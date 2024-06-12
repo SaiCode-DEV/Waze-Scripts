@@ -1,3 +1,5 @@
+/* global $ */
+
 // ==UserScript==
 // @name         Waze GeoPortal DE
 // @namespace    https://greasyfork.org/de/users/863740-horst-wittlich
