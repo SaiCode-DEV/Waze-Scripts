@@ -12,8 +12,8 @@
 // @author         kjg53, WazeDev (2023-?), SaiCode (2024-?)
 // @license        MIT
 // @grant          GM_addStyle
-// @downloadURL https://update.greasyfork.org/scripts/35931/WME%20Rapid%20House%20Numbers.user.js
-// @updateURL https://update.greasyfork.org/scripts/35931/WME%20Rapid%20House%20Numbers.meta.js
+// @downloadURL 	https://github.com/SaiCode-DEV/Waze-Scripts/raw/main/WME%20Rapid%20House%20Numbers.user.js
+// @updateURL 	  https://github.com/SaiCode-DEV/Waze-Scripts/raw/main/WME%20Rapid%20House%20Numbers.user.js
 // ==/UserScript==
 
 (function () {
