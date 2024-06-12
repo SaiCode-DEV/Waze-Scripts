@@ -1,19 +1,19 @@
 // ==UserScript==
-// @name         Waze Darkmode
-// @name:de      Waze Darkmode (schön augen schonen)
-// @namespace    https://github.com/SaiCode-DEV
-// @version      0.72
-// @description  A darkmode for WME / Waze
+// @name            Waze Darkmode
+// @name:de         Waze Darkmode (schön augen schonen)
+// @namespace       https://github.com/SaiCode-DEV
+// @version         0.72
+// @description     A darkmode for WME / Waze
 // @description:de  Dunkler Modus für WME / Waze
-// @author       SaiCode
-// @match      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
-// @match        https://www.waze.com/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=waze.com
-// @grant        GM_addStyle
-// @license MIT
-// @run-at   document-start
-// @downloadURL https://update.greasyfork.org/scripts/495318/Waze%20Darkmode.user.js
-// @updateURL https://update.greasyfork.org/scripts/495318/Waze%20Darkmode.meta.js
+// @author          SaiCode
+// @match           /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
+// @match           https://www.waze.com/*
+// @icon            https://www.google.com/s2/favicons?sz=64&domain=waze.com
+// @grant           GM_addStyle
+// @license         MIT
+// @run-at          document-start
+// @downloadURL     https://update.greasyfork.org/scripts/495318/Waze%20Darkmode.user.js
+// @updateURL       https://update.greasyfork.org/scripts/495318/Waze%20Darkmode.meta.js
 // ==/UserScript==
 
 GM_addStyle(`
