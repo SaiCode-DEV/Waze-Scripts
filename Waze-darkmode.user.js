@@ -12,8 +12,8 @@
 // @grant           GM_addStyle
 // @license         MIT
 // @run-at          document-start
-// @downloadURL     https://update.greasyfork.org/scripts/495318/Waze%20Darkmode.user.js
-// @updateURL       https://update.greasyfork.org/scripts/495318/Waze%20Darkmode.meta.js
+// @downloadURL     https://github.com/SaiCode-DEV/Waze-Scripts/raw/main/Waze-darkmode.user.js
+// @updateURL       https://github.com/SaiCode-DEV/Waze-Scripts/raw/main/Waze-darkmode.user.js
 // ==/UserScript==
 
 GM_addStyle(`
