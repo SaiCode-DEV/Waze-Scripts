@@ -466,4 +466,18 @@ div.c3584528711 > span {
   background-color: rgb(57, 57, 29) !important;
 }
 
+div.c3336571891 > span {
+  background-color: #043904 !important;
+}
+
+div.note {
+  background-color: #10101C !important;
+}
+div.note a {
+  color: #0c5b7f  !important;
+}
+div.note a:visited {
+  color: #107f0c  !important;
+}
+
 `);
