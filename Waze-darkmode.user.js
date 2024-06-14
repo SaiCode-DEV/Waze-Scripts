@@ -159,9 +159,6 @@ div[class^="changesLog--"] {
 
 body {
   color: #fff !important;
-}
-
-body {
   background-color: var(--background_default) !important;
 }
 
@@ -202,6 +199,7 @@ body {
   --surface_variant_purple: #2e0042 !important;
   --surface_variant_red: #420000 !important;
   --surface_variant_yellow: #565201 !important;
+  --surface_alt: #1e2122 !important;
   --content_p1: #d6dae7 !important;
   --content_p2: #bbb !important;
   --content_p3: #666 !important;
@@ -361,6 +359,10 @@ body {
   background: #333 !important;
 }
 
+#sidebar .nav-tabs li a {
+  color: #ddd !important;
+}
+
 .tb-tab-tab {
   background-color: #222 !important;
 }
@@ -375,6 +377,10 @@ body {
 
 .tb-tabContainer {
   background-color: #111 !important;
+}
+
+div.c2952996808 {
+  background-color: #222 !important;
 }
 
 `);
