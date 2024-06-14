@@ -383,4 +383,21 @@ div.c2952996808 {
   background-color: #222 !important;
 }
 
+#WMETB_NavBar {
+  background-color: rgba(17, 17, 17, 0.9) !important;
+  color: #fff !important;
+  opacity: 1;
+}
+
+#WMETB_MeasurementTool,
+#WMETB_CreateJunctions {
+  filter: invert(1);
+}
+#WMETB_PropertiesEditor,
+#WMETB_CopySegmentAttributes,
+#WMETB_Clear_Road_Geometry {
+  filter: brightness(1.2);
+}
+
+
 `);
