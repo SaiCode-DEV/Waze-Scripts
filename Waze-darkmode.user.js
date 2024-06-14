@@ -353,4 +353,28 @@ body {
   color: #c8cee1 !important;
 }
 
+#sidebar .nav-tabs {
+  background: #222 !important;
+}
+
+#sidebar .nav-tabs li.active a {
+  background: #333 !important;
+}
+
+.tb-tab-tab {
+  background-color: #222 !important;
+}
+
+.tb-feature-label-image {
+  filter: invert(1);
+}
+
+.tb-tab-tab.active {
+  background-color: #333 !important;
+}
+
+.tb-tabContainer {
+  background-color: #111 !important;
+}
+
 `);
