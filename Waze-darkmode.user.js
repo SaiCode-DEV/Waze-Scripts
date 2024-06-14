@@ -18,17 +18,34 @@
 
 GM_addStyle(`
 
-
 p {
   color: #aaa !important;
 }
 
-  .transaction-header:hover {
+h2 {
+  color: #fff !important;
+}
+
+.ToolboxMeasurementTool {
   background-color: #222 !important;
 }
 
-h2 {
+.ToolboxMeasurementTool .header {
+  background-color: #0c4151 !important;
+}
+
+#WMETB_Clear_Road_Geometry {
+  filter: brightness(1.2);
+}
+
+#WMETB_CreateJunctions {
+  filter: invert(1);
+}
+
+#WMETB_NavBar {
+  background-color: rgba(17, 17, 17, 0.9) !important;
   color: #fff !important;
+  opacity: 1;
 }
 
 WWSUFooter a {
@@ -131,9 +148,29 @@ WWSUFooter a {
   background-color: #111 !important;
 }
 
+div.c2821834349 > input:checked + label {
+  background-color: #333 !important;
+}
+
+div.c2821834349 > input:enabled + label:hover {
+  background-color: #444 !important;
+}
+
+div.c2821834349 > label {
+  background-color: #222 !important;
+}
+
+div.c2952996808 {
+  background-color: #222 !important;
+}
+
 div[class^="changesLog--"] {
   --wz-tooltip-content-background-color: #222 !important;
   color: #eee !important;
+}
+
+#jaOptions .disabled::after {
+  color: rgba(31, 31, 31, 0.67) !important;
 }
 
 .layer-switcher .menu {
@@ -169,6 +206,30 @@ body {
 #password {
   background-color: #333 !important;
   color: #d6dae7 !important;
+}
+
+#ptsm-Allgem {
+  color: #a4eeee !important;
+}
+
+#ptsm-Baustell {
+  color: #1de1b9 !important;
+}
+
+#ptsm-Bilder {
+  color: #00ff00 !important;
+}
+
+#ptsm-Blitzer {
+  color: #00ffff !important;
+}
+
+#ptsm-GeoPort {
+  color: #9abeff !important;
+}
+
+#ptsm-Misc {
+  color: #ff15ba !important;
 }
 
 #recent-edits .recent-edits-list .recent-edits-list-header {
@@ -207,6 +268,42 @@ body {
 
 #sidebar {
   background-color: #111 !important;
+}
+
+#sidebar .nav-tabs {
+  background: #222 !important;
+}
+
+#sidebar .nav-tabs li a {
+  color: #ddd !important;
+}
+
+#sidebar .nav-tabs li.active a {
+  background: #333 !important;
+}
+
+#sidepanel-ptsm button {
+  background-color: #222 !important;
+}
+
+.tb-feature-label-image {
+  filter: invert(1);
+}
+
+.tb-tab-tab {
+  background-color: #222 !important;
+}
+
+.tb-tab-tab.active {
+  background-color: #333 !important;
+}
+
+.tb-tabContainer {
+  background-color: #111 !important;
+}
+
+.transaction-header:hover {
+  background-color: #222 !important;
 }
 
 #tutorial-dialog .modal-body {
@@ -290,6 +387,10 @@ body {
   color: #bbb !important;
 }
 
+.wz-button.shadowed {
+  background-color: #222 !important;
+}
+
 .wz-cc-container {
   background-color: #333 !important;
   color: #d6dae7 !important;
@@ -350,54 +451,5 @@ body {
 .wz-venue h6 {
   color: #c8cee1 !important;
 }
-
-#sidebar .nav-tabs {
-  background: #222 !important;
-}
-
-#sidebar .nav-tabs li.active a {
-  background: #333 !important;
-}
-
-#sidebar .nav-tabs li a {
-  color: #ddd !important;
-}
-
-.tb-tab-tab {
-  background-color: #222 !important;
-}
-
-.tb-feature-label-image {
-  filter: invert(1);
-}
-
-.tb-tab-tab.active {
-  background-color: #333 !important;
-}
-
-.tb-tabContainer {
-  background-color: #111 !important;
-}
-
-div.c2952996808 {
-  background-color: #222 !important;
-}
-
-#WMETB_NavBar {
-  background-color: rgba(17, 17, 17, 0.9) !important;
-  color: #fff !important;
-  opacity: 1;
-}
-
-#WMETB_MeasurementTool,
-#WMETB_CreateJunctions {
-  filter: invert(1);
-}
-#WMETB_PropertiesEditor,
-#WMETB_CopySegmentAttributes,
-#WMETB_Clear_Road_Geometry {
-  filter: brightness(1.2);
-}
-
 
 `);
