@@ -264,8 +264,6 @@ body {
   --content_p1: #d6dae7 !important;
   --content_p2: #bbb !important;
   --content_p3: #666 !important;
-
-  --wz-button-background-color: #333 !important;
 }
 
 #sidebar {
@@ -458,7 +456,8 @@ body {
   background-color: #111 !important;
 }
 
-#rotationAmount {
+#rotationAmount,
+#shiftAmount {
   background-color: #333 !important;
   color: #d6dae7 !important;
 }
