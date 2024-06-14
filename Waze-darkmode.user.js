@@ -467,7 +467,7 @@ div.c3584528711 > span {
 }
 
 div.c3336571891 > span {
-  background-color: #043904 !important;
+  background-color: rgb(6, 61, 6) !important;
 }
 
 div.note {
