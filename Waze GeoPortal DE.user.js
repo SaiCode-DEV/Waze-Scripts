@@ -1967,6 +1967,11 @@
   function ui_init() {
     //Add a Opacity control to the map controls
     const controlContainer = $(".overlay-buttons-container.bottom").first();
+    //check if the opacity control already exists
+    if (controlContainer.find(".opacity-control-container").length) {
+      return;
+    }
+
     const opacityControl = $(`
     <div class="opacity-control-container">
     <wz-basic-tooltip class="sc-wz-basic-tooltip-h sc-wz-basic-tooltip-s">
@@ -1977,6 +1982,9 @@
                   </wz-tooltip-target><i class="w-icon w-icon-eye-fill"></i>
                 </wz-button>
             </wz-tooltip-source>
+            <wz-tooltip-content position="left">
+                <span> Increase Opacity </span>
+            </wz-tooltip-content>
         </wz-tooltip>
     </wz-basic-tooltip>
     <wz-basic-tooltip class="sc-wz-basic-tooltip-h sc-wz-basic-tooltip-s">
@@ -1987,6 +1995,9 @@
                   </wz-tooltip-target><i class="w-icon w-icon-eye2"></i>
                 </wz-button>
             </wz-tooltip-source>
+            <wz-tooltip-content position="left">
+                <span> Decrease Opacity </span>
+            </wz-tooltip-content>
         </wz-tooltip>
     </wz-basic-tooltip>
     </div>
@@ -2001,7 +2012,7 @@
         try {
           source.layer.setOpacity(opacity);
         } catch (e) {
-          console.error(e);
+          console.error(`Failed to set opacity for ${source.name}`);
         }
       });
     });
@@ -2013,9 +2024,41 @@
         try {
           source.layer.setOpacity(opacity);
         } catch (e) {
-          console.error(e);
+          console.error(`Failed to set opacity for ${source.name}`);
         }
       });
+    });
+
+    //check every 10 seconds if the opacity control is still there
+    setInterval(() => {
+      if (
+        !$(".overlay-buttons-container.bottom")
+          .first()
+          .find(".opacity-control-container").length
+      ) {
+        console.log("Opacity control not found, re-adding...");
+        $(".overlay-buttons-container.bottom").first().append(opacityControl);
+      }
+    }, 10000);
+
+    //add a mutation observer to check if the opacity control is removed
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (!mutation.addedNodes.length) {
+          return;
+        }
+        mutation.addedNodes.forEach((node) => {
+          if (node.id === "overlay-buttons") {
+            $(".overlay-buttons-container.bottom")
+              .first()
+              .append(opacityControl);
+          }
+        });
+      });
+    });
+
+    observer.observe($("#overlay-buttons-region").get(0), {
+      childList: true,
     });
   }
 
