@@ -1998,7 +1998,11 @@
       opacity = Math.min(opacity + 0.1, 1);
       localStorage.setItem("geoportal_opacity", opacity);
       sources.forEach((source) => {
-        source.layer.setOpacity(opacity);
+        try {
+          source.layer.setOpacity(opacity);
+        } catch (e) {
+          console.error(e);
+        }
       });
     });
 
@@ -2006,7 +2010,11 @@
       opacity = Math.max(opacity - 0.1, 0);
       localStorage.setItem("geoportal_opacity", opacity);
       sources.forEach((source) => {
-        source.layer.setOpacity(opacity);
+        try {
+          source.layer.setOpacity(opacity);
+        } catch (e) {
+          console.error(e);
+        }
       });
     });
   }
