@@ -1903,6 +1903,7 @@
               opacity: source.opacity ?? opacity,
               isBaseLayer: false,
               requestEncoding: source.requestEncoding ?? "KVP",
+              visibility: false,
             });
 
             uWaze.map.addLayer(source.layer);
