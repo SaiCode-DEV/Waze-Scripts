@@ -2,7 +2,7 @@
 // @name            Waze Darkmode
 // @name:de         Waze Darkmode (schön augen schonen)
 // @namespace       https://github.com/SaiCode-DEV
-// @version         0.73
+// @version         0.74
 // @description     A darkmode for WME / Waze
 // @description:de  Dunkler Modus für WME / Waze
 // @author          SaiCode
@@ -478,6 +478,26 @@ div.note a {
 }
 div.note a:visited {
   color: #107f0c  !important;
+}
+
+img#slackPermalink {
+  filter: invert(1);
+}
+
+.restrictions-summary .restrictions-table th {
+  background: #003342 !important;
+}
+
+.restrictions-summary .restrictions-table tr {
+  background-color: #222 !important;
+}
+
+.restrictions-summary .restriction-list-item:hover td {
+  background: #333 !important;
+}
+
+.restriction-editing-region .restriction-editing-section .restriction-editing-container {
+  background-color: #222 !important;
 }
 
 `);
