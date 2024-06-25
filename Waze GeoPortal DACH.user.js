@@ -12,8 +12,8 @@
 // @grant        GM_addStyle
 // @license      MIT
 
-// @downloadURL  https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DE.user.js
-// @updateURL    https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DE.meta.js
+// @downloadURL  https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DACH.user.js
+// @updateURL    https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DACH.meta.js
 // ==/UserScript==
 
 /*global I18n, $, W*/
