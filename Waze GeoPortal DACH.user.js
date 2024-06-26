@@ -16,8 +16,9 @@
 // @updateURL    https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DACH.meta.js
 // ==/UserScript==
 
-/*global I18n, $, W*/
+/*global I18n, $, W, OpenLayers*/
 
+/* globals OpenLayers: true */
 // Versions Format
 // yyyy.mm.dd
 
@@ -47,26 +48,27 @@
           name: "Basemap DE",
           unique: "__DrawBasemapDE",
           id: "layer-switcher-basemap-de",
+          type: "WMTS",
           source:
             "https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml",
           layerName: "de_basemapde_web_raster_farbe",
           matrixSet: "GLOBAL_WEBMERCATOR",
-          requestEncoding: "REST",
         },
         {
           name: "GeoDatenZentrum DE",
           unique: "__DrawGeoPortalDE",
           id: "layer-switcher-geoportal-de",
+          type: "WMTS",
           source:
             "https://sgx.geodatenzentrum.de/wmts_topplus_open/1.0.0/WMTSCapabilities.xml",
           layerName: "web",
           matrixSet: "WEBMERCATOR",
-          requestEncoding: "REST",
         },
         {
           name: "GeoPortal BW",
           unique: "__DrawGeoPortalBW",
           id: "layer-switcher-geoportal-bw",
+          type: "WMTS",
           source:
             "https://owsproxy.lgl-bw.de/owsproxy/ows/WMTS_LGL-BW_Basiskarte?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities&user=ZentrKomp&password=viewerprod",
           layerName: "Basiskarte",
@@ -76,32 +78,32 @@
           name: "GeoPortal NRW",
           unique: "__DrawGeoPortalNRW",
           id: "layer-switcher-geoportal-nrw",
+          type: "WMTS",
           source:
             "https://www.wmts.nrw.de/geobasis/wmts_nw_dtk/1.0.0/WMTSCapabilities.xml",
           layerName: "nw_dtk_col",
           matrixSet: "EPSG_3857_16",
-          requestEncoding: "REST",
         },
         {
           name: "GeoPortal NRW Overlay",
           unique: "__DrawGeoPortalNRWOverlay",
           id: "layer-switcher-geoportal-nrw-overlay",
+          type: "WMTS",
           source:
             "https://www.wmts.nrw.de/geobasis/wmts_nw_dop_overlay/1.0.0/WMTSCapabilities.xml",
           layerName: "nw_dop_overlay",
           matrixSet: "EPSG_3857_16",
           opacity: 1,
-          requestEncoding: "REST",
         },
         {
           name: "GeoPortal BY",
           unique: "__DrawGeoPortalBY",
           id: "layer-switcher-geoportal-by",
+          type: "WMTS",
           source:
             "https://geoservices.bayern.de/od/wmts/geobasis/v1/1.0.0/WMTSCapabilities.xml",
           layerName: "by_webkarte",
           matrixSet: "smerc",
-          requestEncoding: "REST",
         },
       ],
     },
@@ -112,29 +114,31 @@
           name: "SwissTopo",
           unique: "__DrawSwissTopo",
           id: "layer-switcher-swisstopo",
+          type: "WMS",
           source:
             "https://wms.geo.admin.ch/?REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.3.0&lang=de",
-          layerName: "",
+          layerName: "ch.swisstopo.swisseo_s2-sr_v100",
           matrixSet: "21781",
-          requestEncoding: "REST",
         },
         {
           name: "SwissImage",
           unique: "__DrawSwissImage",
           id: "layer-switcher-swissimage",
+          type: "WMS",
           source:
             "https://wms.geo.admin.ch/?REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.3.0&lang=de",
-          layerName: "",
+          layerName: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale",
           matrixSet: "21781",
-          requestEncoding: "REST",
         },
       ],
     },
   };
 
-  // Define WMTS Layers. Hide this function for better readability
+  /**
+   * Define WMTS/WMS Layers. Hide this function for better readability
+   */
   function geoportal_init() {
-    const layerControl = $('.layer-switcher').find('.list-unstyled.togglers');
+    const layerControl = $(".layer-switcher").find(".list-unstyled.togglers");
     if (layerControl.length) {
       $.each(sources, function (index, source) {
         console.log(source);
@@ -158,8 +162,14 @@
     }
   }
 
+  /**
+   * Initialize the country layers
+   * @param {string} country
+   * @param {Array} layers
+   */
   function country_init(country, layers) {
     let overlayGroup = $(`ul.collapsible-GROUP_OVERLAY.${country}`);
+    console.group(`Loading Geoportal Layers for ${country.toUpperCase()}`);
 
     $.each(layers, function (index, source) {
       // Make and add layer
@@ -178,25 +188,61 @@
           //if responseXML is not a XML document, cancel the loading
           if (!responseXML || responseXML instanceof XMLDocument === false) {
             console.error(
-              `Failed to load Geoportal Layer ${index + 1}/${
-                layers.length
-              }: ${source.name}`
+              `Failed to load Geoportal Layer ${index + 1}/${layers.length}: ${
+                source.name
+              }`
             );
             return;
           }
 
-          let format = new OpenLayers.Format.WMTSCapabilities({});
-          var doc = responseXML;
-          var capabilities = format.read(doc);
-          source.layer = format.createLayer(capabilities, {
-            layer: source.layerName,
-            matrixSet: source.matrixSet,
-            format: "image/png",
-            opacity: source.opacity ?? opacity,
-            isBaseLayer: false,
-            requestEncoding: source.requestEncoding ?? "KVP",
-            visibility: false,
-          });
+          //chec if WMST or WMTS and load the correct format
+          if (source.type === "WMTS") {
+            var format = new OpenLayers.Format.WMTSCapabilities();
+            var doc = responseXML;
+            var capabilities = format.read(doc);
+            source.layer = format.createLayer(capabilities, {
+              layer: source.layerName,
+              matrixSet: source.matrixSet,
+              format: "image/png",
+              opacity: source.opacity ?? opacity,
+              isBaseLayer: false,
+              requestEncoding: source.requestEncoding ?? "REST",
+              visibility: false,
+            });
+          } else if (source.type === "WMS") {
+            var format = new OpenLayers.Format.WMSCapabilities();
+            var doc = responseXML;
+            var capabilities = format.read(doc);
+
+            // Find the specific layer by its name
+            var wmsLayer = capabilities.capability.layers.find(
+              (layer) => layer.name === source.layerName
+            );
+
+            if (wmsLayer) {
+              console.log(wmsLayer);
+              source.layer = new OpenLayers.Layer.Tile({
+                source: new OpenLayers.Source.TileWMS({
+                  url: wmsLayer.url,
+                  params: {
+                    LAYERS: wmsLayer.name,
+                    FORMAT: "image/png",
+                  },
+                }),
+                name: source.name,
+                opacity: source.opacity ?? opacity,
+                isBaseLayer: false,
+                visibility: false,
+              });
+              JSON.stringify(result, null, 2);
+              console.log(wmsLayer.url);
+            } else {
+              console.error(
+                `Layer ${source.layerName} not found in WMS capabilities for ${source.name}`
+              );
+              return;
+            }
+          }
 
           uWaze.map.addLayer(source.layer);
           uWaze.map.setLayerIndex(source.layer, 3);
@@ -206,7 +252,7 @@
             source.layer.setVisibility(localStorage[source.unique] == "true");
           }
 
-          // Make checkbox and add to "overlay" section
+          // Make checkbox and add to the section
           let toggleEntry = $("<li></li>");
           let checkbox = $("<wz-checkbox></wz-checkbox>", {
             id: source.id,
@@ -223,7 +269,7 @@
             localStorage[source.unique] = source.layer.getVisibility();
           });
 
-          console.log(
+          console.info(
             `Geoportal Layer ${index + 1}/${layers.length}: ${
               source.name
             } loaded`
@@ -231,9 +277,9 @@
         },
         onerror: (response) => {
           console.error(
-            `Failed to load Geoportal Layer ${index + 1}/${
-              layers.length
-            }: ${source.name}`
+            `Failed to load Geoportal Layer ${index + 1}/${layers.length}: ${
+              source.name
+            }`
           );
         },
         ontimeout: (response) => {
@@ -247,6 +293,10 @@
     });
   }
 
+  /**
+   * Initialize the UI
+   * @returns {void}
+   */
   function ui_init() {
     //Add a Opacity control to the map controls
     const controlContainer = $(".overlay-buttons-container.bottom").first();
@@ -366,6 +416,9 @@
     });
   }
 
+  /**
+   * Bootstrap the Geoportal Overlays
+   */
   function geoportal_bootstrap() {
     uWaze = unsafeWindow.W;
     uOpenLayers = unsafeWindow.OpenLayers;
@@ -383,6 +436,57 @@
     }
   }
 
+  /**
+   * Patch OpenLayers to fix missing features
+   * @returns {void}
+   */
+  async function patchOpenLayers() {
+    console.group("WME Geometries: Patching missing features...");
+    if (!OpenLayers.VERSION_NUMBER.match(/^Release [0-9.]*$/)) {
+      console.error(
+        "WME Geometries: OpenLayers version mismatch (" +
+          OpenLayers.VERSION_NUMBER +
+          ") - cannot apply patch"
+      );
+      return;
+    }
+    loadOLScript("lib/OpenLayers/Format/XML");
+    loadOLScript("lib/OpenLayers/Format/XML/VersionedOGC");
+    loadOLScript("lib/OpenLayers/Layer/WMTS");
+    loadOLScript("lib/OpenLayers/Layer/Tile");
+    loadOLScript("lib/OpenLayers/Format/OWSCommon");
+    loadOLScript("lib/OpenLayers/Format/OWSCommon/v1");
+    loadOLScript("lib/OpenLayers/Format/OWSCommon/v1_1_0");
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities");
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1");
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1_3");
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1_3_0");
+    loadOLScript("lib/OpenLayers/Format/WMTSCapabilities");
+    loadOLScript("lib/OpenLayers/Format/WMTSCapabilities/v1_0_0");
+
+    console.groupEnd();
+  }
+
+  /**
+   * Load OpenLayers script from CDN
+   * @param {string} filename 
+   */
+  function loadOLScript(filename) {
+    var version = OpenLayers.VERSION_NUMBER.replace(/Release /, "");
+    console.info("Loading openlayers/" + version + "/" + filename + ".js");
+
+    var openlayers = document.createElement("script");
+    openlayers.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/openlayers/" +
+      version +
+      "/" +
+      filename +
+      ".js";
+    openlayers.type = "text/javascript";
+    openlayers.async = false;
+    document.head.appendChild(openlayers);
+  }
+  patchOpenLayers();
   geoportal_bootstrap();
 })();
 
