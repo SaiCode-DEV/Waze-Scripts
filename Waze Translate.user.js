@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Waze Translate
 // @namespace    https://greasyfork.org/de/users/863740-horst-wittlich
-// @version      0.01
+// @version      0.02
 // @description  Auto Translate using DeepL or LibreTranslate API for Waze Map Editor (WME)
 // @author       SaiCode
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
