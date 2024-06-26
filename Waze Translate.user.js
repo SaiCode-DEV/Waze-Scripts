@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Waze Translate
 // @namespace    https://greasyfork.org/de/users/863740-horst-wittlich
-// @version      0.02
+// @version      0.03
 // @description  Auto Translate using DeepL or LibreTranslate API for Waze Map Editor (WME)
 // @author       SaiCode
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -23,9 +23,6 @@
    * Load the translation library
    */
   function loadTranslateLib() {
-    var version = OpenLayers.VERSION_NUMBER.replace(/Release /, "");
-    console.info("Loading openlayers/" + version + "/" + filename + ".js");
-
     var translate = document.createElement("script");
     translate.src = "https://cdn.jsdelivr.net/npm/translate/index.min.js";
     translate.type = "module";
@@ -33,7 +30,6 @@
       console.info("Translation library loaded.");
     };
     document.head.appendChild(translate);
-    
   }
 
   loadTranslateLib();
