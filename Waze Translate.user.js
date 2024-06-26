@@ -12,8 +12,8 @@
 // @grant        GM_addStyle
 // @license      MIT
 
-// @downloadURL  https://
-// @updateURL    https://
+// @downloadURL https://update.greasyfork.org/scripts/498953/Waze%20Translate.user.js
+// @updateURL https://update.greasyfork.org/scripts/498953/Waze%20Translate.meta.js
 // ==/UserScript==
 
 /*global I18n, $*/
@@ -29,7 +29,11 @@
     var translate = document.createElement("script");
     translate.src = "https://cdn.jsdelivr.net/npm/translate/index.min.js";
     translate.type = "module";
+    translate.onload = () => {
+      console.info("Translation library loaded.");
+    };
     document.head.appendChild(translate);
+    
   }
 
   loadTranslateLib();
