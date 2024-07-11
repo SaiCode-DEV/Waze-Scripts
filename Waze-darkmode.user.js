@@ -500,4 +500,12 @@ img#slackPermalink {
   background-color: #222 !important;
 }
 
+#WazeMap .snapshot-message .snapshot-mode-message {
+  background-color: #111 !important;
+}
+
+.container--wzXTu {
+  background-color: #111 !important;
+}
+
 `);
