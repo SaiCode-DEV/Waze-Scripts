@@ -21,6 +21,150 @@
 // Versions Format
 // yyyy.mm.dd
 
+DEFAULT_SOURCES = {
+  de: {
+    name: "GeoOverlays DE",
+    flag: "🇩🇪",
+    enabled: true,
+    layers: [
+      {
+        name: "Basemap DE",
+        enabled: true,
+        active: false,
+        unique: "__DrawBasemapDE",
+        type: "WMTS",
+        source:
+          "https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml",
+        layerName: "de_basemapde_web_raster_farbe",
+        matrixSet: "GLOBAL_WEBMERCATOR",
+      },
+      {
+        name: "GeoDatenZentrum DE",
+        enabled: true,
+        active: false,
+        unique: "__DrawGeoPortalDE",
+        type: "WMTS",
+        source:
+          "https://sgx.geodatenzentrum.de/wmts_topplus_open/1.0.0/WMTSCapabilities.xml",
+        layerName: "web",
+        matrixSet: "WEBMERCATOR",
+      },
+      {
+        name: "GeoPortal BW",
+        enabled: true,
+        active: false,
+        unique: "__DrawGeoPortalBW",
+        type: "WMTS",
+        source:
+          "https://owsproxy.lgl-bw.de/owsproxy/ows/WMTS_LGL-BW_Basiskarte?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities&user=ZentrKomp&password=viewerprod",
+        layerName: "Basiskarte",
+        matrixSet: "GoogleMapsCompatible",
+      },
+      {
+        name: "GeoPortal NRW",
+        enabled: true,
+        active: false,
+        unique: "__DrawGeoPortalNRW",
+        type: "WMTS",
+        source:
+          "https://www.wmts.nrw.de/geobasis/wmts_nw_dtk/1.0.0/WMTSCapabilities.xml",
+        layerName: "nw_dtk_col",
+        matrixSet: "EPSG_3857_16",
+      },
+      {
+        name: "GeoPortal NRW Overlay",
+        enabled: true,
+        active: false,
+        unique: "__DrawGeoPortalNRWOverlay",
+        type: "WMTS",
+        source:
+          "https://www.wmts.nrw.de/geobasis/wmts_nw_dop_overlay/1.0.0/WMTSCapabilities.xml",
+        layerName: "nw_dop_overlay",
+        matrixSet: "EPSG_3857_16",
+        opacity: 1,
+      },
+      {
+        name: "GeoPortal BY",
+        enabled: true,
+        active: false,
+        unique: "__DrawGeoPortalBY",
+        type: "WMTS",
+        source:
+          "https://geoservices.bayern.de/od/wmts/geobasis/v1/1.0.0/WMTSCapabilities.xml",
+        layerName: "by_webkarte",
+        matrixSet: "smerc",
+      },
+    ],
+  },
+  at: {
+    name: "GeoOverlays AT",
+    flag: "🇦🇹",
+    enabled: true,
+    layers: [
+      {
+        name: "Basemap AT",
+        enabled: true,
+        active: false,
+        unique: "__DrawBasemapAT",
+        type: "WMTS",
+        source:
+          "https://mapsneu.wien.gv.at/basemapneu/1.0.0/WMTSCapabilities.xml",
+        layerName: "geolandbasemap",
+        matrixSet: "google3857",
+      },
+      {
+        name: "Overlay AT",
+        enabled: true,
+        active: false,
+        unique: "__DrawOverlayAT",
+        type: "WMTS",
+        source: "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+        layerName: "bmapoverlay",
+        matrixSet: "google3857",
+      },
+    ],
+  },
+  ch: {
+    name: "GeoOverlays CH",
+    flag: "🇨🇭",
+    enabled: true,
+    layers: [
+      {
+        name: "Strassenkarte",
+        enabled: true,
+        active: false,
+        unique: "__DrawSwissTopoStrassenkarte",
+        type: "WMTS",
+        source:
+          "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        layerName: "ch.swisstopo.swisstne-base",
+        matrixSet: "3857_18",
+      },
+      {
+        name: "Basisnetz",
+        enabled: true,
+        active: false,
+        unique: "__DrawSwissBasisnetz",
+        type: "WMTS",
+        source:
+          "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        layerName: "ch.swisstopo.swisstlm3d-strassen",
+        matrixSet: "3857_18",
+      },
+      {
+        name: "Luftbild",
+        enabled: true,
+        active: false,
+        unique: "__DrawSwissTopoLuftbild",
+        type: "WMTS",
+        source:
+          "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        layerName: "ch.swisstopo.swissimage-product",
+        matrixSet: "3857_20",
+      },
+    ],
+  },
+};
 
 (() => {
   let uOpenLayers;
@@ -40,136 +184,11 @@
   }
 
   // Define WMTS Layers
-  const sources = {
-    de: {
-      name: "GeoOverlays DE",
-      flag: "🇩🇪",
-      layers: [
-        {
-          name: "Basemap DE",
-          unique: "__DrawBasemapDE",
-          id: "layer-switcher-basemap-de",
-          type: "WMTS",
-          source:
-            "https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml",
-          layerName: "de_basemapde_web_raster_farbe",
-          matrixSet: "GLOBAL_WEBMERCATOR",
-        },
-        {
-          name: "GeoDatenZentrum DE",
-          unique: "__DrawGeoPortalDE",
-          id: "layer-switcher-geoportal-de",
-          type: "WMTS",
-          source:
-            "https://sgx.geodatenzentrum.de/wmts_topplus_open/1.0.0/WMTSCapabilities.xml",
-          layerName: "web",
-          matrixSet: "WEBMERCATOR",
-        },
-        {
-          name: "GeoPortal BW",
-          unique: "__DrawGeoPortalBW",
-          id: "layer-switcher-geoportal-bw",
-          type: "WMTS",
-          source:
-            "https://owsproxy.lgl-bw.de/owsproxy/ows/WMTS_LGL-BW_Basiskarte?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities&user=ZentrKomp&password=viewerprod",
-          layerName: "Basiskarte",
-          matrixSet: "GoogleMapsCompatible",
-        },
-        {
-          name: "GeoPortal NRW",
-          unique: "__DrawGeoPortalNRW",
-          id: "layer-switcher-geoportal-nrw",
-          type: "WMTS",
-          source:
-            "https://www.wmts.nrw.de/geobasis/wmts_nw_dtk/1.0.0/WMTSCapabilities.xml",
-          layerName: "nw_dtk_col",
-          matrixSet: "EPSG_3857_16",
-        },
-        {
-          name: "GeoPortal NRW Overlay",
-          unique: "__DrawGeoPortalNRWOverlay",
-          id: "layer-switcher-geoportal-nrw-overlay",
-          type: "WMTS",
-          source:
-            "https://www.wmts.nrw.de/geobasis/wmts_nw_dop_overlay/1.0.0/WMTSCapabilities.xml",
-          layerName: "nw_dop_overlay",
-          matrixSet: "EPSG_3857_16",
-          opacity: 1,
-        },
-        {
-          name: "GeoPortal BY",
-          unique: "__DrawGeoPortalBY",
-          id: "layer-switcher-geoportal-by",
-          type: "WMTS",
-          source:
-            "https://geoservices.bayern.de/od/wmts/geobasis/v1/1.0.0/WMTSCapabilities.xml",
-          layerName: "by_webkarte",
-          matrixSet: "smerc",
-        },
-      ],
-    },
-    at: {
-      name: "GeoOverlays AT",
-      flag: "🇦🇹",
-      layers: [
-        {
-          name: "Basemap AT",
-          unique: "__DrawBasemapAT",
-          id: "layer-switcher-basemap-at",
-          type: "WMTS",
-          source:
-            "https://mapsneu.wien.gv.at/basemapneu/1.0.0/WMTSCapabilities.xml",
-          layerName: "geolandbasemap",
-          matrixSet: "google3857",
-        },
-        {
-          name: "Overlay AT",
-          unique: "__DrawOverlayAT",
-          id: "layer-switcher-overlay-at",
-          type: "WMTS",
-          source: "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
-          layerName: "bmapoverlay",
-          matrixSet: "google3857",
-        },
-      ],
-    },
-    ch: {
-      name: "GeoOverlays CH",
-      flag: "🇨🇭",
-      layers: [
-        {
-          name: "Strassenkarte",
-          unique: "__DrawSwissTopoStrassenkarte",
-          id: "layer-switcher-swisstopo-strassenkarte",
-          type: "WMTS",
-          source:
-            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-          layerName: "ch.swisstopo.swisstne-base",
-          matrixSet: "3857_18",
-        },
-        {
-          name: "Basisnetz",
-          unique: "__DrawSwissBasisnetz",
-          id: "layer-switcher-basisnetz",
-          type: "WMTS",
-          source:
-            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-          layerName: "ch.swisstopo.swisstlm3d-strassen",
-          matrixSet: "3857_18",
-        },
-        {
-          name: "Luftbild",
-          unique: "__DrawSwissTopoLuftbild",
-          id: "layer-switcher-swisstopo-luftbild",
-          type: "WMTS",
-          source:
-            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-          layerName: "ch.swisstopo.swissimage-product",
-          matrixSet: "3857_20",
-        },
-      ],
-    },
-  };
+
+
+  const layersList = [];
+
+  let sources = loadSettings();
 
   /**
    * Define WMTS/WMS Layers. Hide this function for better readability
@@ -178,23 +197,35 @@
     const layerControl = $(".layer-switcher").find(".list-unstyled.togglers");
     if (layerControl.length) {
       console.info(`Loading Geoportal Layers...`);
-      $.each(sources, function (index, source) {
+      $.each(sources, function (key, country) {
         const controlEntry = `
-        <li class="group">
+        <li class="group layer-toggle-${country.flag}" style="${
+          country.enabled ? "" : "display: none;"
+        }">
           <div class="layer-switcher-toggler-tree-category">
-            <wz-button color="clear-icon" size="xs">
+            <wz-button class="expand-country-${key}" color="clear-icon" size="xs">
               <i class="toggle-category w-icon w-icon-caret-down"></i>
             </wz-button>
             <label class="label-text" for="layer-switcher-group_overlay">
-              ${source.name}
+              ${country.name}
             </label>
           </div>
-          <ul class="collapsible-GROUP_OVERLAY ${index}"></ul>
+          <ul class="collapsible-GROUP_OVERLAY ${key}"></ul>
         </li>
         `;
         // append the control entry as the second last entry
         layerControl.children().eq(-1).before(controlEntry);
-        country_init(index, source.layers, source.flag);
+        //make the caret clickable
+        $(`.expand-country-${key}`).on("click", function () {
+          $(`.collapsible-GROUP_OVERLAY.${key}`).toggle();
+          //rotate the caret transform: rotate(90deg);
+          if ($(this).find("i").css("transform") === "none") {
+            $(this).find("i").css("transform", "rotate(-90deg)");
+          } else {
+            $(this).find("i").css("transform", "");
+          }
+        });
+        country_init(key, country.layers, country.flag);
       });
     }
   }
@@ -203,6 +234,7 @@
    * Initialize the country layers
    * @param {string} country
    * @param {Array} layers
+   * @param {string} flag
    */
   function country_init(country, layers, flag) {
     let overlayGroup = $(`ul.collapsible-GROUP_OVERLAY.${country}`);
@@ -235,13 +267,13 @@
             var format = new OpenLayers.Format.WMTSCapabilities();
             var doc = responseXML;
             var capabilities = format.read(doc);
-            source.layer = format.createLayer(capabilities, {
+            layersList[source.unique] = format.createLayer(capabilities, {
               layer: source.layerName,
               matrixSet: source.matrixSet,
               opacity: source.opacity ?? opacity,
               isBaseLayer: false,
               requestEncoding: source.requestEncoding ?? "REST",
-              visibility: false,
+              visibility: source.active,
             });
           } else if (source.type === "WMS") {
             var format = new OpenLayers.Format.WMSCapabilities();
@@ -255,7 +287,7 @@
 
             if (wmsLayer) {
               console.log(wmsLayer);
-              source.layer = new OpenLayers.Layer.Tile({
+              layersList[source.unique] = new OpenLayers.Layer.Tile({
                 source: new OpenLayers.Source.TileWMS({
                   url: wmsLayer.url,
                   params: {
@@ -278,11 +310,11 @@
             }
           }
 
-          uWaze.map.addLayer(source.layer);
-          uWaze.map.setLayerIndex(source.layer, 3);
+          uWaze.map.addLayer(layersList[source.unique]);
+          uWaze.map.setLayerIndex(layersList[source.unique], 3);
 
           //check for errors
-          if (!source.layer) {
+          if (!layersList[source.unique]) {
             console.error(
               `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
                 source.name
@@ -290,38 +322,34 @@
             );
             return;
           }
-          if (!source.layer.url.length) {
+          if (!layersList[source.unique].url.length) {
             console.error(
               `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
                 source.name
               }. No URL found in capabilities.`
             );
-            console.log(source.layer);
+            console.log(layersList[source.unique]);
             return;
           }
 
-          console.debug(source.layer.url)
-
-          // Check if layer was active previously
-          if (localStorage[source.unique]) {
-            source.layer.setVisibility(localStorage[source.unique] == "true");
-          }
+          console.debug(layersList[source.unique].url);
 
           // Make checkbox and add to the section
           let toggleEntry = $("<li></li>");
           let checkbox = $("<wz-checkbox></wz-checkbox>", {
-            id: source.id,
+            id: source.unique,
             class: "hydrated",
-            checked: source.layer.getVisibility(),
+            checked: layersList[source.unique].getVisibility(),
             text: source.name,
           });
 
-          toggleEntry.append(checkbox);
+          toggleEntry.append(checkbox).toggle(source.enabled);
           overlayGroup.append(toggleEntry);
 
           checkbox.on("click", function (e) {
-            source.layer.setVisibility(e.target.checked);
-            localStorage[source.unique] = source.layer.getVisibility();
+            layersList[source.unique].setVisibility(e.target.checked);
+            sources[country].layers[index].active = e.target.checked;
+            saveSettings();
           });
 
           console.log(
@@ -415,7 +443,7 @@
       $.each(sources, function (index, source) {
         source.layers.forEach((source) => {
           try {
-            source.layer.setOpacity(opacity);
+            layersList[source.unique].setOpacity(opacity);
           } catch (e) {
             console.error(`Failed to set opacity for ${source.name}`);
             return;
@@ -434,7 +462,7 @@
       $.each(sources, function (index, source) {
         source.layers.forEach((source) => {
           try {
-            source.layer.setOpacity(opacity);
+            layersList[source.unique].setOpacity(opacity);
           } catch (e) {
             console.error(`Failed to set opacity for ${source.name}`);
             return;
@@ -486,51 +514,123 @@
     tabLabel.innerText = "🌍 Geoportal";
     tabLabel.title = "Geoportal DACH";
 
-    let settingsContent = "<div class='geoportal-countrys'>";
-
-    Object.keys(sources).forEach((country) => {
-      settingsContent += `
-        <div class="country">
-            <label>
-                <input type="checkbox" class="country-checkbox" data-country="${country}" checked>
-                ${sources[country].flag} ${sources[country].name}
-            </label>
-            <ul class="maps-list maps-list-${country}">
-        `;
-      sources[country].layers.forEach((layer) => {
-        settingsContent += `
-            <li>
-                <label>
-                    <input type="checkbox" class="layer-checkbox" data-layer="${layer.unique}" checked>
-                    ${layer.name}
-                </label>
-            </li>
-        `;
-      });
-      settingsContent += "</ul></div>";
-    });
-
-    settingsContent += "</div>";
     tabPane.innerHTML = `
-    <div class="geoportal-settings">
-        <h3>Geoportal Settings</h3>
-        </br>
-        ${settingsContent}
+  <div class="geoportal-settings">
+    <h1>Settings</h1>
+    <div class="geoportal-countrys">
+      <div v-for="country in countries" :key="country">
+        <input type="checkbox" :id="country" v-model="layers[country].enabled" @change="updateCountry" />
+        <label :for="country" class="countyname">{{ layers[country].flag }} {{ layers[country].name }}</label>
+        <ul class="geoportal-layers" v-if="layers[country].enabled">
+          <li v-for="layer in layers[country].layers" :key="layer.unique">
+            <input type="checkbox" :id="layer.unique" v-model="layer.enabled" @change="updateLayer" />
+            <label :for="layer.unique">{{ layer.name }}</label>
+          </li>
+        </ul>
     </div>
-    `;
+  </div>
+  `;
 
     await W.userscripts.waitForElementConnected(tabPane);
 
-    // Event listener to hide/show UL when country checkbox is toggled
-    $(".country-checkbox").on("change", function () {
-      const country = $(this).data("country");
-      const mapsList = $(`.maps-list-${country}`);
-      if (this.checked) {
-        mapsList.show();
-      } else {
-        mapsList.hide();
+    //check if Vue.js is already loaded
+    while (typeof Vue === "undefined") {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    //initialize Vue.js
+    const { createApp, ref } = Vue;
+    createApp({
+      setup() {
+        const countries = ref(Object.keys(sources));
+        const layers = ref(sources);
+
+        return { countries, layers };
+      },
+      methods: {
+        updateCountry(event) {
+          //hide the layers if the country is disabled
+          if (!event.target.checked) {
+            sources[event.target.id].layers.forEach((layer) => {
+              layersList[layer.unique].setVisibility(false);
+            });
+          } else {
+            sources[event.target.id].layers.forEach((layer) => {
+              layersList[layer.unique].setVisibility(layer.active);
+            });
+          }
+          $(`.layer-toggle-${this.layers[event.target.id].flag}`).toggle(
+            event.target.checked
+          );
+          saveSettings();
+        },
+        updateLayer(event) {
+          layersList[event.target.id].setVisibility(event.target.checked);
+          $(`li wz-checkbox#${event.target.id}`).toggle(
+            event.target.checked
+          ).prop("checked", event.target.checked);
+          saveSettings();
+        },
+      },
+    }).mount(tabPane);
+  }
+
+  /**
+   * Load the settings from localStorage
+   * @returns {Object} sources
+   */
+  function loadSettings() {
+    try {
+      const savedSources = JSON.parse(
+        localStorage.getItem("geoportal_sources")
+      );
+
+      if (!savedSources || typeof savedSources !== "object") {
+        return DEFAULT_SOURCES;
       }
-    });
+
+      // Check if each key in savedSources matches the keys in DEFAULT_SOURCES
+      for (const key in savedSources) {
+        const savedSource = savedSources[key];
+
+        // Check if the structure of savedSource matches the structure of defaultSource
+        if (
+          typeof savedSource.name !== "string" ||
+          typeof savedSource.flag !== "string" ||
+          !Array.isArray(savedSource.layers)
+        ) {
+          throw new Error("Invalid country format");
+        }
+        savedSource.enabled = savedSource.enabled ?? true;
+
+        for (const layer of savedSource.layers) {
+          if (
+            typeof layer.name !== "string" ||
+            typeof layer.unique !== "string" ||
+            typeof layer.type !== "string" ||
+            typeof layer.source !== "string" ||
+            typeof layer.layerName !== "string" ||
+            typeof layer.matrixSet !== "string"
+          ) {
+            throw new Error("Invalid layer format");
+          }
+          layer.enabled = layer.enabled ?? true;
+          layer.active = layer.active ?? false;
+        }
+      }
+      // If all checks passed, use savedSources
+      return savedSources;
+    } catch (error) {
+      // If any check fails, log the error and use DEFAULT_SOURCES
+      console.error(error.message);
+      return DEFAULT_SOURCES;
+    }
+  }
+
+  /**
+   * Save the settings to localStorage
+   */
+  async function saveSettings() {
+    localStorage.setItem("geoportal_sources", JSON.stringify(sources));
   }
 
   /**
@@ -604,6 +704,19 @@
     openlayers.async = false;
     document.head.appendChild(openlayers);
   }
+
+  function loadVueJS() {
+    //check if Vue.js is already loaded
+    if (typeof Vue !== "undefined") {
+      return;
+    }
+    console.log("Loading Vue.js");
+    var vuejs = document.createElement("script");
+    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js";
+    document.head.appendChild(vuejs);
+  }
+
+  loadVueJS();
   patchOpenLayers();
   geoportal_bootstrap();
 })();
@@ -621,6 +734,15 @@ GM_addStyle(`
 
   .overlay-buttons-container.bottom {
     bottom: 42px;
+  }
+
+  .geoportal-settings {
+    padding: 10px;
+    user-select: none;
+  }
+
+  .geoportal-settings label {
+    margin-left: 6px;
   }
 
 `);
