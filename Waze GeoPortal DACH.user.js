@@ -6,7 +6,6 @@
 // @author       vertexcode, hiwi234, SaiCode
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=waze.com
-// @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        GM_addStyle
@@ -21,6 +20,7 @@
 /* globals OpenLayers: true */
 // Versions Format
 // yyyy.mm.dd
+
 
 (() => {
   let uOpenLayers;
@@ -43,6 +43,7 @@
   const sources = {
     de: {
       name: "GeoOverlays DE",
+      flag: "🇩🇪",
       layers: [
         {
           name: "Basemap DE",
@@ -107,28 +108,64 @@
         },
       ],
     },
-    ch: {
-      name: "GeoOverlays CH",
+    at: {
+      name: "GeoOverlays AT",
+      flag: "🇦🇹",
       layers: [
         {
-          name: "SwissTopo",
-          unique: "__DrawSwissTopo",
-          id: "layer-switcher-swisstopo",
-          type: "WMS",
+          name: "Basemap AT",
+          unique: "__DrawBasemapAT",
+          id: "layer-switcher-basemap-at",
+          type: "WMTS",
           source:
-            "https://wms.geo.admin.ch/?REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.3.0&lang=de",
-          layerName: "ch.swisstopo.swisseo_s2-sr_v100",
-          matrixSet: "21781",
+            "https://mapsneu.wien.gv.at/basemapneu/1.0.0/WMTSCapabilities.xml",
+          layerName: "geolandbasemap",
+          matrixSet: "google3857",
         },
         {
-          name: "SwissImage",
-          unique: "__DrawSwissImage",
-          id: "layer-switcher-swissimage",
-          type: "WMS",
+          name: "Overlay AT",
+          unique: "__DrawOverlayAT",
+          id: "layer-switcher-overlay-at",
+          type: "WMTS",
+          source: "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+          layerName: "bmapoverlay",
+          matrixSet: "google3857",
+        },
+      ],
+    },
+    ch: {
+      name: "GeoOverlays CH",
+      flag: "🇨🇭",
+      layers: [
+        {
+          name: "Strassenkarte",
+          unique: "__DrawSwissTopoStrassenkarte",
+          id: "layer-switcher-swisstopo-strassenkarte",
+          type: "WMTS",
           source:
-            "https://wms.geo.admin.ch/?REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.3.0&lang=de",
-          layerName: "ch.swisstopo.pixelkarte-farbe-pk1000.noscale",
-          matrixSet: "21781",
+            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+          layerName: "ch.swisstopo.strassenkarte-200",
+          matrixSet: "3857_16",
+        },
+        {
+          name: "Luftbild",
+          unique: "__DrawSwissTopoLuftbild",
+          id: "layer-switcher-swisstopo-luftbild",
+          type: "WMTS",
+          source:
+            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+          layerName: "ch.swisstopo.swissimage-product",
+          matrixSet: "3857_20",
+        },
+        {
+          name: "swissTLM3D",
+          unique: "__DrawSwissTopoTLM3D",
+          id: "layer-switcher-swisstopo-tlm3d",
+          type: "WMTS",
+          source:
+            "https://wmts.geo.admin.ch/EPSG/4326/1.0.0/WMTSCapabilities.xml",
+          layerName: "ch.swisstopo.swisstlm3d-strassen",
+          matrixSet: "4326_17",
         },
       ],
     },
@@ -140,8 +177,8 @@
   function geoportal_init() {
     const layerControl = $(".layer-switcher").find(".list-unstyled.togglers");
     if (layerControl.length) {
+      console.info(`Loading Geoportal Layers...`);
       $.each(sources, function (index, source) {
-        console.log(source);
         const controlEntry = `
         <li class="group">
           <div class="layer-switcher-toggler-tree-category">
@@ -157,7 +194,7 @@
         `;
         // append the control entry as the second last entry
         layerControl.children().eq(-1).before(controlEntry);
-        country_init(index, source.layers);
+        country_init(index, source.layers, source.flag);
       });
     }
   }
@@ -167,10 +204,8 @@
    * @param {string} country
    * @param {Array} layers
    */
-  function country_init(country, layers) {
+  function country_init(country, layers, flag) {
     let overlayGroup = $(`ul.collapsible-GROUP_OVERLAY.${country}`);
-    console.group(`Loading Geoportal Layers for ${country.toUpperCase()}`);
-
     $.each(layers, function (index, source) {
       // Make and add layer
       GM.xmlHttpRequest({
@@ -188,7 +223,7 @@
           //if responseXML is not a XML document, cancel the loading
           if (!responseXML || responseXML instanceof XMLDocument === false) {
             console.error(
-              `Failed to load Geoportal Layer ${index + 1}/${layers.length}: ${
+              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
                 source.name
               }`
             );
@@ -238,7 +273,7 @@
               console.log(wmsLayer.url);
             } else {
               console.error(
-                `Layer ${source.layerName} not found in WMS capabilities for ${source.name}`
+                `Layer ${source.layerName} not found in WMS capabilities for ${flag} ${source.name}`
               );
               return;
             }
@@ -246,6 +281,27 @@
 
           uWaze.map.addLayer(source.layer);
           uWaze.map.setLayerIndex(source.layer, 3);
+
+          //check for errors
+          if (!source.layer) {
+            console.error(
+              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
+                source.name
+              }`
+            );
+            return;
+          }
+          if (!source.layer.url.length) {
+            console.error(
+              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
+                source.name
+              }. No URL found in capabilities.`
+            );
+            console.log(source.layer);
+            return;
+          }
+
+          console.debug(source.layer.url)
 
           // Check if layer was active previously
           if (localStorage[source.unique]) {
@@ -269,22 +325,20 @@
             localStorage[source.unique] = source.layer.getVisibility();
           });
 
-          console.info(
-            `Geoportal Layer ${index + 1}/${layers.length}: ${
-              source.name
-            } loaded`
+          console.log(
+            `${flag} Layer ${index + 1}/${layers.length}: ${source.name} loaded`
           );
         },
         onerror: (response) => {
           console.error(
-            `Failed to load Geoportal Layer ${index + 1}/${layers.length}: ${
+            `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
               source.name
             }`
           );
         },
         ontimeout: (response) => {
           console.error(
-            `Request to Geoportal Layer ${index + 1}/${layers.length}: ${
+            `Request to ${flag} Layer ${index + 1}/${layers.length}: ${
               source.name
             } timed out`
           );
@@ -358,12 +412,16 @@
         opacity = Math.min(opacity + 0.1, 1);
       }
       localStorage.setItem("geoportal_opacity", opacity);
-      sources.de.forEach((source) => {
-        try {
-          source.layer.setOpacity(opacity);
-        } catch (e) {
-          console.error(`Failed to set opacity for ${source.name}`);
-        }
+
+      $.each(sources, function (index, source) {
+        source.layers.forEach((source) => {
+          try {
+            source.layer.setOpacity(opacity);
+          } catch (e) {
+            console.error(`Failed to set opacity for ${source.name}`);
+            return;
+          }
+        });
       });
     });
 
@@ -374,12 +432,15 @@
         opacity = Math.max(opacity - 0.1, 0);
       }
       localStorage.setItem("geoportal_opacity", opacity);
-      sources.de.forEach((source) => {
-        try {
-          source.layer.setOpacity(opacity);
-        } catch (e) {
-          console.error(`Failed to set opacity for ${source.name}`);
-        }
+      $.each(sources, function (index, source) {
+        source.layers.forEach((source) => {
+          try {
+            source.layer.setOpacity(opacity);
+          } catch (e) {
+            console.error(`Failed to set opacity for ${source.name}`);
+            return;
+          }
+        });
       });
     });
 
@@ -417,6 +478,63 @@
   }
 
   /**
+   * Initialize the settings
+   */
+  async function settings_init() {
+    const { tabLabel, tabPane } =
+      W.userscripts.registerSidebarTab("geoportal-dach");
+
+    tabLabel.innerText = "🌍 Geoportal";
+    tabLabel.title = "Geoportal DACH";
+
+    let settingsContent = "<div class='geoportal-countrys'>";
+
+    Object.keys(sources).forEach((country) => {
+      settingsContent += `
+        <div class="country">
+            <label>
+                <input type="checkbox" class="country-checkbox" data-country="${country}" checked>
+                ${sources[country].flag} ${sources[country].name}
+            </label>
+            <ul class="maps-list maps-list-${country}">
+        `;
+      sources[country].layers.forEach((layer) => {
+        settingsContent += `
+            <li>
+                <label>
+                    <input type="checkbox" class="layer-checkbox" data-layer="${layer.unique}" checked>
+                    ${layer.name}
+                </label>
+            </li>
+        `;
+      });
+      settingsContent += "</ul></div>";
+    });
+
+    settingsContent += "</div>";
+    tabPane.innerHTML = `
+    <div class="geoportal-settings">
+        <h3>Geoportal Settings</h3>
+        </br>
+        ${settingsContent}
+    </div>
+    `;
+
+    await W.userscripts.waitForElementConnected(tabPane);
+
+    // Event listener to hide/show UL when country checkbox is toggled
+    $(".country-checkbox").on("change", function () {
+      const country = $(this).data("country");
+      const mapsList = $(`.maps-list-${country}`);
+      if (this.checked) {
+        mapsList.show();
+      } else {
+        mapsList.hide();
+      }
+    });
+  }
+
+  /**
    * Bootstrap the Geoportal Overlays
    */
   function geoportal_bootstrap() {
@@ -431,6 +549,7 @@
       setTimeout(geoportal_bootstrap, 500);
     } else {
       console.log("Loading Geoportal Maps...");
+      settings_init();
       geoportal_init();
       ui_init();
     }
@@ -441,7 +560,7 @@
    * @returns {void}
    */
   async function patchOpenLayers() {
-    console.group("WME Geometries: Patching missing features...");
+    console.groupCollapsed("WME Geometries: Patching missing features...");
     if (!OpenLayers.VERSION_NUMBER.match(/^Release [0-9.]*$/)) {
       console.error(
         "WME Geometries: OpenLayers version mismatch (" +
@@ -469,7 +588,7 @@
 
   /**
    * Load OpenLayers script from CDN
-   * @param {string} filename 
+   * @param {string} filename
    */
   function loadOLScript(filename) {
     var version = OpenLayers.VERSION_NUMBER.replace(/Release /, "");
