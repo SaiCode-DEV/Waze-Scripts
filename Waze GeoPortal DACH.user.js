@@ -144,8 +144,18 @@
           type: "WMTS",
           source:
             "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-          layerName: "ch.swisstopo.strassenkarte-200",
-          matrixSet: "3857_16",
+          layerName: "ch.swisstopo.swisstne-base",
+          matrixSet: "3857_18",
+        },
+        {
+          name: "Basisnetz",
+          unique: "__DrawSwissBasisnetz",
+          id: "layer-switcher-basisnetz",
+          type: "WMTS",
+          source:
+            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+          layerName: "ch.swisstopo.swisstlm3d-strassen",
+          matrixSet: "3857_18",
         },
         {
           name: "Luftbild",
@@ -156,16 +166,6 @@
             "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
           layerName: "ch.swisstopo.swissimage-product",
           matrixSet: "3857_20",
-        },
-        {
-          name: "swissTLM3D",
-          unique: "__DrawSwissTopoTLM3D",
-          id: "layer-switcher-swisstopo-tlm3d",
-          type: "WMTS",
-          source:
-            "https://wmts.geo.admin.ch/EPSG/4326/1.0.0/WMTSCapabilities.xml",
-          layerName: "ch.swisstopo.swisstlm3d-strassen",
-          matrixSet: "4326_17",
         },
       ],
     },
@@ -238,7 +238,6 @@
             source.layer = format.createLayer(capabilities, {
               layer: source.layerName,
               matrixSet: source.matrixSet,
-              format: "image/png",
               opacity: source.opacity ?? opacity,
               isBaseLayer: false,
               requestEncoding: source.requestEncoding ?? "REST",
