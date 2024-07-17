@@ -204,8 +204,7 @@
   color-scheme: light;
 }
 
-:host .dark-mode,
-:root .dark-mode {
+.dark-mode {
   /**
     	Genrated Dark mode
 		*/

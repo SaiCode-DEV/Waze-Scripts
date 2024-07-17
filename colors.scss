@@ -167,52 +167,49 @@ $dark-override: (
   --surface_variant_purple: tint($purple, 90%);
   color: $black;
   color-scheme: light;
+}
 
-  .dark-mode {
-    /**
+.dark-mode {
+  /**
     	Genrated Dark mode
 		*/
-    @each $name, $color in $dark-colorlist {
-      $step: 110%;
-      @for $i from 1 through 9 {
-        $index: $i * 100;
-        @if $i < 5 {
-          $step: $step - 15%;
-          --color-#{$name}-#{$index}: #{shade($color, $step)};
-        }
+  @each $name, $color in $dark-colorlist {
+    $step: 110%;
+    @for $i from 1 through 9 {
+      $index: $i * 100;
+      @if $i < 5 {
+        $step: $step - 15%;
+        --color-#{$name}-#{$index}: #{shade($color, $step)};
+      }
 
-        @if $i == 5 {
-          $step: 0%;
-          --color-#{$name}-#{$index}: #{$color};
-        }
+      @if $i == 5 {
+        $step: 0%;
+        --color-#{$name}-#{$index}: #{$color};
+      }
 
-        @if $i > 5 {
-          $step: $step + 20%;
-          --color-#{$name}-#{$index}: #{tint($color, $step)};
-        }
+      @if $i > 5 {
+        $step: $step + 20%;
+        --color-#{$name}-#{$index}: #{tint($color, $step)};
       }
     }
-
-    @each $name, $color in $dark-override {
-      $step: 100;
-      @for $i from 1 through 9 {
-        $index: $i * 10;
-        $alpha: -($step - $index) * 1%;
-        --color-#{$name}-alpha-#{$index}: #{scale-color(
-            $color,
-            $alpha: $alpha
-          )};
-      }
-    }
-
-    --color-background: var(--color-primary-100);
-    --color-white: #000000;
-    --color-black: #ffffff;
-
-    --wme-shadow: 0px 1.2px 5.3px rgba(0, 0, 0, 0.2),
-      0px 4px 17.9px rgba(0, 0, 0, 0.3), 0px 18px 80px rgba(0, 0, 0, 0.4);
-
-    color: white;
-    color-scheme: dark;
   }
+
+  @each $name, $color in $dark-override {
+    $step: 100;
+    @for $i from 1 through 9 {
+      $index: $i * 10;
+      $alpha: -($step - $index) * 1%;
+      --color-#{$name}-alpha-#{$index}: #{scale-color($color, $alpha: $alpha)};
+    }
+  }
+
+  --color-background: var(--color-primary-100);
+  --color-white: #000000;
+  --color-black: #ffffff;
+
+  --wme-shadow: 0px 1.2px 5.3px rgba(0, 0, 0, 0.2),
+    0px 4px 17.9px rgba(0, 0, 0, 0.3), 0px 18px 80px rgba(0, 0, 0, 0.4);
+
+  color: white;
+  color-scheme: dark;
 }
