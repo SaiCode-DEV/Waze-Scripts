@@ -23,7 +23,7 @@ p {
 }
 
 h2 {
-  color: #fff !important;
+  color: var(--text-color) !important;
 }
 
 .ToolboxMeasurementTool {
@@ -44,7 +44,7 @@ h2 {
 
 #WMETB_NavBar {
   background-color: rgba(17, 17, 17, 0.9) !important;
-  color: #fff !important;
+  color: var(--text-color) !important;
   opacity: 1;
 }
 
@@ -53,7 +53,7 @@ WWSUFooter a {
 }
 
 #WWSU-Container {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 #WWSU-script-update-info {
@@ -84,7 +84,7 @@ WWSUFooter a {
     color-stop(100%, #1a1a1a)
   );
   padding: 3px;
-  color: #fff;
+  color: var(--text-color);
 }
 
 .dialog-lightbox nav button:hover:enabled {
@@ -98,7 +98,7 @@ WWSUFooter a {
     color-stop(100%, #023e8a)
   );
   cursor: pointer;
-  color: #fff;
+  color: var(--text-color);
 }
 
 [dir] .wz-footer {
@@ -141,11 +141,11 @@ WWSUFooter a {
 }
 
 #issue-tracker-filter-region {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .issues-tracker-wrapper .issues-tracker-footer {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 div.c2821834349 > input:checked + label {
@@ -174,7 +174,7 @@ div[class^="changesLog--"] {
 }
 
 .layer-switcher .menu {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .layer-switcher .menu > .title {
@@ -186,16 +186,16 @@ div[class^="changesLog--"] {
 }
 
 .ls-modal {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
   color: #d6dae7 !important;
 }
 
 .modal-content {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 body {
-  color: #fff !important;
+  color: var(--text-color) !important;
   background-color: var(--background_default) !important;
 }
 
@@ -233,15 +233,15 @@ body {
 }
 
 #recent-edits .recent-edits-list .recent-edits-list-header {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 #recent-edits .recent-edits-list .recent-edits-list-items .transaction-header {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 #recent-edits .recent-edits-list .recent-edits-load-more {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 #recent-edits .recent-edits-map .map {
@@ -249,7 +249,7 @@ body {
 }
 
 :root {
-  --background_default: #0e0e0e !important;
+  --background_default: #111 !important;
   --background_variant: #222 !important;
   --content_default: #a7a7a7 !important;
   --surface_default: #1e1e1e !important;
@@ -261,13 +261,14 @@ body {
   --surface_variant_red: #420000 !important;
   --surface_variant_yellow: #565201 !important;
   --surface_alt: #1e2122 !important;
+  --text-color: #fff !important;
   --content_p1: #d6dae7 !important;
   --content_p2: #bbb !important;
   --content_p3: #666 !important;
 }
 
 #sidebar {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 #sidebar .nav-tabs {
@@ -299,7 +300,7 @@ body {
 }
 
 .tb-tabContainer {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .transaction-header:hover {
@@ -316,7 +317,7 @@ body {
 }
 
 .welcome_popup_container--MpGOT {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .welcome_popup_image--SSxnF {
@@ -324,7 +325,7 @@ body {
 }
 
 .wm-card.is-routing {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-map__leaflet {
@@ -333,7 +334,7 @@ body {
 
 .wm-routes {
   border-top: 8px solid #222 !important;
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-routes-item-desktop.is-active {
@@ -341,28 +342,28 @@ body {
 }
 
 .wm-routes-item-desktop__header {
-  color: #fff !important;
+  color: var(--text-color) !important;
 }
 
 .wm-routes__header {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-routing-actions {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-routing-poi {
   border-top: 8px solid #222 !important;
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-routing-poi-card section.wide:last-child {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-routing-schedule {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-routing-schedule .wz-react-dropdown__head {
@@ -371,7 +372,7 @@ body {
 
 .wm-routing-status {
   border-top: 8px solid #222 !important;
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wm-routing__sticky-delimeter {
@@ -379,7 +380,7 @@ body {
 }
 
 .wm-routing__title {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
   color: #d6dae7 !important;
 }
 
@@ -413,7 +414,7 @@ body {
 }
 
 .wz-map-ol-footer {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wz-react-dropdown__head::after {
@@ -421,7 +422,7 @@ body {
 }
 
 .wz-search-from-to {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wz-search-from-to .wm-search .wm-search__selected {
@@ -433,7 +434,7 @@ body {
 }
 
 .wz-sidebar {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .wz-sidebar-toggle-label {
@@ -453,7 +454,7 @@ body {
 }
 
 #RAUtilWindow {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 #rotationAmount,
@@ -501,11 +502,30 @@ img#slackPermalink {
 }
 
 #WazeMap .snapshot-message .snapshot-mode-message {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
 }
 
 .container--wzXTu {
-  background-color: #111 !important;
+  background-color: var(--background_default) !important;
+  display: none;
+}
+
+#abAlerts {
+  background-color: var(--background_default) !important;
+  box-shadow: var(--background_default) 5px 5px 10px !important;
+  border-color: #333 !important;
+}
+
+#sidebar {
+  color: var(--text-color) !important;
+}
+
+.toolbar .toolbar-button {
+  color: var(--content_p1) !important;
+}
+
+.layer-switcher .layer-switcher-toggler-tree-category > .label-text {
+  color: var(--text-color) !important;
 }
 
 `);
