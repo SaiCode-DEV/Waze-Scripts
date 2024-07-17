@@ -1,28 +1,26 @@
-$primary: #05C8F7;
-$secondary: #97C6D1;
-$gray: #BBB8B2;
-$warning: #FB8C00;
-$success: #4CAF50;
-$danger: #CF6679;
-$info: #2196F3;
+$primary: #0099ff;
+$secondary: #97c6d1;
+$gray: #bbb8b2;
+$success: #4caf50;
+$hazard: #ffc400;
+$warning: #fb8c00;
+$danger: #df3d5b;
+$info: #2196f3;
+$purple: #842feb;
+$white: #fff;
+$black: #000;
 
-$dark-primary: #05C8F7;
-$dark-secondary: #97C6D1;
-$dark-gray: #BBB8B2;
-$dark-warning: #FB8C00;
-$dark-success: #4CAF50;
-$dark-danger: #CF6679;
-$dark-info: #2196F3;
-
-// @import "~bootstrap/scss/functions";
-// @import "~bootstrap/scss/variables";
+$dark-secondary: #374649;
+$dark-gray: #84807a;
+$dark-white: #000;
+$dark-black: #fff;
 
 @function tint($color, $percentage) {
-    @return mix(#FFF, $color, $percentage);
+  @return mix($white, $color, $percentage);
 }
 
 @function shade($color, $percentage) {
-    @return mix(#000, $color, $percentage);
+  @return mix($black, $color, $percentage);
 }
 
 $colorlist: (
@@ -36,107 +34,185 @@ $colorlist: (
 );
 
 $dark-colorlist: (
-  "primary": $dark-primary,
+  "primary": $primary,
   "secondary": $dark-secondary,
   "gray": $dark-gray,
-  "success": $dark-success,
-  "danger": $dark-danger,
-  "warning": $dark-warning,
-  "info": $dark-info,
+  "success": $success,
+  "danger": $danger,
+  "warning": $warning,
+  "info": $info,
 );
 
+$dark-override: (
+  "secondary": $dark-secondary,
+  "gray": $dark-gray,
+);
+
+:host,
 :root {
-    /**
-        Generated
-    */
-    @each $name, $color in $colorlist {
-        $step: 110%;
-        @for $i from 1 through 9 {
-            $index: $i * 100;
-            @if $i < 5 {
-                $step: $step - 15%;
-                --wme-color-#{$name}-#{$index}: #{tint($color, $step)};
-            }
+  /**
+    Generated White mode
+  */
+  @each $name, $color in $colorlist {
+    $step: 110%;
+    @for $i from 1 through 9 {
+      $index: $i * 100;
+      @if $i < 5 {
+        $step: $step - 15%;
+        --color-#{$name}-#{$index}: #{tint($color, $step)};
+      }
 
-            @if $i == 5 {
-                $step: 0%;
-                --wme-color-#{$name}-#{$index}: #{$color};
-            }
+      @if $i == 5 {
+        $step: 0%;
+        --color-#{$name}-#{$index}: #{$color};
+      }
 
-            @if $i > 5 {
-                $step: $step + 20%;
-                --wme-color-#{$name}-#{$index}: #{shade($color, $step)};
-            }
-
-        }
+      @if $i > 5 {
+        $step: $step + 20%;
+        --color-#{$name}-#{$index}: #{shade($color, $step)};
+      }
     }
-    @each $name, $color in $colorlist {
-        $step: 100;
-        @for $i from 1 through 9 {
-            $index: $i * 10;
-            $alpha: -($step - $index) * 1%;
-            --wme-color-#{$name}-alpha-#{$index}: #{scale-color($color, $alpha: $alpha)};
-        }
+  }
+  @each $name, $color in $colorlist {
+    $step: 100;
+    @for $i from 1 through 9 {
+      $index: $i * 10;
+      $alpha: -($step - $index) * 1%;
+      --color-#{$name}-alpha-#{$index}: #{scale-color($color, $alpha: $alpha)};
     }
+  }
+  /**
+  	Others
+  	var\(--(?!fs-color|border|size)(.+)
+  */
+  /**
+    Shadow
+    https://shadows.brumm.af/
+  */
+  --wme-shadow: 0px 1.2px 5.3px rgba(0, 0, 0, 0.061),
+    0px 4px 17.9px rgba(0, 0, 0, 0.089), 0px 18px 80px rgba(0, 0, 0, 0.15);
+
+  --alarming: $danger;
+  --alarming_variant: tint($danger, 10%);
+  --always_white: $white;
+  --always_black: $black;
+  --always_dark: var(--color-secondary-900);
+  --always_dark_background_default: var(--color-gray-900);
+  --always_dark_background_variant: var(--always_black);
+  --always_dark_content_default: var(--color-gray-100);
+  --always_dark_content_p1: var(--color-gray-400);
+  --always_dark_content_p2: var(--color-gray-500);
+  --always_dark_inactive: var(--color-gray-600);
+  --always_dark_surface_default: var(--color-gray-800);
+  --border-default: var(--color-primary-200);
+  --background_default: var(--always_white);
+  --background_modal: scale-color($primary, $lightness: -90%, $alpha: -40%);
+  --background_table_overlay: var(--color-gray-alpha-60);
+  --background_variant: var(--color-primary-200);
+  --brand_carpool: #1ee592;
+  --brand_waze: #33ccff;
+  --cautious: #ffc400;
+  --cautious_variant: #e37400;
+  --content_default: var(--color-primary-900);
+  --content_p1: var(--color-gray-800);
+  --content_p2: var(--color-gray-700);
+  --content_p3: var(--color-gray-600);
+  --disabled_text: $gray;
+  --hairline: var(--color-gray-300);
+  --hairline_strong: var(--color-gray-600);
+  --handle: var(--color-primary-200);
+  --hint_text: var(--color-gray-800);
+  --ink_elevation: var(--always_white);
+  --ink_on_primary: var(--color-primary-900);
+  --ink_on_primary_focused: scale-color(
+    $primary,
+    $lightness: -90%,
+    $alpha: -85%
+  );
+  --ink_on_primary_hovered: scale-color(
+    $primary,
+    $lightness: -90%,
+    $alpha: -95%
+  );
+  --ink_on_primary_pressed: scale-color(
+    $primary,
+    $lightness: -90%,
+    $alpha: -90%
+  );
+  --leading_icon: $secondary;
+  --on_primary: var(--always_white);
+  --primary: $primary;
+  --primary_variant: var(--color-primary-700);
+  --promotion_variant: #842feb;
+  --report_chat: #1ee592;
+  --report_closure: #feb87f;
+  --report_crash: #d5d7db;
+  --report_gas: #1bab50;
+  --report_hazard: #ffc400;
+  --report_jam: #ff5252;
+  --report_place: #c088ff;
+  --report_police: #1ab3ff;
+  --safe: $success;
+  --safe_variant: var(--color-success-700);
+  --separator_default: var(--color-secondary-200);
+  --shadow_default: var(--color-gray-800);
+  --surface_alt: var(--color-primary-100);
+  --surface_default: var(--color-gray-100);
+  --surface_variant: var(--color-gray-200);
+  --surface_variant_blue: tint($primary, 90%);
+  --surface_variant_green: tint($success, 90%);
+  --surface_variant_yellow: tint($hazard, 90%);
+  --surface_variant_orange: tint($warning, 90%);
+  --surface_variant_red: tint($danger, 90%);
+  --surface_variant_purple: tint($purple, 90%);
+  color: $black;
+  color-scheme: light;
+
+  .dark-mode {
     /**
-        Others
-        var\(--(?!fs-color|border|size)(.+)
-    */
-    --wme-color-background: #{scale-color(tint($secondary, 94%), $saturation: 96%)};
-    --wme-color-text: var(--wme-color-gray-700);
-    --wme-color-white: white;
-    --wme-color-black: black;
-    --wme-color-light: var(--wme-color-gray-100);
-    --wme-color-dark: var(--wme-color-gray-600);
-    --wme-color-transparent: transparent;
-
-    --wme-border-default: var(--wme-color-primary-200);
-    /**
-        Shadow
-        https://shadows.brumm.af/
-    */
-    --wme-shadow:  0px 1.2px 5.3px rgba(0, 0, 0, 0.061),
-                  0px 4px 17.9px rgba(0, 0, 0, 0.089),
-                  0px 18px 80px rgba(0, 0, 0, 0.15);
-}
-
-
-.dark-mode {
+    	Genrated Dark mode
+		*/
     @each $name, $color in $dark-colorlist {
-        $step: 110%;
-        @for $i from 1 through 9 {
-            $index: $i * 100;
-            @if $i < 5 {
-                $step: $step - 15%;
-                --wme-color-#{$name}-#{$index}: #{shade($color, $step)};
-            }
-
-            @if $i == 5 {
-                $step: 0%;
-                --wme-color-#{$name}-#{$index}: #{$color};
-            }
-
-            @if $i > 5 {
-                $step: $step + 20%;
-                --wme-color-#{$name}-#{$index}: #{tint($color, $step)};
-            }
+      $step: 110%;
+      @for $i from 1 through 9 {
+        $index: $i * 100;
+        @if $i < 5 {
+          $step: $step - 15%;
+          --color-#{$name}-#{$index}: #{shade($color, $step)};
         }
+
+        @if $i == 5 {
+          $step: 0%;
+          --color-#{$name}-#{$index}: #{$color};
+        }
+
+        @if $i > 5 {
+          $step: $step + 20%;
+          --color-#{$name}-#{$index}: #{tint($color, $step)};
+        }
+      }
     }
 
-    @each $name, $color in $dark-colorlist {
-        $step: 100;
-        @for $i from 1 through 9 {
-            $index: $i * 10;
-            $alpha: -($step - $index) * 1%;
-            --wme-color-#{$name}-alpha-#{$index}: #{scale-color($color, $alpha: $alpha)};
-        }
+    @each $name, $color in $dark-override {
+      $step: 100;
+      @for $i from 1 through 9 {
+        $index: $i * 10;
+        $alpha: -($step - $index) * 1%;
+        --color-#{$name}-alpha-#{$index}: #{scale-color(
+            $color,
+            $alpha: $alpha
+          )};
+      }
     }
 
-    --wme-color-background: var(--wme-color-primary-100);
-    --wme-color-white: #000000;
-    --wme-color-black: #ffffff;
+    --color-background: var(--color-primary-100);
+    --color-white: #000000;
+    --color-black: #ffffff;
 
     --wme-shadow: 0px 1.2px 5.3px rgba(0, 0, 0, 0.2),
-                 0px 4px 17.9px rgba(0, 0, 0, 0.3),
-                 0px 18px 80px rgba(0, 0, 0, 0.4);
+      0px 4px 17.9px rgba(0, 0, 0, 0.3), 0px 18px 80px rgba(0, 0, 0, 0.4);
+
+    color: white;
+    color-scheme: dark;
+  }
 }
