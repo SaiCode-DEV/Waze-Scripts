@@ -290,8 +290,10 @@
   --color-gray-alpha-80: rgba(132, 128, 122, 0.8);
   --color-gray-alpha-90: rgba(132, 128, 122, 0.9);
   --color-background: var(--color-primary-100);
-  --color-white: #000000;
-  --color-black: #ffffff;
+  --color-white: #000;
+  --color-black: #fff;
+  --always_white: #000;
+  --always_black: #fff;
   --wme-shadow: 0px 1.2px 5.3px rgba(0, 0, 0, 0.2),
     0px 4px 17.9px rgba(0, 0, 0, 0.3), 0px 18px 80px rgba(0, 0, 0, 0.4);
   color: white;
