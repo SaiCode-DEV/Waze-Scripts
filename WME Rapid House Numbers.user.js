@@ -6,7 +6,7 @@
 // @name           WME Rapid House Numbers
 // @description    A House Number script with its controls in the House Number mini-editor.  It injects the next value in a sequence into each new HN. To support different regions, house numbers may be [0-9]+, [0-9]+[a-z]+, or [0-9]+-[0-9]+.
 // @namespace      http://compsol.cc
-// @version        2.5
+// @version        2.6
 // @include        /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
 // @copyright      2017-2024, kjg53
 // @author         kjg53, WazeDev (2023-?), SaiCode (2024-?)
@@ -26,26 +26,59 @@
   var changeLog = [
     { version: "1.0", message: "" },
     { version: "1.1", message: "The changelog now handles missing entries." },
-    { version: "1.2", message: "Now does full reset when exiting House Number Editor.", },
+    {
+      version: "1.2",
+      message: "Now does full reset when exiting House Number Editor.",
+    },
     { version: "1.3", message: "Fixed typo in change log." },
-    { version: "1.4", message: "The accelerator key bindings are removed upon exiting the House Number editor.", },
-    { version: "1.5", message: "The primary accelerator has been changed from 'a' to 'h'.  The keys '1' .. '9' are now accelerators that create the next house number then increment next by the value of the key.", },
-    { version: "1.6", message: "Disabled numeric accelerators in text fields.", },
-    { version: "1.7", message: "Added support for numpads.  Event handler now removed when the House Number editor is exited.", },
+    {
+      version: "1.4",
+      message:
+        "The accelerator key bindings are removed upon exiting the House Number editor.",
+    },
+    {
+      version: "1.5",
+      message:
+        "The primary accelerator has been changed from 'a' to 'h'.  The keys '1' .. '9' are now accelerators that create the next house number then increment next by the value of the key.",
+    },
+    {
+      version: "1.6",
+      message: "Disabled numeric accelerators in text fields.",
+    },
+    {
+      version: "1.7",
+      message:
+        "Added support for numpads.  Event handler now removed when the House Number editor is exited.",
+    },
     { version: "1.8", message: "Removed info dialog." },
     { version: "1.9", message: "Increased width of increment field." },
-    { version: "1.10", message: "The increment is now persisted between sessions.", },
+    {
+      version: "1.10",
+      message: "The increment is now persisted between sessions.",
+    },
     { version: "1.11", message: "Added missing dependencies to rapidHN." },
     { version: "1.12", message: "Added support for HN such as 7A and 10-5." },
-    { version: "1.13", message: "Added control to enable/disable alphanumeric HN. Pressing <enter> on the next HN field will switch the focus to the map so that you can then press <h> to direct the editor to add a house number to the map.", },
+    {
+      version: "1.13",
+      message:
+        "Added control to enable/disable alphanumeric HN. Pressing <enter> on the next HN field will switch the focus to the map so that you can then press <h> to direct the editor to add a house number to the map.",
+    },
     { version: "1.14", message: "Restored accelerators." },
     { version: "1.15", message: "Updated global symbols." },
     { version: "1.16", message: "Updated to latest WME" },
     { version: "1.17", message: "Resume after saving" },
-    { version: "1.18", message: "Exiting house number editor should clear the next rapid house number field in Beta WME.", },
-    { version: "2.0", message: "New implementation to work with the current WME.", },
+    {
+      version: "1.18",
+      message:
+        "Exiting house number editor should clear the next rapid house number field in Beta WME.",
+    },
+    {
+      version: "2.0",
+      message: "New implementation to work with the current WME.",
+    },
     { version: "2.1", message: "Minor change to work with the current WME." },
     { version: "2.5", message: "Firefox compatibility and Style update." },
+    { version: "2.6", message: "Fixed bug when re entering HN editor." },
   ];
 
   var ALL_DIGITS = /^[0-9]+$/;
@@ -411,6 +444,11 @@
 
   // Type 1-9 instead of 'h' to specify a one-time increment that be applied after the current "next" value is added to the map
   function rapidAccelerator(event) {
+    //if not in house number editor mode, return
+    if ($(".toolbar wz-button.add-house-number").length === 0) {
+      disconnectHouseNumbersObserver();
+      return;
+    }
     if (!event.shiftKey && !event.altKey && !event.metaKey) {
       var acceleratorSelected = false;
 
