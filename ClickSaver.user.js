@@ -22,36 +22,32 @@
 /* global OpenLayers */
 /* global WazeWrap */
 
-;(function main() {
-  "use strict"
+(function main() {
+  "use strict";
 
-  const UPDATE_MESSAGE = ""
+  const UPDATE_MESSAGE = "";
 
-  const SCRIPT_NAME = GM_info.script.name
-  const SCRIPT_VERSION = GM_info.script.version
-  const DOWNLOAD_URL =
-    "https://greasyfork.org/scripts/369629-wme-clicksaver/code/WME%20ClickSaver.user.js"
-  const FORUM_URL = "https://www.waze.com/forum/viewtopic.php?f=819&t=199894"
-  const TRANSLATIONS_URL =
-    "https://sheets.googleapis.com/v4/spreadsheets/1ZlE9yhNncP9iZrPzFFa-FCtYuK58wNOEcmKqng4sH1M/values/ClickSaver"
-  const API_KEY =
-    "YTJWNVBVRkplbUZUZVVGMFl6aFVjMjVOTW0wNU5GaG5kVE40TUZoNWJVZEhWbU5rUjNacVdtdFlWUT09"
-  const DEC = s => atob(atob(s))
+  const SCRIPT_NAME = GM_info.script.name;
+  const SCRIPT_VERSION = GM_info.script.version;
+  const DOWNLOAD_URL = "https://greasyfork.org/scripts/369629-wme-clicksaver/code/WME%20ClickSaver.user.js";
+  const FORUM_URL = "https://www.waze.com/forum/viewtopic.php?f=819&t=199894";
+  const TRANSLATIONS_URL = "https://sheets.googleapis.com/v4/spreadsheets/1ZlE9yhNncP9iZrPzFFa-FCtYuK58wNOEcmKqng4sH1M/values/ClickSaver";
+  const API_KEY = "YTJWNVBVRkplbUZUZVVGMFl6aFVjMjVOTW0wNU5GaG5kVE40TUZoNWJVZEhWbU5rUjNacVdtdFlWUT09";
+  const DEC = s => atob(atob(s));
   const EXTERNAL_SETTINGS = {
     toggleTwoWaySegDrawingShortcut: null,
     copyCoordinatesShortcut: null,
-  }
-  const EXTERNAL_SETTINGS_NAME = "clicksaver_settings_ext"
+  };
+  const EXTERNAL_SETTINGS_NAME = "clicksaver_settings_ext";
 
   // This function is injected into the page.
   function clicksaver(argsObject) {
     /* eslint-disable object-curly-newline */
-    const ROAD_TYPE_DROPDOWN_SELECTOR = 'wz-select[name="roadType"]'
-    const ROAD_TYPE_CHIP_SELECTOR =
-      'wz-chip-select[class="road-type-chip-select"]'
+    const ROAD_TYPE_DROPDOWN_SELECTOR = "wz-select[name=\"roadType\"]";
+    const ROAD_TYPE_CHIP_SELECTOR = "wz-chip-select[class=\"road-type-chip-select\"]";
     // const PARKING_SPACES_DROPDOWN_SELECTOR = 'select[name="estimatedNumberOfSpots"]';
     // const PARKING_COST_DROPDOWN_SELECTOR = 'select[name="costType"]';
-    const SETTINGS_STORE_NAME = "clicksaver_settings"
+    const SETTINGS_STORE_NAME = "clicksaver_settings";
     const DEFAULT_TRANSLATION = {
       roadTypeButtons: {
         St: { text: "St" },
@@ -78,16 +74,16 @@
         setStreetCityToNone: "Set Street/City to None (new seg's only)",
         // eslint-disable-next-line camelcase
         setStreetCityToNone_Title:
-          "NOTE: Only works if connected directly or indirectly" +
-          " to a segment with State / Country already set.",
+          "NOTE: Only works if connected directly or indirectly"
+          + " to a segment with State / Country already set.",
         setCityToConnectedSegCity: "Set City to connected segment's City",
         parkingCostButtons: "Add PLA cost buttons",
         parkingSpacesButtons: "Add PLA estimated spaces buttons",
         timeSaversGroup: "TIME SAVERS",
         discussionForumLinkText: "Discussion Forum",
-        showAddAltCityButton: 'Show "Add alt city" button',
+        showAddAltCityButton: "Show \"Add alt city\" button",
         showSwapDrivingWalkingButton:
-          'Show "Swap driving<->walking segment type" button',
+          "Show \"Swap driving<->walking segment type\" button",
         // eslint-disable-next-line camelcase
         showSwapDrivingWalkingButton_Title:
           "Swap between driving-type and walking-type segments. WARNING! This will DELETE and recreate the segment. Nodes may need to be reconnected.",
@@ -99,7 +95,7 @@
       swapSegmentTypeError_Paths:
         "Paths must be removed from segment before changing between driving and pedestrian road type.",
       addAltCityButtonText: "Add alt city",
-    }
+    };
     const ROAD_TYPES = {
       St: {
         val: 1,
@@ -213,26 +209,26 @@
         category: "pedestrian",
         visible: false,
       },
-    }
+    };
 
     /* eslint-enable object-curly-newline */
-    let _settings = {}
-    let _trans // Translation object
+    let _settings = {};
+    let _trans; // Translation object
 
     // Do not make these const values.  They may get assigned before require() is defined.  Trust me.  Don't do it.
-    let UpdateObject
-    let UpdateFeatureAddress
-    let MultiAction
-    let AddSeg
-    let Segment
-    let DelSeg
+    let UpdateObject;
+    let UpdateFeatureAddress;
+    let MultiAction;
+    let AddSeg;
+    let Segment;
+    let DelSeg;
 
     // function log(message) {
     //     console.log('ClickSaver:', message);
     // }
 
     function logDebug(message) {
-      console.debug("ClickSaver:", message)
+      console.debug("ClickSaver:", message);
     }
 
     // function logWarning(message) {
@@ -244,22 +240,22 @@
     // }
 
     function isChecked(checkboxId) {
-      return $(`#${checkboxId}`).is(":checked")
+      return $(`#${checkboxId}`).is(":checked");
     }
 
     function isSwapPedestrianPermitted() {
-      const { user } = W.loginManager
-      const rank = user.attributes.rank + 1
-      return rank >= 4 || (rank === 3 && user.attributes.isAreaManager)
+      const { user } = W.loginManager;
+      const rank = user.attributes.rank + 1;
+      return rank >= 4 || (rank === 3 && user.attributes.isAreaManager);
     }
 
     function setChecked(checkboxId, checked) {
-      $(`#${checkboxId}`).prop("checked", checked)
+      $(`#${checkboxId}`).prop("checked", checked);
     }
     function loadSettingsFromStorage() {
       const loadedSettings = $.parseJSON(
         localStorage.getItem(SETTINGS_STORE_NAME),
-      )
+      );
       const defaultSettings = {
         lastVersion: null,
         roadButtons: true,
@@ -291,48 +287,48 @@
         useOldRoadColors: false,
         warnOnPedestrianTypeSwap: true,
         addCompactColors: true,
-      }
-      _settings = loadedSettings || defaultSettings
+      };
+      _settings = loadedSettings || defaultSettings;
       Object.keys(defaultSettings).forEach(prop => {
         if (!_settings.hasOwnProperty(prop)) {
-          _settings[prop] = defaultSettings[prop]
+          _settings[prop] = defaultSettings[prop];
         }
-      })
+      });
 
-      setChecked("csRoadTypeButtonsCheckBox", _settings.roadButtons)
+      setChecked("csRoadTypeButtonsCheckBox", _settings.roadButtons);
       if (_settings.roadTypeButtons) {
         Object.keys(ROAD_TYPES).forEach(roadTypeAbbr1 => {
           setChecked(
             `cs${roadTypeAbbr1}CheckBox`,
             _settings.roadTypeButtons.indexOf(roadTypeAbbr1) !== -1,
-          )
-        })
+          );
+        });
       }
 
       if (_settings.roadButtons) {
-        $(".csRoadTypeButtonsCheckBoxContainer").show()
+        $(".csRoadTypeButtonsCheckBoxContainer").show();
       } else {
-        $(".csRoadTypeButtonsCheckBoxContainer").hide()
+        $(".csRoadTypeButtonsCheckBoxContainer").hide();
       }
       // setChecked('csParkingSpacesButtonsCheckBox', _settings.parkingSpacesButtons);
       // setChecked('csParkingCostButtonsCheckBox', _settings.parkingCostButtons);
-      setChecked("csSetNewPLRCityCheckBox", _settings.setNewPLRCity)
-      setChecked("csClearNewPLRCheckBox", _settings.setNewPLRStreetToNone)
-      setChecked("csSetNewPRCityCheckBox", _settings.setNewPRCity)
-      setChecked("csClearNewPRCheckBox", _settings.setNewPRStreetToNone)
-      setChecked("csSetNewRRCityCheckBox", _settings.setNewRRCity)
-      setChecked("csClearNewRRCheckBox", _settings.setNewRRStreetToNone) // added by jm6087
-      setChecked("csSetNewPBCityCheckBox", _settings.setNewPBCity)
-      setChecked("csClearNewPBCheckBox", _settings.setNewPBStreetToNone) // added by jm6087
-      setChecked("csSetNewORCityCheckBox", _settings.setNewORCity)
-      setChecked("csClearNewORCheckBox", _settings.setNewORStreetToNone)
-      setChecked("csUseOldRoadColorsCheckBox", _settings.useOldRoadColors)
-      setChecked("csAddAltCityButtonCheckBox", _settings.addAltCityButton)
+      setChecked("csSetNewPLRCityCheckBox", _settings.setNewPLRCity);
+      setChecked("csClearNewPLRCheckBox", _settings.setNewPLRStreetToNone);
+      setChecked("csSetNewPRCityCheckBox", _settings.setNewPRCity);
+      setChecked("csClearNewPRCheckBox", _settings.setNewPRStreetToNone);
+      setChecked("csSetNewRRCityCheckBox", _settings.setNewRRCity);
+      setChecked("csClearNewRRCheckBox", _settings.setNewRRStreetToNone); // added by jm6087
+      setChecked("csSetNewPBCityCheckBox", _settings.setNewPBCity);
+      setChecked("csClearNewPBCheckBox", _settings.setNewPBStreetToNone); // added by jm6087
+      setChecked("csSetNewORCityCheckBox", _settings.setNewORCity);
+      setChecked("csClearNewORCheckBox", _settings.setNewORStreetToNone);
+      setChecked("csUseOldRoadColorsCheckBox", _settings.useOldRoadColors);
+      setChecked("csAddAltCityButtonCheckBox", _settings.addAltCityButton);
       setChecked(
         "csAddSwapPedestrianButtonCheckBox",
         _settings.addSwapPedestrianButton,
-      )
-      setChecked("csAddCompactColorsCheckBox", _settings.addCompactColors)
+      );
+      setChecked("csAddCompactColorsCheckBox", _settings.addCompactColors);
     }
 
     function saveSettingsToStorage() {
@@ -357,82 +353,81 @@
           addSwapPedestrianButton: _settings.addSwapPedestrianButton,
           warnOnPedestrianTypeSwap: _settings.warnOnPedestrianTypeSwap,
           addCompactColors: _settings.addCompactColors,
-        }
-        settings.roadTypeButtons = []
+        };
+        settings.roadTypeButtons = [];
         Object.keys(ROAD_TYPES).forEach(roadTypeAbbr => {
           if (_settings.roadTypeButtons.indexOf(roadTypeAbbr) !== -1) {
-            settings.roadTypeButtons.push(roadTypeAbbr)
+            settings.roadTypeButtons.push(roadTypeAbbr);
           }
-        })
-        localStorage.setItem(SETTINGS_STORE_NAME, JSON.stringify(settings))
-        logDebug("Settings saved")
+        });
+        localStorage.setItem(SETTINGS_STORE_NAME, JSON.stringify(settings));
+        logDebug("Settings saved");
       }
     }
 
     function isPedestrianTypeSegment(segment) {
-      return [5, 10, 16].includes(segment.attributes.roadType)
+      return [5, 10, 16].includes(segment.attributes.roadType);
     }
 
     function getConnectedSegmentIDs(segmentID) {
-      const IDs = []
-      const segment = W.model.segments.getObjectById(segmentID)
-      ;[
+      const IDs = [];
+      const segment = W.model.segments.getObjectById(segmentID);
+      [
         W.model.nodes.getObjectById(segment.attributes.fromNodeID),
         W.model.nodes.getObjectById(segment.attributes.toNodeID),
       ].forEach(node => {
         if (node) {
           node.attributes.segIDs.forEach(segID => {
             if (segID !== segmentID) {
-              IDs.push(segID)
+              IDs.push(segID);
             }
-          })
+          });
         }
-      })
-      return IDs
+      });
+      return IDs;
     }
 
     function getFirstConnectedSegmentAddress(startSegment) {
-      const nonMatches = []
-      const segmentIDsToSearch = [startSegment.getID()]
+      const nonMatches = [];
+      const segmentIDsToSearch = [startSegment.getID()];
       while (segmentIDsToSearch.length > 0) {
-        const startSegmentID = segmentIDsToSearch.pop()
-        startSegment = W.model.segments.getObjectById(startSegmentID)
-        const connectedSegmentIDs = getConnectedSegmentIDs(startSegmentID)
+        const startSegmentID = segmentIDsToSearch.pop();
+        startSegment = W.model.segments.getObjectById(startSegmentID);
+        const connectedSegmentIDs = getConnectedSegmentIDs(startSegmentID);
         for (let i = 0; i < connectedSegmentIDs.length; i++) {
           const addr = W.model.segments
             .getObjectById(connectedSegmentIDs[i])
-            .getAddress()
+            .getAddress();
           if (!addr.isEmpty()) {
-            return addr
+            return addr;
           }
         }
 
-        nonMatches.push(startSegmentID)
+        nonMatches.push(startSegmentID);
         connectedSegmentIDs.forEach(segmentID => {
           if (
-            nonMatches.indexOf(segmentID) === -1 &&
-            segmentIDsToSearch.indexOf(segmentID) === -1
+            nonMatches.indexOf(segmentID) === -1
+            && segmentIDsToSearch.indexOf(segmentID) === -1
           ) {
-            segmentIDsToSearch.push(segmentID)
+            segmentIDsToSearch.push(segmentID);
           }
-        })
+        });
       }
-      return undefined
+      return undefined;
     }
 
     function setStreetAndCity(setCity) {
-      const segments = getSelectedSegments()
+      const segments = getSelectedSegments();
       if (segments.length === 0) {
-        return
+        return;
       }
 
-      const actions = []
+      const actions = [];
       segments.forEach(segment => {
         if (segment.attributes.primaryStreetID === null) {
-          const addr = getFirstConnectedSegmentAddress(segment)
+          const addr = getFirstConnectedSegmentAddress(segment);
           if (addr && !addr.isEmpty()) {
-            const cityNameToSet =
-              setCity && !addr.getCity().isEmpty() ? addr.getCityName() : ""
+            const cityNameToSet = setCity && !addr.getCity().isEmpty() ? addr.getCityName() : "";
             const action = new UpdateFeatureAddress(
               segment,
               {
@@ -443,13 +438,13 @@
                 emptyCity: !setCity,
               },
               { streetIDField: "primaryStreetID" },
-            )
-            actions.push(action)
+            );
+            actions.push(action);
           }
         }
-      })
+      });
       if (actions.length) {
-        W.model.actionManager.add(new MultiAction(actions))
+        W.model.actionManager.add(new MultiAction(actions));
       }
     }
 
@@ -460,178 +455,175 @@
         function checkIt(tries = 0) {
           if (tries < 150) {
             // try for about 3 seconds;
-            const elem = document.querySelector(selector)
+            const elem = document.querySelector(selector);
             setTimeout(() => {
               if (!elem) {
-                checkIt(++tries)
+                checkIt(++tries);
               } else {
-                resolve(elem)
+                resolve(elem);
               }
-            }, 20)
+            }, 20);
           } else {
             reject(
               new WaitForElementError(
                 `Element was not found within 3 seconds: ${selector}`,
               ),
-            )
+            );
           }
         }
-        checkIt()
-      })
+        checkIt();
+      });
     }
 
     async function waitForShadowElem(parentElemSelector, shadowElemSelectors) {
-      const parentElem = await waitForElem(parentElemSelector)
+      const parentElem = await waitForElem(parentElemSelector);
       return new Promise((resolve, reject) => {
         shadowElemSelectors.forEach((shadowElemSelector, idx) => {
           function checkIt(parent, tries = 0) {
             if (tries < 150) {
               // try for about 3 seconds;
-              const shadowElem =
-                parent.shadowRoot.querySelector(shadowElemSelector)
+              const shadowElem = parent.shadowRoot.querySelector(shadowElemSelector);
               setTimeout(() => {
                 if (!shadowElem) {
-                  checkIt(parent, ++tries)
+                  checkIt(parent, ++tries);
                 } else if (idx === shadowElemSelectors.length - 1) {
-                  resolve({ shadowElem, parentElem })
+                  resolve({ shadowElem, parentElem });
                 } else {
-                  checkIt(shadowElem, 0)
+                  checkIt(shadowElem, 0);
                 }
-              }, 20)
+              }, 20);
             } else {
               reject(
                 new WaitForElementError(
                   `Shadow element was not found within 3 seconds: ${shadowElemSelector}`,
                 ),
-              )
+              );
             }
           }
-          checkIt(parentElem)
-        })
-      })
+          checkIt(parentElem);
+        });
+      });
     }
 
     async function onAddAltCityButtonClick() {
-      const streetID = getSelectedSegments()[0].attributes.primaryStreetID
-      $('wz-button[class="add-alt-street-btn"]').click()
-      const elem = await waitForElem("wz-autocomplete.alt-street-name")
-      elem.focus()
+      const streetID = getSelectedSegments()[0].attributes.primaryStreetID;
+      $("wz-button[class=\"add-alt-street-btn\"]").click();
+      const elem = await waitForElem("wz-autocomplete.alt-street-name");
+      elem.focus();
       let result = await waitForShadowElem("wz-autocomplete.alt-street-name", [
         "wz-text-input",
-      ])
-      result.shadowElem.value =
-        W.model.streets.getObjectById(streetID).attributes.name
+      ]);
+      result.shadowElem.value = W.model.streets.getObjectById(streetID).attributes.name;
       result = await waitForShadowElem("wz-autocomplete.alt-city-name", [
         "wz-text-input",
-      ])
-      result.shadowElem.value = null
-      result.parentElem.focus()
+      ]);
+      result.shadowElem.value = null;
+      result.parentElem.focus();
     }
 
     function onRoadTypeButtonClick(roadTypeVal) {
-      const segments = getSelectedSegments()
-      let action
+      const segments = getSelectedSegments();
+      let action;
       if (segments.length > 1) {
-        const actions = []
+        const actions = [];
         segments.forEach(segment => {
           const subAction = new UpdateObject(segment, {
             roadType: roadTypeVal,
-          })
-          actions.push(subAction)
-        })
-        action = new MultiAction(actions)
+          });
+          actions.push(subAction);
+        });
+        action = new MultiAction(actions);
       } else {
         action = new UpdateObject(segments[0], {
           roadType: roadTypeVal,
-        })
+        });
       }
-      W.model.actionManager.add(action)
+      W.model.actionManager.add(action);
 
       if (
-        roadTypeVal === 20 &&
-        isChecked("csClearNewPLRCheckBox") &&
-        typeof require !== "undefined"
+        roadTypeVal === 20
+        && isChecked("csClearNewPLRCheckBox")
+        && typeof require !== "undefined"
       ) {
-        setStreetAndCity(isChecked("csSetNewPLRCityCheckBox"))
+        setStreetAndCity(isChecked("csSetNewPLRCityCheckBox"));
       } else if (
-        roadTypeVal === 17 &&
-        isChecked("csClearNewPRCheckBox") &&
-        typeof require !== "undefined"
+        roadTypeVal === 17
+        && isChecked("csClearNewPRCheckBox")
+        && typeof require !== "undefined"
       ) {
-        setStreetAndCity(isChecked("csSetNewPRCityCheckBox"))
+        setStreetAndCity(isChecked("csSetNewPRCityCheckBox"));
       } else if (
-        roadTypeVal === 18 &&
-        isChecked("csClearNewRRCheckBox") &&
-        typeof require !== "undefined"
+        roadTypeVal === 18
+        && isChecked("csClearNewRRCheckBox")
+        && typeof require !== "undefined"
       ) {
         // added by jm6087
-        setStreetAndCity(isChecked("csSetNewRRCityCheckBox")) // added by jm6087
+        setStreetAndCity(isChecked("csSetNewRRCityCheckBox")); // added by jm6087
       } else if (
-        roadTypeVal === 10 &&
-        isChecked("csClearNewPBCheckBox") &&
-        typeof require !== "undefined"
+        roadTypeVal === 10
+        && isChecked("csClearNewPBCheckBox")
+        && typeof require !== "undefined"
       ) {
         // added by jm6087
-        setStreetAndCity(isChecked("csSetNewPBCityCheckBox")) // added by jm6087
+        setStreetAndCity(isChecked("csSetNewPBCityCheckBox")); // added by jm6087
       } else if (
-        roadTypeVal === 8 &&
-        isChecked("csClearNewORCheckBox") &&
-        typeof require !== "undefined"
+        roadTypeVal === 8
+        && isChecked("csClearNewORCheckBox")
+        && typeof require !== "undefined"
       ) {
-        setStreetAndCity(isChecked("csSetNewORCityCheckBox"))
+        setStreetAndCity(isChecked("csSetNewORCityCheckBox"));
       }
     }
 
     function addRoadTypeButtons() {
-      const segment = getSelectedSegments()[0]
-      if (!segment) return
-      const isPed = isPedestrianTypeSegment(segment)
-      const $dropDown = $(ROAD_TYPE_DROPDOWN_SELECTOR)
-      $("#csRoadTypeButtonsContainer").remove()
+      const segment = getSelectedSegments()[0];
+      if (!segment) return;
+      const isPed = isPedestrianTypeSegment(segment);
+      const $dropDown = $(ROAD_TYPE_DROPDOWN_SELECTOR);
+      $("#csRoadTypeButtonsContainer").remove();
       const $container = $("<div>", {
         id: "csRoadTypeButtonsContainer",
         class: "cs-rt-buttons-container",
         style: "display: inline-table;",
-      })
+      });
       const $street = $("<div>", {
         id: "csStreetButtonContainer",
         class: "cs-rt-buttons-group",
-      })
+      });
       const $highway = $("<div>", {
         id: "csHighwayButtonContainer",
         class: "cs-rt-buttons-group",
-      })
+      });
       const $otherDrivable = $("<div>", {
         id: "csOtherDrivableButtonContainer",
         class: "cs-rt-buttons-group",
-      })
+      });
       const $nonDrivable = $("<div>", {
         id: "csNonDrivableButtonContainer",
         class: "cs-rt-buttons-group",
-      })
+      });
       const $pedestrian = $("<div>", {
         id: "csPedestrianButtonContainer",
         class: "cs-rt-buttons-group",
-      })
+      });
       const divs = {
         streets: $street,
         highways: $highway,
         otherDrivable: $otherDrivable,
         nonDrivable: $nonDrivable,
         pedestrian: $pedestrian,
-      }
+      };
       Object.keys(ROAD_TYPES).forEach(roadTypeKey => {
         if (_settings.roadTypeButtons.includes(roadTypeKey)) {
-          const roadType = ROAD_TYPES[roadTypeKey]
-          const isDisabled =
-            $dropDown[0].hasAttribute("disabled") &&
-            $dropDown[0].getAttribute("disabled") === "true"
+          const roadType = ROAD_TYPES[roadTypeKey];
+          const isDisabled = $dropDown[0].hasAttribute("disabled")
+            && $dropDown[0].getAttribute("disabled") === "true";
           if (
-            !isDisabled &&
-            ((roadType.category === "pedestrian" && isPed) ||
-              (roadType.category !== "pedestrian" && !isPed))
+            !isDisabled
+            && ((roadType.category === "pedestrian" && isPed)
+              || (roadType.category !== "pedestrian" && !isPed))
           ) {
-            const $div = divs[roadType.category]
+            const $div = divs[roadType.category];
             $div.append(
               $("<div>", {
                 class: `btn cs-rt-button cs-rt-button-${roadTypeKey} btn-positive`,
@@ -641,33 +633,33 @@
                 .prop("checked", roadType.visible)
                 .data("val", roadType.val)
                 .click(function rtbClick() {
-                  onRoadTypeButtonClick($(this).data("val"))
+                  onRoadTypeButtonClick($(this).data("val"));
                 }),
-            )
+            );
           }
         }
-      })
+      });
       if (isPed) {
-        $container.append($pedestrian)
+        $container.append($pedestrian);
       } else {
         $container
           .append($street)
           .append($highway)
           .append($otherDrivable)
-          .append($nonDrivable)
+          .append($nonDrivable);
       }
-      $dropDown.before($container)
+      $dropDown.before($container);
     }
 
     // Function to add an event listener to the chip select for the road type in compact mode
     function addCompactRoadTypeChangeEvents() {
       const chipSelect = document.getElementsByClassName(
         "road-type-chip-select",
-      )[0]
+      )[0];
       chipSelect.addEventListener("chipSelected", evt => {
-        const rtValue = evt.detail.value
-        onRoadTypeButtonClick(rtValue)
-      })
+        const rtValue = evt.detail.value;
+        onRoadTypeButtonClick(rtValue);
+      });
     }
 
     // Function to add road type colors to the chips in compact mode
@@ -675,64 +667,64 @@
       // TODO: Clean this up. Was combined from two functions.
       try {
         if (
-          W.prefs.attributes.compactDensity &&
-          isChecked("csAddCompactColorsCheckBox") &&
-          getSelectedSegments().length
+          W.prefs.attributes.compactDensity
+          && isChecked("csAddCompactColorsCheckBox")
+          && getSelectedSegments().length
         ) {
-          const useOldColors = _settings.useOldRoadColors
-          await waitForElem(".road-type-chip-select wz-checkable-chip")
+          const useOldColors = _settings.useOldRoadColors;
+          await waitForElem(".road-type-chip-select wz-checkable-chip");
           $(".road-type-chip-select wz-checkable-chip").addClass(
             "cs-compact-button",
-          )
+          );
           Object.keys(ROAD_TYPES).forEach(roadTypeKey => {
-            const roadType = ROAD_TYPES[roadTypeKey]
-            const bgColor = useOldColors ? roadType.svColor : roadType.wmeColor
+            const roadType = ROAD_TYPES[roadTypeKey];
+            const bgColor = useOldColors ? roadType.svColor : roadType.wmeColor;
             const rtChip = $(
               `.road-type-chip-select wz-checkable-chip[value=${roadType.val}]`,
-            )
-            if (rtChip.length !== 1) return
+            );
+            if (rtChip.length !== 1) return;
             waitForShadowElem(
               `.road-type-chip-select wz-checkable-chip[value='${roadType.val}']`,
               ["div"],
             ).then(result => {
-              const $elem = $(result.shadowElem)
-              const padding = $elem.hasClass("checked") ? "0px 7px" : "0px 8px"
+              const $elem = $(result.shadowElem);
+              const padding = $elem.hasClass("checked") ? "0px 7px" : "0px 8px";
               $elem.css({
                 backgroundColor: bgColor,
                 padding,
                 color: "black",
-              })
-            })
-          })
+              });
+            });
+          });
 
           const result = await waitForShadowElem(
-            '.road-type-chip-select wz-checkable-chip[checked=""]',
+            ".road-type-chip-select wz-checkable-chip[checked=\"\"]",
             ["div"],
-          )
+          );
           $(result.shadowElem).css({
             border: "black 2px solid",
             padding: "0px 7px",
-          })
+          });
 
           $(".road-type-chip-select wz-checkable-chip").each(
             function updateRoadTypeChip() {
-              const style = {}
+              const style = {};
               if (this.getAttribute("checked") === "false") {
-                style.border = ""
-                style.padding = "0px 8px"
+                style.border = "";
+                style.padding = "0px 8px";
               } else {
-                style.border = "black 2px solid"
-                style.padding = "0px 7px"
+                style.border = "black 2px solid";
+                style.padding = "0px 7px";
               }
-              $(this.shadowRoot.querySelector("div")).css(style)
+              $(this.shadowRoot.querySelector("div")).css(style);
             },
-          )
+          );
         }
       } catch (ex) {
         if (ex instanceof WaitForElementError) {
           // waitForElem will throw an error if Undo causes a deselection. Ignore it.
         } else {
-          throw ex
+          throw ex;
         }
       }
     }
@@ -821,18 +813,17 @@
     // }
 
     function addAddAltCityButton() {
-      const segments = getSelectedSegments()
-      const streetID = segments[0].attributes.primaryStreetID
+      const segments = getSelectedSegments();
+      const streetID = segments[0].attributes.primaryStreetID;
       // Only show the button if every segment has the same primary city and street.
       if (
-        segments.length > 1 &&
-        !segments.every(
+        segments.length > 1
+        && !segments.every(
           segment => segment.attributes.primaryStreetID === streetID,
         )
-      )
-        return
+      ) return;
 
-      const id = "csAddAltCityButton"
+      const id = "csAddAltCityButton";
       if ($(`#${id}`).length === 0) {
         $("div.address-edit")
           .prev("wz-label")
@@ -841,96 +832,96 @@
               href: "#",
               // TODO css
               style:
-                "float: right;text-transform: none;" +
-                'font-family: "Helvetica Neue", Helvetica, "Open Sans", sans-serif;color: #26bae8;' +
-                "font-weight: normal;",
+                "float: right;text-transform: none;"
+                + "font-family: \"Helvetica Neue\", Helvetica, \"Open Sans\", sans-serif;color: #26bae8;"
+                + "font-weight: normal;",
             })
               .text(_trans.addAltCityButtonText)
               .click(onAddAltCityButtonClick),
-          )
+          );
       }
     }
 
     function addSwapPedestrianButton(displayMode) {
       // Added displayMode argument to identify compact vs. regular mode.
-      const id = "csSwapPedestrianContainer"
-      $(`#${id}`).remove()
-      const segments = getSelectedSegments()
+      const id = "csSwapPedestrianContainer";
+      $(`#${id}`).remove();
+      const segments = getSelectedSegments();
       if (segments.length === 1) {
         // TODO css
         const $container = $("<div>", {
           id,
           style: "white-space: nowrap;float: right;display: inline;",
-        })
+        });
         const $button = $("<div>", {
           id: "csBtnSwapPedestrianRoadType",
           title: "",
           // TODO css
           style: "display:inline-block;cursor:pointer;",
-        })
+        });
         $button
           .append(
-            '<i class="w-icon w-icon-streetview w-icon-lg"></i><i class="fa fa-arrows-h fa-lg" style="color: #e84545;vertical-align: top;"></i><i class="w-icon w-icon-car w-icon-lg"></i>',
+            "<i class=\"w-icon w-icon-streetview w-icon-lg\"></i><i class=\"fa fa-arrows-h fa-lg\" style=\"color: #e84545;vertical-align: top;\"></i><i class=\"w-icon w-icon-car w-icon-lg\"></i>",
           )
           .attr({
             title: _trans.prefs.showSwapDrivingWalkingButton_Title,
-          })
-        $container.append($button)
+          });
+        $container.append($button);
 
         // Insert swap button in the correct location based on display mode.
         if (displayMode === "compact") {
           const $label = $(
             "#segment-edit-general > form > div.road-type-control.form-group > wz-label",
-          )
-          $label.css({ display: "inline" }).append($container)
+          );
+          $label.css({ display: "inline" }).append($container);
         } else {
           const $label = $(
             "#segment-edit-general > form > div.road-type-control.form-group > wz-label",
-          )
-          $label.css({ display: "inline" }).append($container)
+          );
+          $label.css({ display: "inline" }).append($container);
         }
         // TODO css
 
-        $("#csBtnSwapPedestrianRoadType").click(onSwapPedestrianButtonClick)
+        $("#csBtnSwapPedestrianRoadType").click(onSwapPedestrianButtonClick);
       }
     }
 
     function onSwapPedestrianButtonClick() {
       if (_settings.warnOnPedestrianTypeSwap) {
-        _settings.warnOnPedestrianTypeSwap = false
-        saveSettingsToStorage()
+        _settings.warnOnPedestrianTypeSwap = false;
+        saveSettingsToStorage();
         if (!confirm(_trans.swapSegmentTypeWarning)) {
-          return
+          return;
         }
       }
 
       // Check for paths before deleting.
-      const segment = W.selectionManager.getSelectedDataModelObjects()[0]
+      const segment = W.selectionManager.getSelectedDataModelObjects()[0];
       if (segment.hasPaths()) {
-        WazeWrap.Alerts.error(SCRIPT_NAME, _trans.swapSegmentTypeError_Paths)
-        return
+        WazeWrap.Alerts.error(SCRIPT_NAME, _trans.swapSegmentTypeError_Paths);
+        return;
       }
 
-      const actions = []
+      const actions = [];
 
       // Copy the selected segment geometry and attributes, then delete it.
-      const newGeom = { type: "LineString", coordinates: [] }
-      const oldPrimaryStreetID = segment.attributes.primaryStreetID
-      const oldAltStreetIDs = segment.attributes.streetIDs.slice()
+      const newGeom = { type: "LineString", coordinates: [] };
+      const oldPrimaryStreetID = segment.attributes.primaryStreetID;
+      const oldAltStreetIDs = segment.attributes.streetIDs.slice();
       segment.getGeometry().coordinates.forEach(coord => {
-        newGeom.coordinates.push(coord.slice())
-      })
-      actions.push(new DelSeg(segment))
+        newGeom.coordinates.push(coord.slice());
+      });
+      actions.push(new DelSeg(segment));
 
       // create the replacement segment in the other segment type (pedestrian -> road & vice versa)
-      const newRoadType = isPedestrianTypeSegment(segment) ? 1 : 5
+      const newRoadType = isPedestrianTypeSegment(segment) ? 1 : 5;
       const feature = new Segment({
         geoJSONGeometry: newGeom,
         roadType: newRoadType,
         primaryStreetID: oldPrimaryStreetID,
         streetIDs: oldAltStreetIDs,
-      })
-      feature.state = OpenLayers.State.INSERT
+      });
+      feature.state = OpenLayers.State.INSERT;
       actions.push(
         new AddSeg(feature, {
           createNodes: !0,
@@ -940,51 +931,51 @@
           // was not working with [null, null] after a recent WME update.
           // snappedFeatures: [null, null]
         }),
-      )
-      const description = `Change segment type to ${newRoadType === 1 ? "drivable" : "pedestrian"}`
-      W.model.actionManager.add(new MultiAction(actions, { description }))
+      );
+      const description = `Change segment type to ${newRoadType === 1 ? "drivable" : "pedestrian"}`;
+      W.model.actionManager.add(new MultiAction(actions, { description }));
 
       // Get the new segment and select it.
-      const newId = W.model.repos.segments.idGenerator.lastValue
-      const newSegment = W.model.segments.getObjectById(newId)
-      W.selectionManager.setSelectedModels([newSegment])
+      const newId = W.model.repos.segments.idGenerator.lastValue;
+      const newSegment = W.model.segments.getObjectById(newId);
+      W.selectionManager.setSelectedModels([newSegment]);
     }
 
     /* eslint-disable no-bitwise, no-mixed-operators */
     function shadeColor2(color, percent) {
-      const f = parseInt(color.slice(1), 16)
-      const t = percent < 0 ? 0 : 255
-      const p = percent < 0 ? percent * -1 : percent
-      const R = f >> 16
-      const G = (f >> 8) & 0x00ff
-      const B = f & 0x0000ff
+      const f = parseInt(color.slice(1), 16);
+      const t = percent < 0 ? 0 : 255;
+      const p = percent < 0 ? percent * -1 : percent;
+      const R = f >> 16;
+      const G = (f >> 8) & 0x00ff;
+      const B = f & 0x0000ff;
       return `#${(
-        0x1000000 +
-        (Math.round((t - R) * p) + R) * 0x10000 +
-        (Math.round((t - G) * p) + G) * 0x100 +
-        (Math.round((t - B) * p) + B)
+        0x1000000
+        + (Math.round((t - R) * p) + R) * 0x10000
+        + (Math.round((t - G) * p) + G) * 0x100
+        + (Math.round((t - B) * p) + B)
       )
         .toString(16)
-        .slice(1)}`
+        .slice(1)}`;
     }
     /* eslint-enable no-bitwise, no-mixed-operators */
 
     function buildRoadTypeButtonCss() {
-      const lines = []
-      const useOldColors = _settings.useOldRoadColors
+      const lines = [];
+      const useOldColors = _settings.useOldRoadColors;
       Object.keys(ROAD_TYPES).forEach(roadTypeAbbr => {
-        const roadType = ROAD_TYPES[roadTypeAbbr]
-        const bgColor = useOldColors ? roadType.svColor : roadType.wmeColor
+        const roadType = ROAD_TYPES[roadTypeAbbr];
+        const bgColor = useOldColors ? roadType.svColor : roadType.wmeColor;
         let output = `.cs-rt-buttons-container .cs-rt-button-${roadTypeAbbr} {background-color:${
           bgColor
-        };box-shadow:0 2px ${shadeColor2(bgColor, -0.5)};border-color:${shadeColor2(bgColor, -0.15)};}`
+        };box-shadow:0 2px ${shadeColor2(bgColor, -0.5)};border-color:${shadeColor2(bgColor, -0.15)};}`;
         output += ` .cs-rt-buttons-container .cs-rt-button-${roadTypeAbbr}:hover {background-color:${shadeColor2(
           bgColor,
           0.2,
-        )}}`
-        lines.push(output)
-      })
-      return lines.join(" ")
+        )}}`;
+        lines.push(output);
+      });
+      return lines.join(" ");
     }
 
     function injectCss() {
@@ -992,8 +983,8 @@
         // Road type button formatting
         ".csRoadTypeButtonsCheckBoxContainer {margin-left:15px;}",
         ".cs-rt-buttons-container {margin-bottom:5px;height:21px;}",
-        ".cs-rt-buttons-container .cs-rt-button {font-size:11px;line-height:20px;color:black;padding:0px 4px;height:20px;" +
-          "margin-right:2px;border-style:solid;border-width:1px;}",
+        ".cs-rt-buttons-container .cs-rt-button {font-size:11px;line-height:20px;color:black;padding:0px 4px;height:20px;"
+          + "margin-right:2px;border-style:solid;border-width:1px;}",
         buildRoadTypeButtonCss(),
         ".btn.cs-rt-button:active {box-shadow:none;transform:translateY(2px)}",
         "div .cs-rt-buttons-group {float:left; margin: 0px 5px 5px 0px;}",
@@ -1002,13 +993,13 @@
         "#sidepanel-clicksaver {font-size:13px;}",
 
         // Compact moad road type button formatting.
-        '.cs-compact-button[checked="false"] {opacity: 0.65;}',
+        ".cs-compact-button[checked=\"false\"] {opacity: 0.65;}",
 
         // Lock button formatting
-        ".cs-group-label {font-size: 11px; width: 100%; font-family: Poppins, sans-serif;" +
-          " text-transform: uppercase; font-weight: 700; color: #354148; margin-bottom: 6px;}",
-      ].join(" ")
-      $(`<style type="text/css">${css}</style>`).appendTo("head")
+        ".cs-group-label {font-size: 11px; width: 100%; font-family: Poppins, sans-serif;"
+          + " text-transform: uppercase; font-weight: 700; color: #354148; margin-bottom: 6px;}",
+      ].join(" ");
+      $(`<style type="text/css">${css}</style>`).appendTo("head");
     }
 
     function createSettingsCheckbox(
@@ -1020,46 +1011,46 @@
       labelCss,
       optionalAttributes,
     ) {
-      const $container = $("<div>", { class: "controls-container" })
+      const $container = $("<div>", { class: "controls-container" });
       const $input = $("<input>", {
         type: "checkbox",
         class: "csSettingsCheckBox",
         name: id,
         id,
         "data-setting-name": settingName,
-      }).appendTo($container)
+      }).appendTo($container);
       const $label = $("<label>", { for: id })
         .text(labelText)
-        .appendTo($container)
+        .appendTo($container);
       // TODO css
-      if (divCss) $container.css(divCss)
+      if (divCss) $container.css(divCss);
       // TODO css
-      if (labelCss) $label.css(labelCss)
-      if (titleText) $container.attr({ title: titleText })
-      if (optionalAttributes) $input.attr(optionalAttributes)
-      return $container
+      if (labelCss) $label.css(labelCss);
+      if (titleText) $container.attr({ title: titleText });
+      if (optionalAttributes) $input.attr(optionalAttributes);
+      return $container;
     }
 
     function initUserPanel() {
       const $roadTypesDiv = $("<div>", {
         class: "csRoadTypeButtonsCheckBoxContainer",
-      })
+      });
       $roadTypesDiv.append(
         createSettingsCheckbox(
           "csUseOldRoadColorsCheckBox",
           "useOldRoadColors",
           _trans.prefs.useOldRoadColors,
         ),
-      )
+      );
       Object.keys(ROAD_TYPES).forEach(roadTypeAbbr => {
-        const roadType = ROAD_TYPES[roadTypeAbbr]
-        const id = `cs${roadTypeAbbr}CheckBox`
-        const title = I18n.t("segment.road_types")[roadType.val]
+        const roadType = ROAD_TYPES[roadTypeAbbr];
+        const id = `cs${roadTypeAbbr}CheckBox`;
+        const title = I18n.t("segment.road_types")[roadType.val];
         $roadTypesDiv.append(
           createSettingsCheckbox(id, "roadType", title, null, null, null, {
             "data-road-type": roadTypeAbbr,
           }),
-        )
+        );
         if (["PLR", "PR", "RR", "PB", "OR"].includes(roadTypeAbbr)) {
           // added RR & PB by jm6087
           $roadTypesDiv.append(
@@ -1080,16 +1071,16 @@
               { paddingLeft: "30px", marginRight: "4px" },
               { fontStyle: "italic" },
             ),
-          )
+          );
         }
-      })
+      });
 
       const $tab = $("<li>", { title: argsObject.scriptName }).append(
         $("<a>", {
           "data-toggle": "tab",
           href: "#sidepanel-clicksaver",
         }).append($("<span>").text("CS")),
-      )
+      );
 
       const $panel = $("<div>", {
         class: "tab-pane",
@@ -1136,7 +1127,7 @@
             ),
           ),
         ),
-      )
+      );
 
       $panel.append(
         // TODO css
@@ -1153,60 +1144,60 @@
             }).text(_trans.prefs.discussionForumLinkText),
           ),
         ),
-      )
+      );
 
-      $("#user-tabs > .nav-tabs").append($tab)
-      $("#user-info > .flex-parent > .tab-content").append($panel)
+      $("#user-tabs > .nav-tabs").append($tab);
+      $("#user-info > .flex-parent > .tab-content").append($panel);
 
       // Add change events
       $("#csRoadTypeButtonsCheckBox").change(
         function onRoadTypeButtonCheckChanged() {
           if (this.checked) {
-            $(".csRoadTypeButtonsCheckBoxContainer").show()
+            $(".csRoadTypeButtonsCheckBoxContainer").show();
           } else {
-            $(".csRoadTypeButtonsCheckBoxContainer").hide()
+            $(".csRoadTypeButtonsCheckBoxContainer").hide();
           }
-          saveSettingsToStorage()
+          saveSettingsToStorage();
         },
-      )
+      );
       $(".csSettingsCheckBox").change(function onSettingsCheckChanged() {
-        const { checked } = this
-        const settingName = $(this).data("setting-name")
+        const { checked } = this;
+        const settingName = $(this).data("setting-name");
         if (settingName === "roadType") {
-          const roadType = $(this).data("road-type")
-          const array = _settings.roadTypeButtons
-          const index = array.indexOf(roadType)
+          const roadType = $(this).data("road-type");
+          const array = _settings.roadTypeButtons;
+          const index = array.indexOf(roadType);
           if (checked && index === -1) {
-            array.push(roadType)
+            array.push(roadType);
           } else if (!checked && index !== -1) {
-            array.splice(index, 1)
+            array.splice(index, 1);
           }
         } else {
-          _settings[settingName] = checked
+          _settings[settingName] = checked;
         }
-        saveSettingsToStorage()
-      })
+        saveSettingsToStorage();
+      });
     }
 
     function skipLoginDialog() {
       if (!W.loginManager || W.loginManager.isLoggedIn()) {
-        return
+        return;
       }
-      $("wz-button.do-login")?.click()
+      $("wz-button.do-login")?.click();
     }
 
     function getSelectedModels() {
-      return W.selectionManager.getSelectedDataModelObjects()
+      return W.selectionManager.getSelectedDataModelObjects();
     }
     function getSelectedSegments() {
-      return getSelectedModels().filter(model => model.type === "segment")
+      return getSelectedModels().filter(model => model.type === "segment");
     }
 
     function updateControls() {
       if ($(ROAD_TYPE_DROPDOWN_SELECTOR).length > 0) {
-        if (isChecked("csRoadTypeButtonsCheckBox")) addRoadTypeButtons()
+        if (isChecked("csRoadTypeButtonsCheckBox")) addRoadTypeButtons();
       }
-      addCompactRoadTypeColors()
+      addCompactRoadTypeColors();
       // if ($(PARKING_SPACES_DROPDOWN_SELECTOR).length > 0 && isChecked('csParkingSpacesButtonsCheckBox')) {
       //     addParkingSpacesButtons(); // TODO - add option setting
       // }
@@ -1219,48 +1210,48 @@
       return target.replace(
         new RegExp(`\\b${searchWord}\\b`, "g"),
         replaceWithWord,
-      )
+      );
     }
 
     function titleCase(word) {
-      return word.charAt(0).toUpperCase() + word.substring(1).toLowerCase()
+      return word.charAt(0).toUpperCase() + word.substring(1).toLowerCase();
     }
     function mcCase(word) {
       return (
-        word.charAt(0).toUpperCase() +
-        word.charAt(1).toLowerCase() +
-        word.charAt(2).toUpperCase() +
-        word.substring(3).toLowerCase()
-      )
+        word.charAt(0).toUpperCase()
+        + word.charAt(1).toLowerCase()
+        + word.charAt(2).toUpperCase()
+        + word.substring(3).toLowerCase()
+      );
     }
     function upperCase(word) {
-      return word.toUpperCase()
+      return word.toUpperCase();
     }
 
     function processSubstring(target, substringRegex, processFunction) {
-      const substrings = target.match(substringRegex)
+      const substrings = target.match(substringRegex);
       if (substrings) {
         for (let idx = 0; idx < substrings.length; idx++) {
-          const substring = substrings[idx]
-          const newSubstring = processFunction(substring)
-          target = replaceWord(target, substring, newSubstring)
+          const substring = substrings[idx];
+          const newSubstring = processFunction(substring);
+          target = replaceWord(target, substring, newSubstring);
         }
       }
-      return target
+      return target;
     }
 
     function onPaste(e) {
-      const targetNode = e.target
+      const targetNode = e.target;
       if (
-        targetNode.name === "streetName" ||
-        targetNode.className.includes("street-name")
+        targetNode.name === "streetName"
+        || targetNode.className.includes("street-name")
       ) {
         // Get the text that's being pasted.
-        let pastedText = e.clipboardData.getData("text/plain")
+        let pastedText = e.clipboardData.getData("text/plain");
 
         // If pasting text in ALL CAPS...
         if (/^[^a-z]*$/.test(pastedText)) {
-          ;[
+          [
             // Title case all words first.
             [/\b[a-zA-Z]+(?:'S)?\b/g, titleCase],
 
@@ -1268,93 +1259,90 @@
             [/\bMC\w+\b/gi, mcCase], // e.g. McCaulley
             [/\b(?:I|US|SH|SR|CH|CR|CS|PR|PS)\s*-?\s*\d+\w*\b/gi, upperCase], // e.g. US-25, US25
             /* eslint-disable-next-line max-len */
-            [/\b(?:AL|AK|AS|AZ|AR|CA|CO|CT|DE|DC|FM|FL|GA|GU|HI|ID|IL|IN|IA|KS|KY|LA|ME|MH|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|MP|OH|OK|OR|PW|PA|PR|RI|SC|SD|TN|TX|UT|VT|VI|VA|WA|WV|WI|WY)\s*-?\s*\d+\w*\b/gi,upperCase], // e.g. WV-52
+            [/\b(?:AL|AK|AS|AZ|AR|CA|CO|CT|DE|DC|FM|FL|GA|GU|HI|ID|IL|IN|IA|KS|KY|LA|ME|MH|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|MP|OH|OK|OR|PW|PA|PR|RI|SC|SD|TN|TX|UT|VT|VI|VA|WA|WV|WI|WY)\s*-?\s*\d+\w*\b/gi, upperCase], // e.g. WV-52
             [/\b(?:NE|NW|SE|SW)\b/gi, upperCase],
           ].forEach(item => {
-            pastedText = processSubstring(pastedText, item[0], item[1])
-          })
+            pastedText = processSubstring(pastedText, item[0], item[1]);
+          });
 
           // Insert new text in the focused node.
-          document.execCommand("insertText", false, pastedText)
+          document.execCommand("insertText", false, pastedText);
 
           // Prevent the default paste behavior.
-          e.preventDefault()
-          return false
+          e.preventDefault();
+          return false;
         }
       }
-      return true
+      return true;
     }
 
     function getTranslationObject() {
       if (argsObject.useDefaultTranslation) {
-        return DEFAULT_TRANSLATION
+        return DEFAULT_TRANSLATION;
       }
-      let locale = I18n.currentLocale().toLowerCase()
+      let locale = I18n.currentLocale().toLowerCase();
       if (!argsObject.translations.hasOwnProperty(locale)) {
-        locale = "en-us"
+        locale = "en-us";
       }
-      return argsObject.translations[locale]
+      return argsObject.translations[locale];
     }
 
     function errorHandler(callback) {
       try {
-        callback()
+        callback();
       } catch (ex) {
-        console.error(`${argsObject.scriptName}:`, ex)
+        console.error(`${argsObject.scriptName}:`, ex);
       }
     }
 
     function onSegmentsChanged() {
-      addCompactRoadTypeColors()
+      addCompactRoadTypeColors();
     }
 
     function init() {
-      logDebug("Initializing...")
-      UpdateObject = require("Waze/Action/UpdateObject")
-      UpdateFeatureAddress = require("Waze/Action/UpdateFeatureAddress")
-      MultiAction = require("Waze/Action/MultiAction")
-      AddSeg = require("Waze/Action/AddSegment")
-      Segment = require("Waze/Feature/Vector/Segment")
-      DelSeg = require("Waze/Action/DeleteSegment")
+      logDebug("Initializing...");
+      UpdateObject = require("Waze/Action/UpdateObject");
+      UpdateFeatureAddress = require("Waze/Action/UpdateFeatureAddress");
+      MultiAction = require("Waze/Action/MultiAction");
+      AddSeg = require("Waze/Action/AddSegment");
+      Segment = require("Waze/Feature/Vector/Segment");
+      DelSeg = require("Waze/Action/DeleteSegment");
 
-      _trans = getTranslationObject()
+      _trans = getTranslationObject();
       Object.keys(ROAD_TYPES).forEach(rtName => {
-        ROAD_TYPES[rtName].text = _trans.roadTypeButtons[rtName].text
-      })
+        ROAD_TYPES[rtName].text = _trans.roadTypeButtons[rtName].text;
+      });
 
-      document.addEventListener("paste", onPaste)
+      document.addEventListener("paste", onPaste);
 
-      W.model.segments.on("objectschanged", onSegmentsChanged)
-      W.selectionManager.events.register("selectionchanged", null, () =>
-        errorHandler(updateControls),
-      )
+      W.model.segments.on("objectschanged", onSegmentsChanged);
+      W.selectionManager.events.register("selectionchanged", null, () => errorHandler(updateControls));
 
       // check for changes in the edit-panel
       const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
           for (let i = 0; i < mutation.addedNodes.length; i++) {
-            const addedNode = mutation.addedNodes[i]
+            const addedNode = mutation.addedNodes[i];
 
             if (addedNode.nodeType === Node.ELEMENT_NODE) {
               // Checks to identify if this is a segment in regular display mode.
               if (addedNode.querySelector(ROAD_TYPE_DROPDOWN_SELECTOR)) {
-                if (isChecked("csRoadTypeButtonsCheckBox")) addRoadTypeButtons()
+                if (isChecked("csRoadTypeButtonsCheckBox")) addRoadTypeButtons();
                 if (
-                  isSwapPedestrianPermitted() &&
-                  isChecked("csAddSwapPedestrianButtonCheckBox")
+                  isSwapPedestrianPermitted()
+                  && isChecked("csAddSwapPedestrianButtonCheckBox")
                 ) {
-                  addSwapPedestrianButton("regular")
+                  addSwapPedestrianButton("regular");
                 }
               }
               // Checks to identify if this is a segment in compact display mode.
               if (addedNode.querySelector(ROAD_TYPE_CHIP_SELECTOR)) {
-                if (isChecked("csRoadTypeButtonsCheckBox"))
-                  addCompactRoadTypeChangeEvents()
+                if (isChecked("csRoadTypeButtonsCheckBox")) addCompactRoadTypeChangeEvents();
                 if (
-                  isSwapPedestrianPermitted() &&
-                  isChecked("csAddSwapPedestrianButtonCheckBox")
+                  isSwapPedestrianPermitted()
+                  && isChecked("csAddSwapPedestrianButtonCheckBox")
                 ) {
-                  addSwapPedestrianButton("compact")
+                  addSwapPedestrianButton("compact");
                 }
               }
               // if (addedNode.querySelector(PARKING_SPACES_DROPDOWN_SELECTOR) && isChecked('csParkingSpacesButtonsCheckBox')) {
@@ -1365,36 +1353,36 @@
               //     addParkingCostButtons();
               // }
               if (
-                addedNode.querySelector(".side-panel-section") &&
-                isChecked("csAddAltCityButtonCheckBox")
+                addedNode.querySelector(".side-panel-section")
+                && isChecked("csAddAltCityButtonCheckBox")
               ) {
-                addAddAltCityButton()
+                addAddAltCityButton();
               }
             }
           }
-        })
-      })
+        });
+      });
 
       observer.observe(document.getElementById("edit-panel"), {
         childList: true,
         subtree: true,
-      })
-      initUserPanel()
-      loadSettingsFromStorage()
-      injectCss()
+      });
+      initUserPanel();
+      loadSettingsFromStorage();
+      injectCss();
       // W.prefs.on('change:isImperial', () => errorHandler(() => { initUserPanel(); loadSettingsFromStorage(); }));
-      updateControls() // In case of PL w/ segments selected.
+      updateControls(); // In case of PL w/ segments selected.
 
-      logDebug("Initialized")
+      logDebug("Initialized");
     }
 
     function bootstrap() {
       if (typeof W === "object" && W.userscripts?.state.isReady) {
-        init()
+        init();
       } else {
-        logDebug("Bootstrap failed. Trying again...")
-        skipLoginDialog()
-        setTimeout(bootstrap, 250)
+        logDebug("Bootstrap failed. Trying again...");
+        skipLoginDialog();
+        setTimeout(bootstrap, 250);
       }
     }
 
@@ -1402,9 +1390,9 @@
     // that people were having with "require is not defined".  I tried several things to fix it and
     // I'm leaving those things, though all may not be needed.
     $(document).ready(() => {
-      logDebug("Bootstrap...")
-      bootstrap()
-    })
+      logDebug("Bootstrap...");
+      bootstrap();
+    });
   } // END clicksaver function (code to be injected)
 
   // function exists(...objects) {
@@ -1414,7 +1402,7 @@
   function injectScript(argsObject) {
     // 3/31/2023 - removing script injection due to loading errors that I can't track down ("require is not defined").
     // Not sure if injection is needed anymore. I believe it was to get around an issue with Greasemonkey / Firefox.
-    clicksaver(argsObject)
+    clicksaver(argsObject);
     // if (exists(require, $)) {
     //     GM_addElement('script', {
     //         textContent: `(function(){${clicksaver.toString()}\n clicksaver(${JSON.stringify(argsObject).replace('\'', '\\\'')})})();`
@@ -1425,44 +1413,44 @@
   }
 
   function setValue(object, path, value) {
-    const pathParts = path.split(".")
+    const pathParts = path.split(".");
     for (let i = 0; i < pathParts.length - 1; i++) {
-      const pathPart = pathParts[i]
+      const pathPart = pathParts[i];
       if (pathPart in object) {
-        object = object[pathPart]
+        object = object[pathPart];
       } else {
-        object[pathPart] = {}
-        object = object[pathPart]
+        object[pathPart] = {};
+        object = object[pathPart];
       }
     }
-    object[pathParts[pathParts.length - 1]] = value
+    object[pathParts[pathParts.length - 1]] = value;
   }
 
   function convertTranslationsArrayToObject(arrayIn) {
-    const translations = {}
-    let iRow
-    let iCol
-    const languages = arrayIn[0].map(lang => lang.toLowerCase())
+    const translations = {};
+    let iRow;
+    let iCol;
+    const languages = arrayIn[0].map(lang => lang.toLowerCase());
     for (iCol = 1; iCol < languages.length; iCol++) {
-      translations[languages[iCol]] = {}
+      translations[languages[iCol]] = {};
     }
     for (iRow = 1; iRow < arrayIn.length; iRow++) {
-      const row = arrayIn[iRow]
-      const propertyPath = row[0]
+      const row = arrayIn[iRow];
+      const propertyPath = row[0];
       for (iCol = 1; iCol < row.length; iCol++) {
-        setValue(translations[languages[iCol]], propertyPath, row[iCol])
+        setValue(translations[languages[iCol]], propertyPath, row[iCol]);
       }
     }
-    return translations
+    return translations;
   }
 
   function loadTranslations() {
     if (typeof $ === "undefined") {
-      setTimeout(loadTranslations, 250)
+      setTimeout(loadTranslations, 250);
       console.debug(
         "ClickSaver:",
         "jQuery not ready. Retry loading translations...",
-      )
+      );
     } else {
       // This call retrieves the data from the translations spreadsheet and then injects
       // the main code into the page.  If the spreadsheet call fails, the default English
@@ -1471,38 +1459,38 @@
         scriptName: SCRIPT_NAME,
         scriptVersion: SCRIPT_VERSION,
         forumUrl: FORUM_URL,
-      }
+      };
       $.getJSON(`${TRANSLATIONS_URL}?${DEC(API_KEY)}`)
         .then(res => {
-          args.translations = convertTranslationsArrayToObject(res.values)
-          console.debug("ClickSaver:", "Translations loaded.")
+          args.translations = convertTranslationsArrayToObject(res.values);
+          console.debug("ClickSaver:", "Translations loaded.");
         })
         .fail(() => {
           console.error(
             "ClickSaver: Error loading translations spreadsheet. Using default translation (English).",
-          )
-          args.useDefaultTranslation = true
+          );
+          args.useDefaultTranslation = true;
         })
         .always(() => {
           // Leave this document.ready function. Some people randomly get a "require is not defined" error unless the injectMain function
           // is called late enough.  Even with a "typeof require !== 'undefined'" check.
           $(document).ready(() => {
-            injectScript(args)
-          })
-        })
+            injectScript(args);
+          });
+        });
     }
   }
 
   async function copyCoordinates() {
     try {
-      const center = W.map.getCenter()
-      const center4326 = WazeWrap.Geometry.ConvertTo4326(center.lon, center.lat)
+      const center = W.map.getCenter();
+      const center4326 = WazeWrap.Geometry.ConvertTo4326(center.lon, center.lat);
       await navigator.clipboard.writeText(
         `${center4326.lat.toFixed(5)}, ${center4326.lon.toFixed(5)}`,
-      )
-      console.log("Content copied to clipboard")
+      );
+      console.log("Content copied to clipboard");
     } catch (err) {
-      console.error("Failed to copy: ", err)
+      console.error("Failed to copy: ", err);
     }
   }
 
@@ -1514,10 +1502,10 @@
       "ClickSaver",
       EXTERNAL_SETTINGS.toggleTwoWaySegDrawingShortcut,
       () => {
-        $('wz-checkbox[name="twoWaySegmentsByDefault"]').click()
+        $("wz-checkbox[name=\"twoWaySegmentsByDefault\"]").click();
       },
       null,
-    ).add()
+    ).add();
   }
 
   function addCopyCoordinatesShortcut() {
@@ -1529,60 +1517,57 @@
       EXTERNAL_SETTINGS.copyCoordinatesShortcut,
       copyCoordinates,
       null,
-    ).add()
+    ).add();
   }
 
   function sandboxLoadSettings() {
-    const loadedSettings =
-      JSON.parse(localStorage.getItem(EXTERNAL_SETTINGS_NAME)) || {}
-    EXTERNAL_SETTINGS.toggleTwoWaySegDrawingShortcut =
-      loadedSettings.toggleTwoWaySegDrawingShortcut || ""
-    EXTERNAL_SETTINGS.copyCoordinatesShortcut =
-      loadedSettings.copyCoordinatesShortcut || ""
-    addToggleDrawNewRoadsAsTwoWayShortcut()
-    addCopyCoordinatesShortcut()
-    $(window).on("beforeunload", () => sandboxSaveSettings())
+    const loadedSettings = JSON.parse(localStorage.getItem(EXTERNAL_SETTINGS_NAME)) || {};
+    EXTERNAL_SETTINGS.toggleTwoWaySegDrawingShortcut = loadedSettings.toggleTwoWaySegDrawingShortcut || "";
+    EXTERNAL_SETTINGS.copyCoordinatesShortcut = loadedSettings.copyCoordinatesShortcut || "";
+    addToggleDrawNewRoadsAsTwoWayShortcut();
+    addCopyCoordinatesShortcut();
+    $(window).on("beforeunload", () => sandboxSaveSettings());
   }
 
   function getShortcutKeys(shortcutAction) {
-    let keys = ""
-    const { shortcut } = shortcutAction
+    let keys = "";
+    const { shortcut } = shortcutAction;
     if (shortcut) {
-      if (shortcut.altKey) keys += "A"
-      if (shortcut.shiftKey) keys += "S"
-      if (shortcut.ctrlKey) keys += "C"
-      if (keys.length) keys += "+"
-      if (shortcut.keyCode) keys += shortcut.keyCode
+      if (shortcut.altKey) keys += "A";
+      if (shortcut.shiftKey) keys += "S";
+      if (shortcut.ctrlKey) keys += "C";
+      if (keys.length) keys += "+";
+      if (shortcut.keyCode) keys += shortcut.keyCode;
     }
-    return keys
+    return keys;
   }
 
   function sandboxSaveSettings() {
     EXTERNAL_SETTINGS.toggleTwoWaySegDrawingShortcut = getShortcutKeys(
       W.accelerators.Actions.ToggleTwoWayNewSeg,
-    )
+    );
     EXTERNAL_SETTINGS.copyCoordinatesShortcut = getShortcutKeys(
       W.accelerators.Actions.CopyCoordinates,
-    )
+    );
     localStorage.setItem(
       EXTERNAL_SETTINGS_NAME,
       JSON.stringify(EXTERNAL_SETTINGS),
-    )
+    );
   }
 
   function loadScriptUpdateMonitor() {
-    let updateMonitor
+    let updateMonitor;
     try {
       updateMonitor = new WazeWrap.Alerts.ScriptUpdateMonitor(
         SCRIPT_NAME,
         SCRIPT_VERSION,
         DOWNLOAD_URL,
         GM_xmlhttpRequest,
-      )
-      updateMonitor.start()
+      );
+      updateMonitor.start();
     } catch (ex) {
       // Report, but don't stop if ScriptUpdateMonitor fails.
-      console.error(`${SCRIPT_NAME}:`, ex)
+      console.error(`${SCRIPT_NAME}:`, ex);
     }
   }
 
@@ -1593,17 +1578,17 @@
         SCRIPT_VERSION,
         UPDATE_MESSAGE,
         FORUM_URL,
-      )
-      loadScriptUpdateMonitor()
-      sandboxLoadSettings()
+      );
+      loadScriptUpdateMonitor();
+      sandboxLoadSettings();
     } else {
-      setTimeout(sandboxBootstrap, 250)
+      setTimeout(sandboxBootstrap, 250);
     }
   }
 
   // Go ahead and start loading translations, and inject the main code into the page.
-  loadTranslations()
+  loadTranslations();
 
   // Start the "sandboxed" code.
-  sandboxBootstrap()
-})()
+  sandboxBootstrap();
+})();

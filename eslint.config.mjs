@@ -65,6 +65,7 @@ export default [
       "global-require": "off",
       "no-cond-assign": ["error", "except-parens"],
       "wrap-iife": ["error", "any"],
+      "quotes": ["warn", "double"],
 
       "space-before-function-paren": [
         "error",

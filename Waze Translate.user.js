@@ -19,32 +19,31 @@
 
 /* global I18n, $ */
 
-;(() => {
+(() => {
   /**
    * Load the translation library
    */
   function loadTranslationLib() {
-    if (unsafeWindow.Translate) return
+    if (unsafeWindow.Translate) return;
     function Cache() {
-      let e = Object.create(null)
+      let e = Object.create(null);
       function a(a) {
-        delete e[a]
+        delete e[a];
       }
-      ;(this.set = function(n, i, r) {
-        if (void 0 !== r && (typeof r !== "number" || isNaN(r) || r <= 0))
-          throw new Error("Cache timeout must be a positive number")
-        const t = e[n]
-        t && clearTimeout(t.timeout)
-        const o = { value: i, expire: r + Date.now() }
+      (this.set = function(n, i, r) {
+        if (void 0 !== r && (typeof r !== "number" || isNaN(r) || r <= 0)) throw new Error("Cache timeout must be a positive number");
+        const t = e[n];
+        t && clearTimeout(t.timeout);
+        const o = { value: i, expire: r + Date.now() };
         return (
           isNaN(o.expire) || (o.timeout = setTimeout(() => a(n), r)),
           (e[n] = o),
           i
-        )
+        );
       }),
       (this.del = function(n) {
-        let i = !0
-        const r = e[n]
+        let i = !0;
+        const r = e[n];
         return (
           r
             ? (clearTimeout(r.timeout),
@@ -52,59 +51,61 @@
             : (i = !1),
           i && a(n),
           i
-        )
+        );
       }),
       (this.clear = function() {
-        for (const a in e) clearTimeout(e[a].timeout)
-        e = Object.create(null)
+        for (const a in e) clearTimeout(e[a].timeout);
+        e = Object.create(null);
       }),
       (this.get = function(a) {
-        const n = e[a]
+        const n = e[a];
         if (void 0 !== n) {
-          if (isNaN(n.expire) || n.expire >= Date.now()) return n.value
-          delete e[a]
+          if (isNaN(n.expire) || n.expire >= Date.now()) return n.value;
+          delete e[a];
         }
-        return null
-      })
+        return null;
+      });
     }
-    const cache = new Cache()
-    cache.Cache = Cache
-    const googleUrl = "https://translate.googleapis.com/translate_a/single"
-    const libreUrl = "https://libretranslate.com/translate"
+    const cache = new Cache();
+    cache.Cache = Cache;
+    const googleUrl = "https://translate.googleapis.com/translate_a/single";
+    const libreUrl = "https://libretranslate.com/translate";
     const google = {
-      fetch: ({ key, from, to, text }) => [
+      fetch: ({
+        key, from, to, text,
+      }) => [
         `${googleUrl}?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURI(text)}`,
       ],
-      parse: res =>
-        res.json().then(body => {
-          if (
-            !(body =
-              body &&
-              body[0] &&
-              body[0][0] &&
-              body[0].map(e => e[0]).join(""))
-          )
-            throw new Error("Translation not found")
-          return body
-        }),
-    }
+      parse: res => res.json().then(body => {
+        if (
+          !(body = body
+              && body[0]
+              && body[0][0]
+              && body[0].map(e => e[0]).join(""))
+        ) throw new Error("Translation not found");
+        return body;
+      }),
+    };
     const yandex = {
       needkey: !0,
-      fetch: ({ key: e, from, to, text }) => [
+      fetch: ({
+        key: e, from, to, text,
+      }) => [
         `https://translate.yandex.net/api/v1.5/tr.json/translate?key=${e}&lang=${from}-${to}&text=${encodeURIComponent(
           text,
         )}`,
         { method: "POST", body: "" },
       ],
-      parse: res =>
-        res.json().then(body => {
-          if (body.code !== 200) throw new Error(body.message)
-          return body.text[0]
-        }),
-    }
+      parse: res => res.json().then(body => {
+        if (body.code !== 200) throw new Error(body.message);
+        return body.text[0];
+      }),
+    };
     const libre = {
       needkey: !1,
-      fetch: ({ url: e = libreUrl, key, from, to, text }) => [
+      fetch: ({
+        url: e = libreUrl, key, from, to, text,
+      }) => [
         e,
         {
           method: "POST",
@@ -117,38 +118,37 @@
           headers: { "Content-Type": "application/json" },
         },
       ],
-      parse: res =>
-        res.json().then(body => {
-          if (!body) throw new Error("No response found")
-          if (body.error) throw new Error(body.error)
-          if (!body.translatedText) throw new Error("No response found")
-          return body.translatedText
-        }),
-    }
+      parse: res => res.json().then(body => {
+        if (!body) throw new Error("No response found");
+        if (body.error) throw new Error(body.error);
+        if (!body.translatedText) throw new Error("No response found");
+        return body.translatedText;
+      }),
+    };
     const deepl = {
       needkey: !0,
-      fetch: ({ key, from, to, text }) => [
+      fetch: ({
+        key, from, to, text,
+      }) => [
         `https://api${
           key.endsWith(":fx") ? "-free" : ""
-        }.deepl.com/v2/translate?auth_key=${key}&source_lang=${from}&target_lang=${to}&text=${(text =
-          encodeURIComponent(text))}`,
+        }.deepl.com/v2/translate?auth_key=${key}&source_lang=${from}&target_lang=${to}&text=${(text = encodeURIComponent(text))}`,
         { method: "POST", body: "" },
       ],
       parse: async res => {
         if (!res.ok) {
-          if (res.status === 403)
-            throw new Error("Auth Error, please review the key for DeepL")
-          throw new Error(`Error ${res.status}`)
+          if (res.status === 403) throw new Error("Auth Error, please review the key for DeepL");
+          throw new Error(`Error ${res.status}`);
         }
-        return res.json().then(e => e.translations[0].text)
+        return res.json().then(e => e.translations[0].text);
       },
-    }
+    };
     const engines = {
       google,
       yandex,
       libre,
       deepl,
-    }
+    };
     const iso = {
       aar: "aa",
       abk: "ab",
@@ -334,7 +334,7 @@
       yor: "yo",
       zha: "za",
       zul: "zu",
-    }
+    };
     const names = {
       afar: "aa",
       abkhazian: "ab",
@@ -555,23 +555,20 @@
       zhuang: "za",
       chuang: "za",
       zulu: "zu",
-    }
-    const isoKeys = Object.values(iso).sort()
+    };
+    const isoKeys = Object.values(iso).sort();
     const languages = e => {
-      if (typeof e !== "string")
-        throw new Error(`The "language" must be a string, received ${typeof e}`)
-      if (e.length > 100)
-        throw new Error(`The "language" is too long at ${e.length} characters`)
+      if (typeof e !== "string") throw new Error(`The "language" must be a string, received ${typeof e}`);
+      if (e.length > 100) throw new Error(`The "language" is too long at ${e.length} characters`);
       if (
         ((e = e.toLowerCase()),
         (e = names[e] || iso[e] || e),
         !isoKeys.includes(e))
-      )
-        throw new Error(`The language "${e}" is not part of the ISO 639-1`)
-      return e
-    }
+      ) throw new Error(`The language "${e}" is not part of the ISO 639-1`);
+      return e;
+    };
     const Translate = function(e = {}) {
-      if (!(this instanceof Translate)) return new Translate(e)
+      if (!(this instanceof Translate)) return new Translate(e);
       const defaults = {
         from: "en",
         to: "en",
@@ -582,45 +579,45 @@
         languages,
         engines,
         keys: {},
-      }
+      };
       const translate = async(text, opts = {}) => {
-        typeof opts === "string" && (opts = { to: opts })
+        typeof opts === "string" && (opts = { to: opts });
         const invalidKey = Object.keys(opts).find(
           e => e !== "from" && e !== "to",
-        )
+        );
 
         if (invalidKey) {
-          throw new Error(`Invalid option with the name '${invalidKey}'`)
+          throw new Error(`Invalid option with the name '${invalidKey}'`);
         }
 
-        opts.text = text
-        opts.from = languages(opts.from || translate.from)
-        opts.to = languages(opts.to || translate.to)
-        opts.cache = translate.cache
-        opts.engine = translate.engine
-        opts.url = translate.url
-        opts.id = `${opts.url}:${opts.from}:${opts.to}:${opts.engine}:${opts.text}`
-        opts.keys = translate.keys || {}
+        opts.text = text;
+        opts.from = languages(opts.from || translate.from);
+        opts.to = languages(opts.to || translate.to);
+        opts.cache = translate.cache;
+        opts.engine = translate.engine;
+        opts.url = translate.url;
+        opts.id = `${opts.url}:${opts.from}:${opts.to}:${opts.engine}:${opts.text}`;
+        opts.keys = translate.keys || {};
 
         for (const name in translate.keys) {
-          opts.keys[name] = opts.keys[name] || translate.keys[name]
+          opts.keys[name] = opts.keys[name] || translate.keys[name];
         }
-        opts.key = opts.key || translate.key || opts.keys[opts.engine]
+        opts.key = opts.key || translate.key || opts.keys[opts.engine];
 
-        const engine = translate.engines[opts.engine]
+        const engine = translate.engines[opts.engine];
 
-        const cached = cache.get(opts.id)
-        if (cached) return Promise.resolve(cached)
+        const cached = cache.get(opts.id);
+        if (cached) return Promise.resolve(cached);
 
         // Target is the same as origin, just return the string
-        if (opts.to === opts.from) return Promise.resolve(opts.text)
+        if (opts.to === opts.from) return Promise.resolve(opts.text);
 
         if (engine.needkey && !opts.key) {
           throw new Error(
             `The engine "${opts.engine}" needs a key, please provide it`,
-          )
+          );
         }
-        const fetchOpts = engine.fetch(opts)
+        const fetchOpts = engine.fetch(opts);
         return new Promise((resolve, reject) => {
           GM_xmlhttpRequest({
             method: fetchOpts[1].method || "GET",
@@ -629,43 +626,42 @@
             data: fetchOpts[1].body || "",
             responseType: "json",
             onload(response) {
-              console.log(response)
-              const result = engine.parse(response.responseText)
+              console.log(response);
+              const result = engine.parse(response.responseText);
               result.then(translated => {
-                cache.set(opts.id, translated, opts.cache)
-                resolve(translated)
-              })
+                cache.set(opts.id, translated, opts.cache);
+                resolve(translated);
+              });
             },
             onerror(error) {
-              reject(error)
+              reject(error);
             },
-          })
-        })
+          });
+        });
         return fetch(...fetchOpts)
           .then(engine.parse)
-          .then(translated => cache.set(opts.id, translated, opts.cache))
-      }
-      for (const key in defaults)
-        translate[key] = void 0 === e[key] ? defaults[key] : e[key]
-      return translate
-    }
+          .then(translated => cache.set(opts.id, translated, opts.cache));
+      };
+      for (const key in defaults) translate[key] = void 0 === e[key] ? defaults[key] : e[key];
+      return translate;
+    };
 
-    console.info("Translation library loaded")
-    if (!unsafeWindow.Translate) unsafeWindow.Translate = Translate
-    return Translate
+    console.info("Translation library loaded");
+    if (!unsafeWindow.Translate) unsafeWindow.Translate = Translate;
+    return Translate;
   }
 
-  const Tranlate = loadTranslationLib()
+  const Tranlate = loadTranslationLib();
 
   const lTrans = new Tranlate({
     engine: "libre",
     url: "https://translate.saicloud.de/translate",
-  })
-  const gTrans = new Tranlate({ engine: "google" })
+  });
+  const gTrans = new Tranlate({ engine: "google" });
   // test translation
-  gTrans("en", "de", "Hello World").then(console.log)
-})()
+  gTrans("en", "de", "Hello World").then(console.log);
+})();
 
 GM_addStyle(`
 
-`)
+`);
