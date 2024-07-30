@@ -27,23 +27,25 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 */
 
 /* JSHint Directives */
-/* globals $: */
+/* globals $ */
 /* globals W: true */
-/* globals I18n: */
+/* globals I18n */
 /* globals OpenLayers: true */
-/* globals trustedTypes: */
-/* globals ResizeObserver: */
-/* globals jQuery: */
+/* globals trustedTypes */
+/* globals ResizeObserver */
+/* globals jQuery */
 /* jshint esversion: 11 */
 
-(function () {
-  // global variables
-  FUME_VERSION = "1.63.257";
-  FUME_DATE = "2024-05-07";
-  const newVersionNotes = ["Compatibility fix for latest WME release..."];
+;(function main() {
+  "use strict"
 
-  PREFIX = "WMEFUME";
-  DEFAULT_OPTIONS = {
+  // global variables
+  const FUME_VERSION = "1.63.257"
+  const FUME_DATE = "2024-05-07"
+  const newVersionNotes = ["Compatibility fix for latest WME release..."]
+
+  const PREFIX = "WMEFUME"
+  const DEFAULT_OPTIONS = {
     oldVersion: "0.0",
     moveZoomBar: true,
     shrinkTopBars: true,
@@ -100,24 +102,25 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     pointMCScale: 1,
     resizeSearchBox: false,
     theme: "system",
-  };
+  }
 
-  var options;
-  let tabAttempts = 0;
-  let debug = true;
-  let wmeFUinitialising = true;
-  let kineticDragParams;
-  let yslider;
-  let layersButton, refreshButton, shareButton;
-  let zliResizeObserver = null;
+  let options
+  const debug = true
+  let wmeFUinitialising = true
+  let kineticDragParams
+  let yslider
+  let layersButton
+  let refreshButton
+  let shareButton
+  let zliResizeObserver = null
 
-  let killTurnPopup = false;
+  let killTurnPopup = false
 
-  let abAlerts = null;
-  let abAlertBoxStack = [];
-  let abAlertBoxTickAction = null;
-  let abAlertBoxCrossAction = null;
-  let abAlertBoxInUse = false;
+  let abAlerts = null
+  const abAlertBoxStack = []
+  let abAlertBoxTickAction = null
+  let abAlertBoxCrossAction = null
+  let abAlertBoxInUse = false
 
   function abAlertBoxObj(
     headericon,
@@ -127,47 +130,47 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     tickText,
     crossText,
     tickAction,
-    crossAction
+    crossAction,
   ) {
-    this.headericon = headericon;
-    this.title = title;
-    this.content = content;
-    this.hasCross = hasCross;
-    this.tickText = tickText;
-    this.crossText = crossText;
-    this.tickAction = tickAction;
-    this.crossAction = crossAction;
+    this.headericon = headericon
+    this.title = title
+    this.content = content
+    this.hasCross = hasCross
+    this.tickText = tickText
+    this.crossText = crossText
+    this.tickAction = tickAction
+    this.crossAction = crossAction
   }
   function abCloseAlertBox() {
-    $("#abAlerts").fadeOut(250, function () {
+    $("#abAlerts").fadeOut(250, () => {
       document.getElementById("abAlerts").childNodes[0].innerHTML =
-        modifyHTML("");
+        modifyHTML("")
       document.getElementById("abAlerts").childNodes[1].innerHTML =
-        modifyHTML("");
+        modifyHTML("")
       document.getElementById("abAlertTickBtnCaption").innerHTML =
-        modifyHTML("");
+        modifyHTML("")
       document.getElementById("abAlertCrossBtnCaption").innerHTML =
-        modifyHTML("");
-      abAlertBoxTickAction = null;
-      abAlertBoxCrossAction = null;
-      $("#abAlertCrossBtn").hide();
-      abAlertBoxInUse = false;
+        modifyHTML("")
+      abAlertBoxTickAction = null
+      abAlertBoxCrossAction = null
+      $("#abAlertCrossBtn").hide()
+      abAlertBoxInUse = false
       if (abAlertBoxStack.length > 0) {
-        abBuildAlertBoxFromStack();
+        abBuildAlertBoxFromStack()
       }
-    });
+    })
   }
   function abCloseAlertBoxWithTick() {
     if (typeof abAlertBoxTickAction === "function") {
-      abAlertBoxTickAction();
+      abAlertBoxTickAction()
     }
-    abCloseAlertBox();
+    abCloseAlertBox()
   }
   function abCloseAlertBoxWithCross() {
     if (typeof abAlertBoxCrossAction === "function") {
-      abAlertBoxCrossAction();
+      abAlertBoxCrossAction()
     }
-    abCloseAlertBox();
+    abCloseAlertBox()
   }
   function abShowAlertBox(
     headericon,
@@ -177,7 +180,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     tickText,
     crossText,
     tickAction,
-    crossAction
+    crossAction,
   ) {
     abAlertBoxStack.push(
       new abAlertBoxObj(
@@ -188,53 +191,53 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         tickText,
         crossText,
         tickAction,
-        crossAction
-      )
-    );
+        crossAction,
+      ),
+    )
     if (abAlertBoxInUse === false) {
-      abBuildAlertBoxFromStack();
+      abBuildAlertBoxFromStack()
     }
   }
   function abBuildAlertBoxFromStack() {
     const tbIcon =
-      "data:image/png;base64,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eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDQuNC4wLUV4aXYyIj4KIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIKICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIgogICAgeG1sbnM6R0lNUD0iaHR0cDovL3d3dy5naW1wLm9yZy94bXAvIgogICAgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIgogICAgeG1sbnM6dGlmZj0iaHR0cDovL25zLmFkb2JlLmNvbS90aWZmLzEuMC8iCiAgICB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iCiAgIHhtcE1NOkRvY3VtZW50SUQ9ImdpbXA6ZG9jaWQ6Z2ltcDoxYThmMWIxZS1iMDhhLTQxN2EtOThkOS02Njg1OWNmZjg0ODgiCiAgIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6ZTQxMTMxMTUtNWJkNS00Yjg5LTg3YTUtNjQ3ZDlkNjVkN2IyIgogICB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NmM3ZjJkYmQtZGQwYS00MDNjLThiYTMtMzAyNjRlYWMxNjI4IgogICBkYzpGb3JtYXQ9ImltYWdlL3BuZyIKICAgZXhpZjpQaXhlbFhEaW1lbnNpb249IjgwIgogICBleGlmOlBpeGVsWURpbWVuc2lvbj0iODAiCiAgIEdJTVA6QVBJPSIyLjAiCiAgIEdJTVA6UGxhdGZvcm09IldpbmRvd3MiCiAgIEdJTVA6VGltZVN0YW1wPSIxNjc4MjM1NDcyMjM0NjU2IgogICBHSU1QOlZlcnNpb249IjIuMTAuMzAiCiAgIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiCiAgIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIKICAgdGlmZjpJbWFnZUxlbmd0aD0iODAiCiAgIHRpZmY6SW1hZ2VXaWR0aD0iODAiCiAgIHRpZmY6T3JpZW50YXRpb249IjEiCiAgIHRpZmY6UmVzb2x1dGlvblVuaXQ9IjIiCiAgIHRpZmY6WFJlc29sdXRpb249IjcyLzEiCiAgIHRpZmY6WVJlc29sdXRpb249IjcyLzEiCiAgIHhtcDpDcmVhdG9yVG9vbD0iR0lNUCAyLjEwIgogICB4bXA6TWV0YWRhdGFEYXRlPSIyMDIxLTEwLTI3VDA4OjUyOjUzKzAxOjAwIgogICB4bXA6TW9kaWZ5RGF0ZT0iMjAyMS0xMC0yN1QwODo1Mjo1MyswMTowMCI+CiAgIDx4bXBNTTpIaXN0b3J5PgogICAgPHJkZjpTZXE+CiAgICAgPHJkZjpsaQogICAgICBzdEV2dDphY3Rpb249InByb2R1Y2VkIgogICAgICBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZmZpbml0eSBEZXNpZ25lciAxLjEwLjMiCiAgICAgIHN0RXZ0OndoZW49IjIwMjEtMTAtMjdUMDg6NTI6NTMrMDE6MDAiLz4KICAgICA8cmRmOmxpCiAgICAgIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiCiAgICAgIHN0RXZ0OmNoYW5nZWQ9Ii8iCiAgICAgIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZGY4YTVhMzYtZDZkYy00ZDVmLWJjMWMtMzZhNWViZWY3YzU3IgogICAgICBzdEV2dDpzb2Z0d2FyZUFnZW50PSJHaW1wIDIuMTAgKFdpbmRvd3MpIgogICAgICBzdEV2dDp3aGVuPSIyMDIzLTAzLTA4VDAwOjMxOjEyIi8+CiAgICA8L3JkZjpTZXE+CiAgIDwveG1wTU06SGlzdG9yeT4KICA8L3JkZjpEZXNjcmlwdGlvbj4KIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAKPD94cGFja2V0IGVuZD0idyI/Pv26nxYAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAwgAHwyBbZEQAAAJD0lEQVRYw5WXeXDV1RXHP/f3+70tL28LISEhJCqyBYJiosgixQqyiFoI0NoKWq1lbMVOnVE7Zcap7dQ6dKE62DrttI7iVGVzGZWS0Q6LIAghQCwQskFeyEK2917y1t9y+0ceMS9A0TNz//md+zvne+8953zPEXwNMYKVGlCIFLchWA5MAooBf3pLCGgB6oCdII8gadOKdxjXsi3+nzLVslxVhFIG4kngbmAMoF7Dpgl0AFVIXpZC1trG7TC/MQA9WJkv4GkQa4Hc4XtNU2KYEinloBEhUFWBpmaYk0A38IbE2mgbt/Pi1wJgtK4Q0hI3CSH+BlQM3zMQNTjbFOGjTy7Q06tjWoMAFEXgcSss/FYBZZMDBPx2hMgAclQi10mL4/aSHfKqAFKtK4SwxEwhxBbgxuG61vYYL/29ju27UwRG5WG3O1AUBQRYloWhG/T1djGv3OTJRydwU6kfRckwXw+ssaTxhb34PXlFAHpL5c1CiG0jnbd3xtnw4kmO1uXgD+SgKArZ7iwe+O4qbJrG21u30xsKI6UkFo2S4wryx+dKmTbZP/KCG6WUq23FO45d+qAMc56fvvYM5ynd4p9vN3L4lI9AzqjBUwPTSqewcMECZtxyC2XTpg7Fgjs7m+7YWF7+Rz39A/pIAOOFEH81WirzMwDoLctVIXg6/eYZ0tmV4IOqMIGcUYhhDxsKhzl58iRNTU3U1ddn/ON2Z7P3CJw4FbpS3FUgxNNGcIUKoA1CV8rS0Z4R6T2hJLv+00ZL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";
+      "data:image/png;base64,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eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDQuNC4wLUV4aXYyIj4KIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIKICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIgogICAgeG1sbnM6R0lNUD0iaHR0cDovL3d3dy5naW1wLm9yZy94bXAvIgogICAgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIgogICAgeG1sbnM6dGlmZj0iaHR0cDovL25zLmFkb2JlLmNvbS90aWZmLzEuMC8iCiAgICB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iCiAgIHhtcE1NOkRvY3VtZW50SUQ9ImdpbXA6ZG9jaWQ6Z2ltcDoxYThmMWIxZS1iMDhhLTQxN2EtOThkOS02Njg1OWNmZjg0ODgiCiAgIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6ZTQxMTMxMTUtNWJkNS00Yjg5LTg3YTUtNjQ3ZDlkNjVkN2IyIgogICB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NmM3ZjJkYmQtZGQwYS00MDNjLThiYTMtMzAyNjRlYWMxNjI4IgogICBkYzpGb3JtYXQ9ImltYWdlL3BuZyIKICAgZXhpZjpQaXhlbFhEaW1lbnNpb249IjgwIgogICBleGlmOlBpeGVsWURpbWVuc2lvbj0iODAiCiAgIEdJTVA6QVBJPSIyLjAiCiAgIEdJTVA6UGxhdGZvcm09IldpbmRvd3MiCiAgIEdJTVA6VGltZVN0YW1wPSIxNjc4MjM1NDcyMjM0NjU2IgogICBHSU1QOlZlcnNpb249IjIuMTAuMzAiCiAgIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiCiAgIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIKICAgdGlmZjpJbWFnZUxlbmd0aD0iODAiCiAgIHRpZmY6SW1hZ2VXaWR0aD0iODAiCiAgIHRpZmY6T3JpZW50YXRpb249IjEiCiAgIHRpZmY6UmVzb2x1dGlvblVuaXQ9IjIiCiAgIHRpZmY6WFJlc29sdXRpb249IjcyLzEiCiAgIHRpZmY6WVJlc29sdXRpb249IjcyLzEiCiAgIHhtcDpDcmVhdG9yVG9vbD0iR0lNUCAyLjEwIgogICB4bXA6TWV0YWRhdGFEYXRlPSIyMDIxLTEwLTI3VDA4OjUyOjUzKzAxOjAwIgogICB4bXA6TW9kaWZ5RGF0ZT0iMjAyMS0xMC0yN1QwODo1Mjo1MyswMTowMCI+CiAgIDx4bXBNTTpIaXN0b3J5PgogICAgPHJkZjpTZXE+CiAgICAgPHJkZjpsaQogICAgICBzdEV2dDphY3Rpb249InByb2R1Y2VkIgogICAgICBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZmZpbml0eSBEZXNpZ25lciAxLjEwLjMiCiAgICAgIHN0RXZ0OndoZW49IjIwMjEtMTAtMjdUMDg6NTI6NTMrMDE6MDAiLz4KICAgICA8cmRmOmxpCiAgICAgIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiCiAgICAgIHN0RXZ0OmNoYW5nZWQ9Ii8iCiAgICAgIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZGY4YTVhMzYtZDZkYy00ZDVmLWJjMWMtMzZhNWViZWY3YzU3IgogICAgICBzdEV2dDpzb2Z0d2FyZUFnZW50PSJHaW1wIDIuMTAgKFdpbmRvd3MpIgogICAgICBzdEV2dDp3aGVuPSIyMDIzLTAzLTA4VDAwOjMxOjEyIi8+CiAgICA8L3JkZjpTZXE+CiAgIDwveG1wTU06SGlzdG9yeT4KICA8L3JkZjpEZXNjcmlwdGlvbj4KIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAKPD94cGFja2V0IGVuZD0idyI/Pv26nxYAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAwgAHwyBbZEQAAAJD0lEQVRYw5WXeXDV1RXHP/f3+70tL28LISEhJCqyBYJiosgixQqyiFoI0NoKWq1lbMVOnVE7Zcap7dQ6dKE62DrttI7iVGVzGZWS0Q6LIAghQCwQskFeyEK2917y1t9y+0ceMS9A0TNz//md+zvne+8953zPEXwNMYKVGlCIFLchWA5MAooBf3pLCGgB6oCdII8gadOKdxjXsi3+nzLVslxVhFIG4kngbmAMoF7Dpgl0AFVIXpZC1trG7TC/MQA9WJkv4GkQa4Hc4XtNU2KYEinloBEhUFWBpmaYk0A38IbE2mgbt/Pi1wJgtK4Q0hI3CSH+BlQM3zMQNTjbFOGjTy7Q06tjWoMAFEXgcSss/FYBZZMDBPx2hMgAclQi10mL4/aSHfKqAFKtK4SwxEwhxBbgxuG61vYYL/29ju27UwRG5WG3O1AUBQRYloWhG/T1djGv3OTJRydwU6kfRckwXw+ssaTxhb34PXlFAHpL5c1CiG0jnbd3xtnw4kmO1uXgD+SgKArZ7iwe+O4qbJrG21u30xsKI6UkFo2S4wryx+dKmTbZP/KCG6WUq23FO45d+qAMc56fvvYM5ynd4p9vN3L4lI9AzqjBUwPTSqewcMECZtxyC2XTpg7Fgjs7m+7YWF7+Rz39A/pIAOOFEH81WirzMwDoLctVIXg6/eYZ0tmV4IOqMIGcUYhhDxsKhzl58iRNTU3U1ddn/ON2Z7P3CJw4FbpS3FUgxNNGcIUKoA1CV8rS0Z4R6T2hJLv+00ZL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"
 
-    abAlertBoxInUse = true;
-    abAlertBoxTickAction = null;
-    abAlertBoxCrossAction = null;
-    var titleContent = '<span style="font-size:14px;padding:2px;">';
-    //titleContent += '<i class="fa '+abAlertBoxStack[0].headericon+'"> </i>&nbsp;';
-    titleContent += '<img src="' + tbIcon + '">';
-    titleContent += abAlertBoxStack[0].title;
-    titleContent += "</span>";
-    $("#abAlerts #header").html(titleContent);
-    $("#abAlerts #content").html(abAlertBoxStack[0].content);
+    abAlertBoxInUse = true
+    abAlertBoxTickAction = null
+    abAlertBoxCrossAction = null
+    let titleContent = '<span style="font-size:14px;padding:2px;">'
+    // titleContent += '<i class="fa '+abAlertBoxStack[0].headericon+'"> </i>&nbsp;';
+    titleContent += `<img src="${tbIcon}">`
+    titleContent += abAlertBoxStack[0].title
+    titleContent += "</span>"
+    $("#abAlerts #header").html(titleContent)
+    $("#abAlerts #content").html(abAlertBoxStack[0].content)
     document.getElementById("abAlertTickBtnCaption").innerHTML = modifyHTML(
-      abAlertBoxStack[0].tickText
-    );
+      abAlertBoxStack[0].tickText,
+    )
     if (abAlertBoxStack[0].hasCross) {
       document.getElementById("abAlertCrossBtnCaption").innerHTML = modifyHTML(
-        abAlertBoxStack[0].crossText
-      );
-      $("#abAlertCrossBtn").show();
+        abAlertBoxStack[0].crossText,
+      )
+      $("#abAlertCrossBtn").show()
       if (typeof abAlertBoxStack[0].crossAction === "function") {
-        abAlertBoxCrossAction = abAlertBoxStack[0].crossAction;
+        abAlertBoxCrossAction = abAlertBoxStack[0].crossAction
       }
     } else {
-      $("#abAlertCrossBtn").hide();
+      $("#abAlertCrossBtn").hide()
     }
     if (typeof abAlertBoxStack[0].tickAction === "function") {
-      abAlertBoxTickAction = abAlertBoxStack[0].tickAction;
+      abAlertBoxTickAction = abAlertBoxStack[0].tickAction
     }
-    $("#abAlerts").fadeIn(200);
-    abAlertBoxStack.shift();
+    $("#abAlerts").fadeIn(200)
+    abAlertBoxStack.shift()
   }
   function abInitialiseAlertBox() {
     // create a new div to display script alerts
-    abAlerts = document.createElement("div");
-    abAlerts.id = "abAlerts";
+    abAlerts = document.createElement("div")
+    abAlerts.id = "abAlerts"
 
-    var alertsHTML = `
+    const alertsHTML = `
     <div id="header">Alert title goes here...</div>
     <div id="content">Alert content goes here...</div>
     <div id="controls" align="center">
@@ -248,97 +251,95 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         <span id="abAlertCrossBtnCaption" style="font-weight: bold;"></span>
       </span>
     </div>
-    `;
-    abAlerts.innerHTML = modifyHTML(alertsHTML);
-    abAlerts.style.display = "none";
-    document.body.appendChild(abAlerts);
+    `
+    abAlerts.innerHTML = modifyHTML(alertsHTML)
+    abAlerts.style.display = "none"
+    document.body.appendChild(abAlerts)
   }
 
   function SetStyle(elm, style, value, important) {
     if (elm !== null && elm != undefined) {
       if (important === true) {
-        value += "!important";
+        value += "!important"
       }
-      elm.style[style] = value;
+      elm.style[style] = value
     }
   }
   function modifyHTML(htmlIn) {
     if (typeof trustedTypes === "undefined") {
-      return htmlIn;
-    } else {
-      const escapeHTMLPolicy = trustedTypes.createPolicy("forceInner", {
-        createHTML: (to_escape) => to_escape,
-      });
-      return escapeHTMLPolicy.createHTML(htmlIn);
+      return htmlIn
     }
+    const escapeHTMLPolicy = trustedTypes.createPolicy("forceInner", {
+      createHTML: to_escape => to_escape,
+    })
+    return escapeHTMLPolicy.createHTML(htmlIn)
   }
   function reorderDaysOfWeek(origDOWs) {
-    let dows = [];
+    const dows = []
     for (let i = 0; i < 6; ++i) {
-      dows.push(origDOWs[i + 1]);
+      dows.push(origDOWs[i + 1])
     }
-    dows.push(origDOWs[0]);
+    dows.push(origDOWs[0])
 
-    return dows;
+    return dows
   }
   // contrast items
   function GetBorderContrast(contrast, isImportant) {
-    var retval = "border: 1px solid " + ["", "lightgrey", "grey"][contrast];
+    let retval = `border: 1px solid ${["", "lightgrey", "grey"][contrast]}`
     if (isImportant === true) {
-      retval += "!important";
+      retval += "!important"
     }
-    retval += "; ";
-    return retval;
+    retval += "; "
+    return retval
   }
-  //Mutation Observer for daterangepicker in Restrictions
-  var RestrictionObserver = new MutationObserver(function (mutations) {
+  // Mutation Observer for daterangepicker in Restrictions
+  const RestrictionObserver = new MutationObserver(mutations => {
     if (options.mondayFirst || options.ISODates) {
-      mutations.forEach(function (mutation) {
+      mutations.forEach(mutation => {
         if ($(mutation.target).hasClass("modal-content")) {
           if (mutation.addedNodes.length > 0) {
             if ($(".datepicker").length > 0) {
-              let DRP = $(".datepicker")[0];
-              let dows = reorderDaysOfWeek(
-                $(DRP).data("daterangepicker").locale.daysOfWeek
-              );
+              const DRP = $(".datepicker")[0]
+              const dows = reorderDaysOfWeek(
+                $(DRP).data("daterangepicker").locale.daysOfWeek,
+              )
 
               if (options.mondayFirst) {
                 if ($(DRP).data("daterangepicker").locale.firstDay === 0) {
-                  $(DRP).data("daterangepicker").locale.firstDay = 1;
-                  $(DRP).data("daterangepicker").locale.daysOfWeek = dows;
+                  $(DRP).data("daterangepicker").locale.firstDay = 1
+                  $(DRP).data("daterangepicker").locale.daysOfWeek = dows
                 }
               }
               if (options.ISODates) {
-                $(DRP).data("daterangepicker").locale.format = "YYYY-MM-DD";
-                DRP.value =
-                  $(DRP).data("daterangepicker").startDate._i +
-                  " - " +
-                  $(DRP).data("daterangepicker").endDate._i;
+                $(DRP).data("daterangepicker").locale.format = "YYYY-MM-DD"
+                DRP.value = `${$(DRP).data("daterangepicker").startDate._i} - ${
+                  $(DRP).data("daterangepicker").endDate._i
+                }`
               }
             }
           }
         }
-      });
+      })
     }
-  });
+  })
   // Mutation Observer for segment edit panel
-  var SegmentObserver = new MutationObserver(function (mutations) {
+  const SegmentObserver = new MutationObserver(mutations => {
     // Tame the locked segment message which, in some locales, takes up rather more space than would be ideal
     if (options.tameLockedSegment) {
-      let tObj = document.getElementsByClassName("segment-details");
+      const tObj = document.getElementsByClassName("segment-details")
       if (tObj.length > 0) {
         if (
           tObj[0].firstChild.textContent ==
           I18n.lookup("edit.segment.permissions.locked.title")
         ) {
-          tObj[0].firstChild.textContent = "Segment locked";
-          tObj[0].childNodes[1].firstChild.firstChild.textContent = "";
+          tObj[0].firstChild.textContent = "Segment locked"
+          tObj[0].childNodes[1].firstChild.firstChild.textContent = ""
         } else if (
           tObj[0].firstChild.textContent ==
           I18n.lookup("edit.segment.permissions.locked_except_closures.title")
         ) {
-          tObj[0].firstChild.textContent = "Segment locked except for closures";
-          tObj[0].childNodes[1].firstChild.firstChild.textContent = "";
+          tObj[0].firstChild.textContent = "Segment locked except for closures"
+          tObj[0].childNodes[1].firstChild.firstChild.textContent = ""
         }
       }
     }
@@ -347,13 +348,13 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (options.hideSegmentPanelLabels) {
       let tObj = document
         .getElementById("edit-panel")
-        .getElementsByTagName("wz-tab");
+        .getElementsByTagName("wz-tab")
       if (tObj.length > 0) {
-        tObj = tObj[0].getElementsByTagName("wz-label");
+        tObj = tObj[0].getElementsByTagName("wz-label")
         if (tObj.length > 0) {
-          for (let l of tObj) {
+          for (const l of tObj) {
             if (l.getElementsByTagName("wz-checkbox").length == 0) {
-              l.style.display = "none";
+              l.style.display = "none"
             }
           }
         }
@@ -364,24 +365,24 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (options.tameElevationMenu) {
       if (document.getElementsByName("level").length > 0) {
         if (document.getElementsByName("level")[0].childElementCount > 0) {
-          let menuEntries = document
+          const menuEntries = document
             .getElementsByName("level")[0]
-            .getElementsByTagName("wz-option");
-          let localeGround = I18n.lookup("edit.segment.levels")[0];
-          for (let pe of menuEntries) {
-            let level = 0;
+            .getElementsByTagName("wz-option")
+          const localeGround = I18n.lookup("edit.segment.levels")[0]
+          for (const pe of menuEntries) {
+            let level = 0
             if (pe.value != localeGround) {
-              level = parseInt(pe.value);
+              level = parseInt(pe.value)
             }
             if (level > 5 || level < -5) {
-              SetStyle(pe, "display", "none", false);
+              SetStyle(pe, "display", "none", false)
             } else {
-              let sr = pe.shadowRoot.querySelector(".wz-menu-item");
-              let indent = 44 + level * 8;
-              SetStyle(sr, "padding", "0px 0px 0px " + indent + "px", false);
-              SetStyle(sr, "height", "100%", false);
-              SetStyle(sr, "lineHeight", "100%", false);
-              SetStyle(sr, "minHeight", "auto", false);
+              const sr = pe.shadowRoot.querySelector(".wz-menu-item")
+              const indent = 44 + level * 8
+              SetStyle(sr, "padding", `0px 0px 0px ${indent}px`, false)
+              SetStyle(sr, "height", "100%", false)
+              SetStyle(sr, "lineHeight", "100%", false)
+              SetStyle(sr, "minHeight", "auto", false)
             }
           }
         }
@@ -393,33 +394,33 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       // Check the menu is being shown - this won't be the case in compact mode
       if (document.getElementsByName("roadType").length > 0) {
         if (document.getElementsByName("roadType")[0].childElementCount > 0) {
-          let menuDividers = document
+          const menuDividers = document
             .getElementsByName("roadType")[0]
-            .getElementsByTagName("wz-menu-divider");
-          let pe;
-          let sr;
+            .getElementsByTagName("wz-menu-divider")
+          let pe
+          let sr
           for (pe of menuDividers) {
-            SetStyle(pe, "display", "none", false);
+            SetStyle(pe, "display", "none", false)
           }
-          let menuTitles = document
+          const menuTitles = document
             .getElementsByName("roadType")[0]
-            .getElementsByTagName("wz-menu-title");
+            .getElementsByTagName("wz-menu-title")
           for (pe of menuTitles) {
-            sr = pe.shadowRoot.querySelector(".wz-menu-title");
-            SetStyle(sr, "padding", "0px, 0px, 0px 4px", false);
-            SetStyle(sr, "height", "100%", false);
-            SetStyle(sr, "lineHeight", "100%", false);
-            SetStyle(sr, "minHeight", "auto", false);
+            sr = pe.shadowRoot.querySelector(".wz-menu-title")
+            SetStyle(sr, "padding", "0px, 0px, 0px 4px", false)
+            SetStyle(sr, "height", "100%", false)
+            SetStyle(sr, "lineHeight", "100%", false)
+            SetStyle(sr, "minHeight", "auto", false)
           }
-          let menuEntries = document
+          const menuEntries = document
             .getElementsByName("roadType")[0]
-            .getElementsByTagName("wz-option");
+            .getElementsByTagName("wz-option")
           for (pe of menuEntries) {
-            sr = pe.shadowRoot.querySelector(".wz-menu-item");
-            SetStyle(sr, "padding", "0px 0px 0px 24px", false);
-            SetStyle(sr, "height", "100%", false);
-            SetStyle(sr, "lineHeight", "100%", false);
-            SetStyle(sr, "minHeight", "auto", false);
+            sr = pe.shadowRoot.querySelector(".wz-menu-item")
+            SetStyle(sr, "padding", "0px 0px 0px 24px", false)
+            SetStyle(sr, "height", "100%", false)
+            SetStyle(sr, "lineHeight", "100%", false)
+            SetStyle(sr, "minHeight", "auto", false)
           }
         }
       }
@@ -431,8 +432,8 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         document.querySelector(".routing-road-type-message")?.parentElement,
         "display",
         "none",
-        false
-      );
+        false,
+      )
     }
 
     if (options.restyleSidePanel) {
@@ -443,103 +444,98 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           document.querySelector("wz-tab")?.shadowRoot.querySelector(".wz-tab"),
           "padding",
           "2px",
-          false
-        );
+          false,
+        )
 
         // Reduce gap between the "Select entire street" and "Edit house numbers" buttons
         SetStyle(
           document.querySelector("#edit-panel .more-actions"),
           "gap",
           "0px",
-          false
-        );
+          false,
+        )
 
         // Reduce gap under the direction and lock level selectors
         SetStyle(
           document.querySelector("segment-direction-editor"),
           "marginBottom",
           "0px",
-          false
-        );
+          false,
+        )
         SetStyle(
           document.querySelector(".lock-edit-view"),
           "marginBottom",
           "0px",
-          false
-        );
+          false,
+        )
 
         // Reduce height of the speed limit input boxes
-        let nSLE = document.querySelectorAll(
-          "#segment-edit-general .speed-limit-input"
-        ).length;
+        const nSLE = document.querySelectorAll(
+          "#segment-edit-general .speed-limit-input",
+        ).length
         if (nSLE > 0) {
           for (let i = 0; i < nSLE; ++i) {
-            let sr = document.querySelectorAll(
-              "#segment-edit-general .speed-limit-input"
-            )[i].shadowRoot;
+            const sr = document.querySelectorAll(
+              "#segment-edit-general .speed-limit-input",
+            )[i].shadowRoot
             SetStyle(
               sr.querySelector(".wz-text-input"),
               "height",
               "26px",
-              false
-            );
+              false,
+            )
           }
         }
 
         // Reduce height of the elevation drop-down - all this just to tweak the height of ONE UI element, thank you
         // VERY much shadowroot :-/
         if (document.getElementsByName("level")[0] != undefined) {
-          let sr = document.getElementsByName("level")[0].shadowRoot;
-          SetStyle(sr.querySelector(".wz-select"), "height", "20px", false);
+          const sr = document.getElementsByName("level")[0].shadowRoot
+          SetStyle(sr.querySelector(".wz-select"), "height", "20px", false)
           SetStyle(
             sr.querySelector(".selected-value-wrapper"),
             "height",
             "20px",
-            false
-          );
-          SetStyle(
-            sr.querySelector(".select-wrapper"),
-            "height",
-            "20px",
-            false
-          );
-          SetStyle(sr.querySelector(".select-box"), "height", "20px", false);
+            false,
+          )
+          SetStyle(sr.querySelector(".select-wrapper"), "height", "20px", false)
+          SetStyle(sr.querySelector(".select-box"), "height", "20px", false)
         }
       }
     }
-  });
-  //Mutation Observer for daterangepicker in Closures
-  var ClosureObserver = new MutationObserver(function (mutations) {
+  })
+  // Mutation Observer for daterangepicker in Closures
+  const ClosureObserver = new MutationObserver(mutations => {
     if (options.mondayFirst) {
-      mutations.forEach(function (mutation) {
+      mutations.forEach(mutation => {
         if (mutation.target.className == "closures") {
           if (mutation.addedNodes.length > 0) {
             if (
               mutation.addedNodes[0].firstChild.classList.contains(
-                "edit-closure"
+                "edit-closure",
               )
             ) {
               if (
                 $(".start-date").data("daterangepicker").locale.firstDay === 0
               ) {
-                $(".start-date").data("daterangepicker").locale.firstDay = 1;
-                $(".end-date").data("daterangepicker").locale.firstDay = 1;
+                $(".start-date").data("daterangepicker").locale.firstDay = 1
+                $(".end-date").data("daterangepicker").locale.firstDay = 1
 
-                let dows = reorderDaysOfWeek(
-                  $(".start-date").data("daterangepicker").locale.daysOfWeek
-                );
+                const dows = reorderDaysOfWeek(
+                  $(".start-date").data("daterangepicker").locale.daysOfWeek,
+                )
                 $(".start-date").data("daterangepicker").locale.daysOfWeek =
-                  dows;
-                $(".end-date").data("daterangepicker").locale.daysOfWeek = dows;
+                  dows
+                $(".end-date").data("daterangepicker").locale.daysOfWeek = dows
               }
             }
           }
         }
-      });
+      })
     }
-  });
+  })
   // Mutation Observer for place edit panel
-  var PlaceObserver = new MutationObserver(function (mutations) {
+  const PlaceObserver = new MutationObserver(mutations => {
     // This slightly convoluted bit of code allows us to manipulate
     // the entries in the dynamically created drop-down list which
     // is generated whenever you start searching for a GMaps place
@@ -547,19 +543,19 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (options.fixExternalProviders) {
       // First check that the MO has fired because the user has selected
       // a place for editing...
-      let acMenu = document.getElementsByClassName(
-        "external-provider-edit-form"
-      )[0];
+      const acMenu = document.getElementsByClassName(
+        "external-provider-edit-form",
+      )[0]
       if (acMenu !== undefined) {
         // ...and then check the "add linked Google place" option has been
         // selected, to start the process of generating the dynamic list
-        let acInner = acMenu.getElementsByTagName("wz-autocomplete")[0];
+        const acInner = acMenu.getElementsByTagName("wz-autocomplete")[0]
         if (acInner !== undefined) {
           // If so, then we now need to poll the UI to see if there are any
           // list items present - this doesn't appear to be possible via a
           // MO due to the items being hidden behind shadowroot, hence the
           // slightly old-school nature of polling vs event driven here :-/
-          window.setTimeout(EPObserver, 500);
+          window.setTimeout(EPObserver, 500)
         }
       }
     }
@@ -568,45 +564,46 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       // we can dive into its shadowroot to deal with its excessive whitespace
       if (
         document.getElementsByClassName(
-          "navigation-point-item navigation-point-editable"
+          "navigation-point-item navigation-point-editable",
         ).length > 0
       ) {
-        let npOuter = document.getElementsByClassName(
-          "navigation-point-item navigation-point-editable"
-        )[0];
-        let npInner = npOuter.shadowRoot.querySelectorAll(".list-item-wrapper");
+        const npOuter = document.getElementsByClassName(
+          "navigation-point-item navigation-point-editable",
+        )[0]
+        const npInner =
+          npOuter.shadowRoot.querySelectorAll(".list-item-wrapper")
         if (npInner.length > 0) {
-          for (let i of npInner) {
-            i.style.paddingTop = "4px";
-            i.style.paddingBottom = "4px";
+          for (const i of npInner) {
+            i.style.paddingTop = "4px"
+            i.style.paddingBottom = "4px"
           }
         }
       }
     }
-  });
+  })
   // Mutation Observer for issue tracker panel
-  var ITObserver = new MutationObserver(function (mutations) {
-    disableUITransitions();
-  });
-  var MTEObserver = new MutationObserver(function (mutations) {
-    checkForMTEDropDown();
-  });
+  const ITObserver = new MutationObserver(mutations => {
+    disableUITransitions()
+  })
+  const MTEObserver = new MutationObserver(mutations => {
+    checkForMTEDropDown()
+  })
 
   // To unwind the temporary moving of the notification icons when entering HN edit mode above, we observe changes in the primary
   // toolbar in order to detect when the close HN editor button is displayed, and also when the regular toolbar contents are
   // displayed.  We use the former to set up an onclick handler so that when the close editor button is clicked, we set a flag
   // to then trigger the deferred unwinding of the icon move once we detect the toolbar is back to normal...
-  let doCleanUpAfterHNEdit = false;
-  var PriToolBarObserver = new MutationObserver(function (mutation) {
+  let doCleanUpAfterHNEdit = false
+  const PriToolBarObserver = new MutationObserver(mutation => {
     if (document.querySelector("wz-button.waze-icon-exit") !== null) {
       // The HN topbar buttons don't exist within the DOM until the user initiates HN editing, so we need to
       // perform a seperate application of the button-specific parts of the topbar compression mods
-      CheckForHNButtons();
+      CheckForHNButtons()
     }
 
     if (
       document.querySelector(
-        "#primary-toolbar .toolbar-collection-component"
+        "#primary-toolbar .toolbar-collection-component",
       ) !== null
     ) {
       if (
@@ -614,22 +611,22 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           .width !== 0
       ) {
         if (doCleanUpAfterHNEdit) {
-          doCleanUpAfterHNEdit = false;
-          hideMenuLabels();
+          doCleanUpAfterHNEdit = false
+          hideMenuLabels()
           if (options.moveUserInfo) {
             insertNodeBeforeNode(
               document.querySelector(".user-toolbar"),
-              getById("left-app-head")
-            );
+              getById("left-app-head"),
+            )
             insertNodeBeforeNode(
               document.querySelector("wz-user-box"),
-              getById("left-app-head")
-            );
+              getById("left-app-head"),
+            )
           }
         }
       }
     }
-  });
+  })
   function CheckForHNButtons() {
     // The shadowroots for the HN topbar buttons get filled in slightly after the topbar mutation observer fires, which means
     // we can't do a simple (because when has dealing with the WME UI design EVER been simple...) call to the code that applies
@@ -637,7 +634,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // it saw any empty shadowroot containers - i.e. for any buttons which WME hasn't finished rendering.  We use this return
     // value to then trigger a short duration timeout before trying to apply the compression again, and so on until it works...
     if (ApplyTopBarShadowRootWzButtonCompression() === false) {
-      window.setTimeout(CheckForHNButtons, 10);
+      window.setTimeout(CheckForHNButtons, 10)
     }
   }
   function PrepForHNEdit() {
@@ -646,68 +643,68 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (options.moveUserInfo) {
       insertNodeAfterNode(
         document.querySelector("wz-user-box"),
-        document.querySelector("#save-button").parentElement.parentElement
-      );
+        document.querySelector("#save-button").parentElement.parentElement,
+      )
       insertNodeAfterNode(
         document.querySelector(".user-toolbar"),
-        document.querySelector("#save-button").parentElement.parentElement
-      );
-      doCleanUpAfterHNEdit = true;
+        document.querySelector("#save-button").parentElement.parentElement,
+      )
+      doCleanUpAfterHNEdit = true
     }
   }
 
   function checkForMTEDropDown() {
-    let tObj = document.querySelector("#sidepanel-mtes");
-    let nWO = tObj?.querySelectorAll("wz-option").length;
-    let nSR = 0;
+    const tObj = document.querySelector("#sidepanel-mtes")
+    let nWO = tObj?.querySelectorAll("wz-option").length
+    let nSR = 0
     while (nWO) {
       if (tObj.querySelectorAll("wz-option")[nWO - 1].shadowRoot != null) {
-        ++nSR;
+        ++nSR
       }
-      --nWO;
+      --nWO
     }
     if (nSR > 0) {
-      restyleDropDownEntries();
+      restyleDropDownEntries()
     } else {
-      window.setTimeout(checkForMTEDropDown, 100);
+      window.setTimeout(checkForMTEDropDown, 100)
     }
   }
   function EPObserver() {
     // Just a quick sanity check to make sure the list elements we need are
     // all still present...
-    let acMenu = document.getElementsByClassName(
-      "external-provider-edit-form"
-    )[0];
-    if (acMenu == undefined) return;
-    let acInner = acMenu.getElementsByTagName("wz-autocomplete")[0];
-    if (acInner == undefined) return;
+    const acMenu = document.getElementsByClassName(
+      "external-provider-edit-form",
+    )[0]
+    if (acMenu == undefined) return
+    const acInner = acMenu.getElementsByTagName("wz-autocomplete")[0]
+    if (acInner == undefined) return
 
     // Now that we're back to the same position we were at when we originally
     // started polling, it's time to mess with whichever list items we can
     // find here
-    let acEntries = acInner.shadowRoot.querySelectorAll("wz-menu-item");
+    const acEntries = acInner.shadowRoot.querySelectorAll("wz-menu-item")
     if (acEntries.length != 0) {
-      for (let i of acEntries) {
+      for (const i of acEntries) {
         // To accommodate suggestions that wrap onto 3+ lines, we need to remove the
         // height styling from the main menu item plus its child elements, so that each
         // entry can expand as needed to keep all of the text visible
-        SetStyle(i, "--wz-menu-option-height", "auto", false);
-        let wai = i.querySelector(".wz-autocomplete-item");
-        SetStyle(wai, "height", "auto", false);
-        SetStyle(wai, "padding-top", "2px", false);
-        SetStyle(wai, "padding-bottom", "2px", false);
+        SetStyle(i, "--wz-menu-option-height", "auto", false)
+        const wai = i.querySelector(".wz-autocomplete-item")
+        SetStyle(wai, "height", "auto", false)
+        SetStyle(wai, "padding-top", "2px", false)
+        SetStyle(wai, "padding-bottom", "2px", false)
 
         // Most of the restyling fun takes place on this child element within the
         // list element
-        let acText = i.querySelector(".wz-string-wrapper.primary-text");
+        const acText = i.querySelector(".wz-string-wrapper.primary-text")
 
         // Restore some sanity to the entries, so we can see exactly what they
         // say and therefore know what it is we're selecting - UI Design 101...
-        SetStyle(acText, "overflow", "visible", false);
-        SetStyle(acText, "overflow", "visible", false);
-        SetStyle(acText, "lineHeight", "100%", false);
-        SetStyle(acText, "display", "block", false);
-        SetStyle(acText, "whiteSpace", "normal", false);
+        SetStyle(acText, "overflow", "visible", false)
+        SetStyle(acText, "overflow", "visible", false)
+        SetStyle(acText, "lineHeight", "100%", false)
+        SetStyle(acText, "display", "block", false)
+        SetStyle(acText, "whiteSpace", "normal", false)
 
         // And just for shits and giggles, the late April WME update now places each and every
         // character within an entry in its own childnode of that entry, so that styling can be
@@ -715,16 +712,16 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         // styling which used to be all that was needed to get things looking good here, we now
         // ALSO need to override the native styling on these child nodes.  What next devs, an
         // individual node for each pixel of each character???
-        let acChars = acText.childNodes;
-        for (let j of acChars) {
-          SetStyle(j, "lineHeight", "100%", false);
+        const acChars = acText.childNodes
+        for (const j of acChars) {
+          SetStyle(j, "lineHeight", "100%", false)
         }
 
         // We also need to tweak the shadowroot version of the menu item itself, to
         // adjust the height style to prevent the item failing to grow tall enough
         // to fully accommodate 3+ line entries
-        let srMenuItems = i.shadowRoot.querySelector(".wz-menu-item");
-        SetStyle(srMenuItems, "height", "auto", false);
+        const srMenuItems = i.shadowRoot.querySelector(".wz-menu-item")
+        SetStyle(srMenuItems, "height", "auto", false)
       }
     }
 
@@ -736,251 +733,251 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // the MO fires - part-time polling, I can live with that if the alternative is
     // leaving the list entries in a sometimes unuseable state due to the odd
     // choice of native styles...
-    window.setTimeout(EPObserver, 100);
+    window.setTimeout(EPObserver, 100)
   }
   // Don't try to manipulate I18n if we're currently running within the scope of the login popup, because I18n doesn't
   // exist there, and we need to get past here without throwing an exception in order to be able to modify the CSS
   // within the popup...
   if (document.location.href.indexOf("signin") == -1) {
-    //Fix for date/time formats in WME released Oct/Nov 2016 - provided by Glodenox
-    I18n.translations[I18n.currentLocale()].time = {};
-    I18n.translations[I18n.currentLocale()].time.formats = {};
+    // Fix for date/time formats in WME released Oct/Nov 2016 - provided by Glodenox
+    I18n.translations[I18n.currentLocale()].time = {}
+    I18n.translations[I18n.currentLocale()].time.formats = {}
     I18n.translations[I18n.currentLocale()].time.formats.long =
-      "%a %b %d %Y, %H:%M";
-    I18n.translations[I18n.currentLocale()].date.formats = {};
+      "%a %b %d %Y, %H:%M"
+    I18n.translations[I18n.currentLocale()].date.formats = {}
     I18n.translations[I18n.currentLocale()].date.formats.long =
-      "%a %b %d %Y, %H:%M";
-    I18n.translations[I18n.currentLocale()].date.formats.default =
-      "%a %b %d %Y";
+      "%a %b %d %Y, %H:%M"
+    I18n.translations[I18n.currentLocale()].date.formats.default = "%a %b %d %Y"
   }
   function newSaveMode() {
-    let sm = W.editingMediator.attributes.saveMode;
+    const sm = W.editingMediator.attributes.saveMode
     if (sm === "IDLE") {
-      float();
+      float()
     }
   }
 
   function init1() {
-    logit("Starting init1", "debug");
+    logit("Starting init1", "debug")
 
     // Hide the "accept cookies" panel in the login popup
     if (document.location.href.indexOf("signin") != -1) {
-      addGlobalStyle(".wz-cc-container { display: none; }");
+      addGlobalStyle(".wz-cc-container { display: none; }")
     }
 
     if (W === undefined) {
-      window.setTimeout(init1, 100);
-      return;
+      window.setTimeout(init1, 100)
+      return
     }
 
-    logit("Initialising...");
+    logit("Initialising...")
 
     if (W.userscripts?.state?.isReady) {
-      init1Finalise();
+      init1Finalise()
     } else {
-      document.addEventListener("wme-ready", init1Finalise, { once: true });
+      document.addEventListener("wme-ready", init1Finalise, {
+        once: true,
+      })
     }
   }
   function init1Finalise() {
     // insert the content as a tab
-    addMyTab();
+    addMyTab()
   }
   function init2() {
-    logit("Starting init2", "debug");
+    logit("Starting init2", "debug")
     if (W.userscripts === undefined) {
-      //go round again if my tab isn't there yet
+      // go round again if my tab isn't there yet
       if (!getById("sidepanel-FixUI")) {
-        logit("Waiting for my tab to appear...", "warning");
-        setTimeout(init2, 200);
-        return;
+        logit("Waiting for my tab to appear...", "warning")
+        setTimeout(init2, 200)
+        return
       }
     }
     // setup event handlers for controls:
-    getById("street-view-drag-handle").ondblclick = GSVWidthReset;
+    getById("street-view-drag-handle").ondblclick = GSVWidthReset
 
-    //REGISTER WAZE EVENT HOOKS
+    // REGISTER WAZE EVENT HOOKS
 
     // events for Aerial Shifter
-    W.map.events.register("zoomend", null, shiftAerials);
-    W.map.events.register("moveend", null, shiftAerials);
+    W.map.events.register("zoomend", null, shiftAerials)
+    W.map.events.register("moveend", null, shiftAerials)
     W.map
       .getLayerByUniqueName("satellite_imagery")
-      .events.register("loadend", null, shiftAerials);
+      .events.register("loadend", null, shiftAerials)
     // events to change menu bar color based on map comments checkbox
-    W.map.events.register("zoomend", null, warnCommentsOff);
-    W.map.events.register("moveend", null, warnCommentsOff);
+    W.map.events.register("zoomend", null, warnCommentsOff)
+    W.map.events.register("moveend", null, warnCommentsOff)
     // event to remove the overlay that blocks the sidebar UI if you zoom out too far
-    W.map.events.register("zoomend", null, unblockSidePanel);
+    W.map.events.register("zoomend", null, unblockSidePanel)
     // events to adjust the "Search this area" z-index so it gets rendered behind the drop-down menus
-    W.map.events.register("zoomend", null, moveSearchThisArea);
-    W.map.events.register("moveend", null, moveSearchThisArea);
+    W.map.events.register("zoomend", null, moveSearchThisArea)
+    W.map.events.register("moveend", null, moveSearchThisArea)
     // event to re-hack my zoom bar if it's there
     W.map
       .getLayerByUniqueName("BASE_LAYER")
-      .events.register("loadend", null, ZLI);
-    //window resize event to resize chat
-    window.addEventListener("resize", enhanceChat, true);
-    //window resize event to resize layers menu
-    window.addEventListener("resize", compressLayersMenu, true);
-    //window resize event to reapply zoombar fix
-    window.addEventListener("resize", ZLI, true);
-    //window resize event to resize search box
-    window.addEventListener("resize", resizeSearch, true);
+      .events.register("loadend", null, ZLI)
+    // window resize event to resize chat
+    window.addEventListener("resize", enhanceChat, true)
+    // window resize event to resize layers menu
+    window.addEventListener("resize", compressLayersMenu, true)
+    // window resize event to reapply zoombar fix
+    window.addEventListener("resize", ZLI, true)
+    // window resize event to resize search box
+    window.addEventListener("resize", resizeSearch, true)
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        updateTheme();
-      });
+      .addEventListener("change", e => {
+        updateTheme()
+      })
 
-    //anything we might need to do when the mouse moves...
-    W.map.events.register("mousemove", null, mouseMove);
+    // anything we might need to do when the mouse moves...
+    W.map.events.register("mousemove", null, mouseMove)
 
-    let tEvt = Object.assign(
-      {},
-      W.editingMediator._events["change:saveMode"][0]
-    );
-    tEvt.callback = newSaveMode;
-    W.editingMediator._events["change:saveMode"].push(tEvt);
+    const tEvt = {
+      ...W.editingMediator._events["change:saveMode"][0],
+    }
+    tEvt.callback = newSaveMode
+    W.editingMediator._events["change:saveMode"].push(tEvt)
 
     // event handlers to help with the weird change log visibility problem...
     document
       .querySelector("#save-button")
-      .addEventListener("mouseover", saveMouseOver, true);
+      .addEventListener("mouseover", saveMouseOver, true)
     document
       .querySelector("#save-button")
-      .addEventListener("mouseout", saveMouseOut, true);
+      .addEventListener("mouseout", saveMouseOut, true)
 
-    //window resize event to refloat the sharing box in the correct location
-    window.addEventListener("resize", unfloat, true);
-    //event to re-hack toolbar buttons on exiting HN mode
-    W.editingMediator.on("change:editingHouseNumbers", function () {
+    // window resize event to refloat the sharing box in the correct location
+    window.addEventListener("resize", unfloat, true)
+    // event to re-hack toolbar buttons on exiting HN mode
+    W.editingMediator.on("change:editingHouseNumbers", () => {
       if (W.editingMediator.attributes.editingHouseNumbers === true) {
-        PrepForHNEdit();
+        PrepForHNEdit()
       }
 
       if (options.unfloatButtons) {
-        if (W.editingMediator.attributes.editingHouseNumbers) unfloat();
-        if (W.editingMediator.attributes.editingEnabled) unfloat();
+        if (W.editingMediator.attributes.editingHouseNumbers) unfloat()
+        if (W.editingMediator.attributes.editingEnabled) unfloat()
       }
-    });
+    })
 
-    //create Aerial Shifter warning div
-    var ASwarning = document.createElement("div");
-    ASwarning.id = "WMEFU_AS";
-    ASwarning.innerHTML = modifyHTML("Aerials Shifted");
+    // create Aerial Shifter warning div
+    const ASwarning = document.createElement("div")
+    ASwarning.id = "WMEFU_AS"
+    ASwarning.innerHTML = modifyHTML("Aerials Shifted")
     ASwarning.setAttribute(
       "style",
-      "top:20px; left:0px; width:100%; position:absolute; z-index:10000; font-size:100px; font-weight:900; color:rgba(255, 255, 0, 0.4); text-align:center; pointer-events:none; display:none;"
-    );
-    getById("WazeMap").appendChild(ASwarning);
+      "top:20px; left:0px; width:100%; position:absolute; z-index:10000; font-size:100px; font-weight:900; color:rgba(255, 255, 0, 0.4); text-align:center; pointer-events:none; display:none;",
+    )
+    getById("WazeMap").appendChild(ASwarning)
 
     // Add an extra checkbox so I can test segment panel changes easily
     if (W.loginManager.user.attributes.userName == "Twister-UK") {
-      logit("creating segment detail debug checkbox", "info");
-      var extraCBSection = document.createElement("p");
+      logit("creating segment detail debug checkbox", "info")
+      const extraCBSection = document.createElement("p")
       extraCBSection.innerHTML = modifyHTML(
-        '<input type="checkbox" id="_cbextraCBSection" />'
-      );
-      insertNodeBeforeNode(extraCBSection, getById("left-app-head"));
-      getById("_cbextraCBSection").onclick = FALSEcompressSegmentTab;
+        '<input type="checkbox" id="_cbextraCBSection" />',
+      )
+      insertNodeBeforeNode(extraCBSection, getById("left-app-head"))
+      getById("_cbextraCBSection").onclick = FALSEcompressSegmentTab
       getById("_cbextraCBSection").checked = getById(
-        "_cbCompressSegmentTab"
-      ).checked;
+        "_cbCompressSegmentTab",
+      ).checked
     }
-    //create Panel Swap div
-    var WMEPS_div = document.createElement("div");
-    var WMEPS_div_sub = document.createElement("div");
-    WMEPS_div.id = "WMEFUPS";
+    // create Panel Swap div
+    const WMEPS_div = document.createElement("div")
+    const WMEPS_div_sub = document.createElement("div")
+    WMEPS_div.id = "WMEFUPS"
     WMEPS_div.setAttribute(
       "style",
-      "color: lightgrey; margin-left: 5px; font-size: 20px;"
-    );
+      "color: lightgrey; margin-left: 5px; font-size: 20px;",
+    )
     WMEPS_div.title =
-      "Panel Swap: when map elements are selected, this lets you\nswap between the edit panel and the other tabs.";
-    WMEPS_div_sub.innerHTML = modifyHTML('<i class="fa fa-sticky-note"></i>');
-    WMEPS_div.appendChild(WMEPS_div_sub);
-    insertNodeBeforeNode(WMEPS_div, getById("left-app-head"));
-    getById("WMEFUPS").onclick = PSclicked;
-    W.selectionManager.events.register("selectionchanged", null, PSicon);
-    //create Permalink Count div
-    var WMEPC_div = document.createElement("div");
-    var WMEPC_div_sub = document.createElement("div");
-    WMEPC_div.id = "WMEFUPC";
-    WMEPC_div.classList.add("toolbar-button", "toolbar-button-with-icon");
+      "Panel Swap: when map elements are selected, this lets you\nswap between the edit panel and the other tabs."
+    WMEPS_div_sub.innerHTML = modifyHTML('<i class="fa fa-sticky-note"></i>')
+    WMEPS_div.appendChild(WMEPS_div_sub)
+    insertNodeBeforeNode(WMEPS_div, getById("left-app-head"))
+    getById("WMEFUPS").onclick = PSclicked
+    W.selectionManager.events.register("selectionchanged", null, PSicon)
+    // create Permalink Count div
+    const WMEPC_div = document.createElement("div")
+    const WMEPC_div_sub = document.createElement("div")
+    WMEPC_div.id = "WMEFUPC"
+    WMEPC_div.classList.add("toolbar-button", "toolbar-button-with-icon")
     WMEPC_div.title =
-      "Number of selectable map objects in the URL\nClick to reselect them.";
-    WMEPC_div_sub.classList.add("item-container", "WMEFU-toolbar-button");
-    var totalItems;
+      "Number of selectable map objects in the URL\nClick to reselect them."
+    WMEPC_div_sub.classList.add("item-container", "WMEFU-toolbar-button")
+    let totalItems
     if (location.search.match("segments"))
       totalItems = window.location.search
         .match(new RegExp("[?&]segments?=([^&]*)"))[1]
-        .split(",").length;
+        .split(",").length
     else if (location.search.match("venues"))
       totalItems = window.location.search
         .match(new RegExp("[?&]venues?=([^&]*)"))[1]
-        .split(",").length;
+        .split(",").length
     else if (location.search.match("nodes"))
       totalItems = Math.min(
         1,
         window.location.search
           .match(new RegExp("[?&]nodes?=([^&]*)"))[1]
-          .split(",").length
-      );
+          .split(",").length,
+      )
     else if (location.search.match("mapComments"))
       totalItems = Math.min(
         1,
         window.location.search
           .match(new RegExp("[?&]mapComments?=([^&]*)"))[1]
-          .split(",").length
-      );
+          .split(",").length,
+      )
     else if (location.search.match("cameras"))
       totalItems = Math.min(
         1,
         window.location.search
           .match(new RegExp("[?&]cameras?=([^&]*)"))[1]
-          .split(",").length
-      );
-    else totalItems = 0;
+          .split(",").length,
+      )
+    else totalItems = 0
     WMEPC_div_sub.innerHTML = modifyHTML(
-      '<span class="item-icon" style="display:inline-flex"><i style="margin-top:8px" class="fa fa-link WMEFUPCicon"></i>&nbsp;' +
-        totalItems +
-        "</span>"
-    );
-    WMEPC_div.appendChild(WMEPC_div_sub);
-    insertNodeBeforeNode(WMEPC_div, getById("search"));
-    WMEPC_div.onclick = PCclicked;
-    //Create Turn Popup Blocker div
-    var WMETPB_div = document.createElement("div");
-    var WMETPB_div_sub = document.createElement("div");
-    WMETPB_div.id = "WMEFUTPB";
-    WMETPB_div.classList.add("toolbar-button", "toolbar-button-with-icon");
-    WMETPB_div.title = "Disable/enable the turn arrow popup dialogue";
-    WMETPB_div_sub.classList.add("item-container", "WMEFU-toolbar-button");
+      `<span class="item-icon" style="display:inline-flex"><i style="margin-top:8px" class="fa fa-link WMEFUPCicon"></i>&nbsp;${
+        totalItems
+      }</span>`,
+    )
+    WMEPC_div.appendChild(WMEPC_div_sub)
+    insertNodeBeforeNode(WMEPC_div, getById("search"))
+    WMEPC_div.onclick = PCclicked
+    // Create Turn Popup Blocker div
+    const WMETPB_div = document.createElement("div")
+    const WMETPB_div_sub = document.createElement("div")
+    WMETPB_div.id = "WMEFUTPB"
+    WMETPB_div.classList.add("toolbar-button", "toolbar-button-with-icon")
+    WMETPB_div.title = "Disable/enable the turn arrow popup dialogue"
+    WMETPB_div_sub.classList.add("item-container", "WMEFU-toolbar-button")
     WMETPB_div_sub.innerHTML = modifyHTML(
-      '<span class="item-icon fa-stack fa-2x" style="display:inline-flex; font-size:10px !important"><i class="fa fa-comment fa-stack-2x"></i><i class="fa fa-arrow-up fa-inverse fa-stack-1x"></i></span>'
-    );
-    WMETPB_div.appendChild(WMETPB_div_sub);
-    insertNodeBeforeNode(WMETPB_div, getById("search"));
-    WMETPB_div.onclick = toggleKillTurnPopup;
-    addGlobalStyle(".WMEFU-toolbar-button { padding: 0px !important; }");
+      '<span class="item-icon fa-stack fa-2x" style="display:inline-flex; font-size:10px !important"><i class="fa fa-comment fa-stack-2x"></i><i class="fa fa-arrow-up fa-inverse fa-stack-1x"></i></span>',
+    )
+    WMETPB_div.appendChild(WMETPB_div_sub)
+    insertNodeBeforeNode(WMETPB_div, getById("search"))
+    WMETPB_div.onclick = toggleKillTurnPopup
+    addGlobalStyle(".WMEFU-toolbar-button { padding: 0px !important; }")
 
     // overload the window unload function to save my settings
-    window.addEventListener("beforeunload", saveSettings, false);
+    window.addEventListener("beforeunload", saveSettings, false)
     // Alert to new version
     if (options.oldVersion != FUME_VERSION) {
-      let releaseNotes = `
+      const releaseNotes = `
         <div>
           <div>Version ${FUME_VERSION} (${FUME_DATE}) release notes</div>
           <ul>
             ${
-              newVersionNotes.length > 0
-                ? newVersionNotes.map((note) => `<li>${note}`).join("")
-                : "<li>No changes"
-            }
+  newVersionNotes.length > 0
+    ? newVersionNotes.map(note => `<li>${note}`).join("")
+    : "<li>No changes"
+  }
           </ul>
         </div>
-        `;
+        `
       abShowAlertBox(
         "fa-info-circle",
         "WME Fix UI Memorial Edition",
@@ -989,35 +986,35 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         "OK",
         "",
         null,
-        null
-      );
-      saveSettings();
+        null,
+      )
+      saveSettings()
     }
     // fix for sidebar display problem in Safari, requested by edsonajj
-    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
-      addGlobalStyle(".flex-parent { height: 99% !important; }");
+      addGlobalStyle(".flex-parent { height: 99% !important; }")
     }
     // stop wobbling status bar
-    addGlobalStyle(".WazeControlMousePosition { font-family: monospace }");
+    addGlobalStyle(".WazeControlMousePosition { font-family: monospace }")
     // move closed node icon below node markers
     // apply the settings
-    shiftAerials();
+    shiftAerials()
 
-    window.setTimeout(applyAllSettings, 1000);
+    window.setTimeout(applyAllSettings, 1000)
 
-    logit("Initialisation complete");
+    logit("Initialisation complete")
   }
-  let wasDrawing = null;
+  let wasDrawing = null
   function mouseMove() {
     // Temporarily disable the Enlarge geo/junction nodes and Enlarge geo handles options
     // when drawing new geometry, to avoid the enlarged nodes/handles on other geometry
     // objects getting in the way of the new object being drawn...
-    let isDrawing = W.editingMediator.attributes.drawing;
+    const isDrawing = W.editingMediator.attributes.drawing
     if (isDrawing != wasDrawing) {
-      enlargeGeoNodes(isDrawing);
-      enlargeGeoHandles(isDrawing);
-      wasDrawing = isDrawing;
+      enlargeGeoNodes(isDrawing)
+      enlargeGeoHandles(isDrawing)
+      wasDrawing = isDrawing
     }
   }
   function unblockSidePanel() {
@@ -1028,10 +1025,10 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     //
     // This one-liner simply kills the blocking overlay if it's present, restoring access to the
     // sidebar UI at all zoom levels.
-    document.querySelector(".overlay.editingDisabled")?.remove();
+    document.querySelector(".overlay.editingDisabled")?.remove()
   }
   function createTabHTML() {
-    let innerHTML = `
+    const innerHTML = `
 	<div id="UIFixSettings">
 		<div class="aerial_shifter">
 			<h6 title="Shift aerial images layer to match GPS tracks and reduce image opacity">
@@ -1443,49 +1440,48 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 
 		</div>
 	</div>
-`;
-    return innerHTML;
+`
+    return innerHTML
   }
   function addMyTab() {
-    logit("Creating tab...");
-    tabAttempts = 0;
-    tabCreate();
+    logit("Creating tab...")
+    tabCreate()
   }
   async function tabCreate() {
-    let { tabLabel, tabPane } = W.userscripts.registerSidebarTab("FUME");
-    tabLabel.innerText = "FUME";
-    tabPane.innerHTML = modifyHTML(createTabHTML());
-    await W.userscripts.waitForElementConnected(tabPane);
+    const { tabLabel, tabPane } = W.userscripts.registerSidebarTab("FUME")
+    tabLabel.innerText = "FUME"
+    tabPane.innerHTML = modifyHTML(createTabHTML())
+    await W.userscripts.waitForElementConnected(tabPane)
 
-    //check if Vue.js is already loaded
+    // check if Vue.js is already loaded
     while (typeof Vue === "undefined") {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
-    //initialize Vue.js
-    const { createApp, ref } = Vue;
+    // initialize Vue.js
+    const { createApp, ref } = Vue
     try {
-      loadSettings();
-      logit("Vue.js loaded");
+      loadSettings()
+      logit("Vue.js loaded")
       createApp({
         setup() {
-          const theme = ref(options.theme);
-          return { options, theme };
+          const theme = ref(options.theme)
+          return { options, theme }
         },
         methods: {
           resetAerials() {
-            options.arialShiftX = 0;
-            options.arialShiftY = 0;
-            options.arialOpacity = 100;
-            options.arialShiftXO = 0;
-            options.arialShiftYO = 0;
-            options.arialOpacityO = 100;
-            shiftAerials();
+            options.arialShiftX = 0
+            options.arialShiftY = 0
+            options.arialOpacity = 100
+            options.arialShiftXO = 0
+            options.arialShiftYO = 0
+            options.arialOpacityO = 100
+            shiftAerials()
           },
           updateTheme(theme) {
-            options.theme = theme.target.id;
-            logit("Theme changed to " + options.theme);
-            updateTheme();
-            saveSettings();
+            options.theme = theme.target.id
+            logit(`Theme changed to ${options.theme}`)
+            updateTheme()
+            saveSettings()
           },
           shiftAerials,
           shrinkTopBars,
@@ -1526,10 +1522,10 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           enlargeGeoHandles,
           enlargePointMCs,
         },
-      }).mount(tabPane);
+      }).mount(tabPane)
     } catch (error) {
-      logit("Failed to load Vue.js", "error");
-      logit(error, "error");
+      logit("Failed to load Vue.js", "error")
+      logit(error, "error")
       tabPane.innerHTML = `
 					<h3>Failed to load Vue.js</h3>
 					<p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
@@ -1553,151 +1549,151 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 							</g>
 						</svg>
 					</div>
-					`;
+					`
     }
 
-    logit("Tab now available...");
-    createDSASection();
-    abInitialiseAlertBox();
+    logit("Tab now available...")
+    createDSASection()
+    abInitialiseAlertBox()
     document
       .getElementById("abAlertTickBtn")
-      .addEventListener("click", abCloseAlertBoxWithTick, true);
+      .addEventListener("click", abCloseAlertBoxWithTick, true)
     document
       .getElementById("abAlertCrossBtn")
-      .addEventListener("click", abCloseAlertBoxWithCross, true);
+      .addEventListener("click", abCloseAlertBoxWithCross, true)
 
-    //pass control to init2
-    init2();
+    // pass control to init2
+    init2()
   }
   function loadSettings() {
     // Remove old V1 settings if they're still hanging around
     if (localStorage.WMEFixUI) {
-      localStorage.removeItem("WMEFixUI");
+      localStorage.removeItem("WMEFixUI")
     }
     if (localStorage.WMEFUSettings) {
-      const loadedOptions = JSON.parse(localStorage.WMEFUSettings);
-      //merge old settings with new settings, to fix missing settings
+      const loadedOptions = JSON.parse(localStorage.WMEFUSettings)
+      // merge old settings with new settings, to fix missing settings
       options = {
         ...DEFAULT_OPTIONS,
         ...loadedOptions,
-      };
+      }
     } else {
-      options = DEFAULT_OPTIONS;
+      options = DEFAULT_OPTIONS
     }
   }
   function saveSettings() {
     if (localStorage) {
-      logit("saving options to local storage");
-      options.oldVersion = FUME_VERSION;
-      localStorage.WMEFUSettings = JSON.stringify(options);
+      logit("saving options to local storage")
+      options.oldVersion = FUME_VERSION
+      localStorage.WMEFUSettings = JSON.stringify(options)
     }
   }
   function applyAllSettings() {
-    kineticDragParams = W.map.controls.find((control) => control.dragPan)
-      .dragPan.kinetic;
+    kineticDragParams = W.map.controls.find(control => control.dragPan)
+      .dragPan.kinetic
 
-    logit("Applying settings...");
+    logit("Applying settings...")
 
-    updateTheme();
-    unfloatButtons();
-    shrinkTopBars();
-    compressSegmentTab();
-    restyleReports();
-    enhanceChat();
-    narrowSidePanel();
-    warnCommentsOff();
-    adjustGSV();
-    GSVWidth();
-    compressLayersMenu();
-    moveChatIcon();
-    highlightInvisible();
-    darkenSaveLayer();
-    swapRoadsGPS();
-    showMapBlockers();
-    disableBridgeButton();
-    disablePathButton();
-    disableKinetic();
-    disableScrollZoom();
-    disableAnimatedZoom();
-    disableSaveBlocker();
-    disableUITransitions();
-    colourBlindTurns();
-    hideMenuLabels();
-    createZoomBar();
+    updateTheme()
+    unfloatButtons()
+    shrinkTopBars()
+    compressSegmentTab()
+    restyleReports()
+    enhanceChat()
+    narrowSidePanel()
+    warnCommentsOff()
+    adjustGSV()
+    GSVWidth()
+    compressLayersMenu()
+    moveChatIcon()
+    highlightInvisible()
+    darkenSaveLayer()
+    swapRoadsGPS()
+    showMapBlockers()
+    disableBridgeButton()
+    disablePathButton()
+    disableKinetic()
+    disableScrollZoom()
+    disableAnimatedZoom()
+    disableSaveBlocker()
+    disableUITransitions()
+    colourBlindTurns()
+    hideMenuLabels()
+    createZoomBar()
 
-    moveUserInfo();
-    moveSearchThisArea();
+    moveUserInfo()
+    moveSearchThisArea()
 
-    hackGSVHandle();
-    enlargeGeoNodes(false);
-    enlargeGeoHandles(false);
-    enlargePointMCs();
-    RTCArrowsFix();
-    hideUnuseableStuff();
-    resizeSearch();
+    hackGSVHandle()
+    enlargeGeoNodes(false)
+    enlargeGeoHandles(false)
+    enlargePointMCs()
+    RTCArrowsFix()
+    hideUnuseableStuff()
+    resizeSearch()
 
     RestrictionObserver.observe(getById("dialog-container"), {
       childList: true,
       subtree: true,
-    });
+    })
     ClosureObserver.observe(getById("edit-panel"), {
       childList: true,
       subtree: true,
-    });
+    })
     SegmentObserver.observe(getById("edit-panel"), {
       childList: true,
       subtree: true,
-    });
+    })
     PlaceObserver.observe(getById("edit-panel"), {
       childList: true,
       subtree: true,
-    });
+    })
     MTEObserver.observe(getById("sidepanel-mtes"), {
       childList: true,
       subtree: true,
-    });
+    })
     RTCMarkerObserver.observe(W.map.closuresMarkerLayer.div, {
       childList: true,
       subtree: true,
-    });
+    })
     OBObserver.observe(getById("overlay-buttons"), {
       childList: true,
       subtree: true,
-    });
+    })
     ITObserver.observe(getById("issue-tracker-filter-region"), {
       childList: true,
       subtree: true,
-    });
+    })
     PriToolBarObserver.observe(getById("primary-toolbar"), {
       childList: true,
       subtree: true,
-    });
+    })
 
-    document.body.onchange = checkForTippy;
-    getById("sidepanel-issue-tracker").onchange = checkForIssuesFilter;
+    document.body.onchange = checkForTippy
+    getById("sidepanel-issue-tracker").onchange = checkForIssuesFilter
 
     if (getById("_cbLayersMenuMoreOptions").checked === true) {
       $(
-        "#layer-switcher-region > div > div > div.more-options-toggle > label > div"
-      ).click();
+        "#layer-switcher-region > div > div > div.more-options-toggle > label > div",
+      ).click()
       Array.from(
-        getByClass("upside-down", getById("layer-switcher-region"))
-      ).forEach(function (item) {
-        item.click();
-      });
+        getByClass("upside-down", getById("layer-switcher-region")),
+      ).forEach(item => {
+        item.click()
+      })
     }
 
-    wmeFUinitialising = false;
-    saveSettings();
+    wmeFUinitialising = false
+    saveSettings()
   }
   function hasExactlyOneSelectedSegment() {
-    let retval = false;
-    let sf = W.selectionManager.getSelectedDataModelObjects();
+    let retval = false
+    const sf = W.selectionManager.getSelectedDataModelObjects()
     if (sf.length === 1) {
-      retval = sf[0].type === "segment";
+      retval = sf[0].type === "segment"
     }
 
-    return retval;
+    return retval
   }
 
   function checkForTippy() {
@@ -1706,23 +1702,23 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // is selected.  If this latter isn't true, then no turn arrows will be visible, thus the TIO popup can't be
     // shown...
     if (hasExactlyOneSelectedSegment() === true) {
-      let n = document.querySelectorAll(".turn-arrow-state-open").length;
+      let n = document.querySelectorAll(".turn-arrow-state-open").length
       while (n) {
-        --n;
+        --n
         document
           .querySelectorAll(".turn-arrow-state-open")
-          [n].addEventListener("mouseenter", checkForTippy1a);
+          [n].addEventListener("mouseenter", checkForTippy1a)
       }
-      checkForTippy1a();
+      checkForTippy1a()
     }
   }
   function checkForTippy1a() {
-    let tObj = document.querySelector(".tippy-box");
+    const tObj = document.querySelector(".tippy-box")
     if (tObj === null) {
-      window.setTimeout(checkForTippy1a, 100);
-      return;
+      window.setTimeout(checkForTippy1a, 100)
+      return
     }
-    TippyObserver.observe(tObj, { childList: true, subtree: true });
+    TippyObserver.observe(tObj, { childList: true, subtree: true })
   }
   function checkForTippy2() {
     // The onchange event is triggered as soon as the popup element is created within the DOM, however at this
@@ -1732,49 +1728,49 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // onto the last step via the restyleTippy() call.
     //
     // Note this function is also used by the popup mutation observer we set up in a moment
-    let tObj = document.querySelector(".tippy-box");
+    const tObj = document.querySelector(".tippy-box")
 
     if (tObj === null) {
-      window.setTimeout(checkForTippy2, 100);
-      return;
+      window.setTimeout(checkForTippy2, 100)
+      return
     }
 
     if (tObj.querySelectorAll("wz-option").length == 0) {
-      window.setTimeout(checkForTippy2, 100);
-      return;
+      window.setTimeout(checkForTippy2, 100)
+      return
     }
 
-    let compress = getById("_inpUICompression").value;
+    const compress = getById("_inpUICompression").value
     if (compress > 0) {
-      restyleTippy();
+      restyleTippy()
     }
   }
-  var TippyObserver = new MutationObserver(function (mutations) {
+  var TippyObserver = new MutationObserver(mutations => {
     // If we detect any changes in the popup contents, treat it almost the same as the original body onchange event
     // and go back into checking for the drop-down elements being present prior to restyling
-    checkForTippy2();
-  });
+    checkForTippy2()
+  })
   function restyleTippy() {
     // Once we're happy that the TIO popup has been populated with the stuff we're interested in messing with, we can
     // apply the restyling required...
-    let tObj = document.querySelector(".tippy-box");
+    const tObj = document.querySelector(".tippy-box")
 
-    let n = tObj.querySelectorAll("wz-option").length;
+    let n = tObj.querySelectorAll("wz-option").length
     while (n) {
-      let sr = tObj.querySelectorAll("wz-option")[n - 1].shadowRoot;
-      let mi = sr.querySelector(".wz-menu-item");
+      const sr = tObj.querySelectorAll("wz-option")[n - 1].shadowRoot
+      const mi = sr.querySelector(".wz-menu-item")
       if (mi != null) {
-        SetStyle(mi, "height", "100%", false);
-        SetStyle(mi, "lineHeight", "130%", false);
-        SetStyle(mi, "minHeight", "auto", false);
+        SetStyle(mi, "height", "100%", false)
+        SetStyle(mi, "lineHeight", "130%", false)
+        SetStyle(mi, "minHeight", "auto", false)
       }
-      --n;
+      --n
     }
     // Having done that, we now set up a mutation observer on the popup, which allows us to detect when its redrawn
     // (which would cause the redrawn drop-down to revert to the default styling) without the body onchange event
     // triggering - this can occur if they mouse-over one of the other turn arrows on the currently selected segment,
     // or if they select a different segment without first deselecting the current one...
-    TippyObserver.observe(tObj, { childList: true, subtree: true });
+    TippyObserver.observe(tObj, { childList: true, subtree: true })
   }
   function checkForIssuesFilter() {
     // To restyle the drop-down menu entries in the issue tracker panel, we need to be aware that, unlike all the other
@@ -1799,33 +1795,33 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // can still use for *some* stuff, yet here we are having to use event handlers and DOM content checking and iterative
     // applications of styles to individual elements.
 
-    let srProbe = document
+    const srProbe = document
       .querySelector("#areas")
       ?.querySelector("wz-option")
-      ?.shadowRoot?.querySelector(".wz-menu-item");
-    let srExists = srProbe != null && srProbe != undefined;
+      ?.shadowRoot?.querySelector(".wz-menu-item")
+    const srExists = srProbe != null && srProbe != undefined
 
     if (srExists === true) {
-      restyleDropDownEntries();
+      restyleDropDownEntries()
     } else {
-      window.setTimeout(checkForIssuesFilter, 100);
+      window.setTimeout(checkForIssuesFilter, 100)
     }
   }
   function applyEnhancements() {
-    shrinkTopBars();
-    compressSegmentTab();
-    restyleReports();
-    enhanceChat();
-    compressLayersMenu();
-    moveUserInfo();
+    shrinkTopBars()
+    compressSegmentTab()
+    restyleReports()
+    enhanceChat()
+    compressLayersMenu()
+    moveUserInfo()
   }
   function moveSVRecentreIcons() {
-    let fname = "moveSVRecentreIcons";
+    const fname = "moveSVRecentreIcons"
     if (getById("_cbMoveZoomBar").checked) {
-      if (getById("WMEFUzoom") === null) return;
+      if (getById("WMEFUzoom") === null) return
       // Apply the styling related to the zoombar, so that we can get an accurate read of its
       // size/location in a moment...
-      var styles = `
+      let styles = `
         .olControlPanZoomBar {
           left: 10px;
           top: 35px;
@@ -1879,28 +1875,30 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           cursor: ns-resize;
         }
 
-        `;
-      addStyle(PREFIX + fname, styles);
+        `
+      addStyle(PREFIX + fname, styles)
 
       // Force a re-render of the zoombar, so that the graphics elements which are missing at this point
       // get inserted - this is also required to get an accurate size/location read...
-      ZLI();
+      ZLI()
 
       // Get the absolute positions/sizes of the newly generated zoombar, the existing element that contains
       // the SV and location buttons, and the size of the SV button
-      var zbBCR = getById("WMEFUzoom").getBoundingClientRect();
-      var bcBCR = getByClass(
-        "bottom overlay-buttons-container"
-      )[0].getBoundingClientRect();
-      var btnBCR = getByClass("street-view-control")[0].getBoundingClientRect();
+      const zbBCR = getById("WMEFUzoom").getBoundingClientRect()
+      const bcBCR = getByClass(
+        "bottom overlay-buttons-container",
+      )[0].getBoundingClientRect()
+      const btnBCR = getByClass(
+        "street-view-control",
+      )[0].getBoundingClientRect()
       // Use this information to calculate what the x/y positions will need to be for the buttons to position
       // them correctly below the zoombar.  Note that the x position will be negative, as this gets applied
       // relative to the parent container in which the button container resides, rather than to the map view
-      var bcPosX = zbBCR.left - bcBCR.left;
-      var bcPosY = zbBCR.top + zbBCR.height;
+      const bcPosX = zbBCR.left - bcBCR.left
+      const bcPosY = zbBCR.top + zbBCR.height
       // Also work out how tall the button container will need to be once we've hidden the native zoom
       // controls
-      var bcHeight = btnBCR.height * 2 + 10;
+      const bcHeight = btnBCR.height * 2 + 10
 
       // Now apply the full set of styling...
       styles = `
@@ -1971,26 +1969,26 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 				.street-view-region {
 				  margin-bottom: 8px;
 				}
-			`;
+			`
 
-      addStyle(PREFIX + fname, styles);
+      addStyle(PREFIX + fname, styles)
 
-      ZLI();
+      ZLI()
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   async function createZoomBar() {
     if (options.moveZoomBar) {
       // Create the zoombar element and add it to the map view
-      yslider = document.createElement("div");
-      yslider.position.x = 10;
-      yslider.position.y = 35;
-      yslider.id = "WMEFUzoom";
-      W.map.addControl(yslider);
+      yslider = document.createElement("div")
+      yslider.position.x = 10
+      yslider.position.y = 35
+      yslider.id = "WMEFUzoom"
+      W.map.addControl(yslider)
 
       while (typeof jQuery.ui === "undefined") {
-        await sleep(1000);
+        await sleep(1000)
       }
 
       // Set up the zoom bar
@@ -2000,27 +1998,27 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         min: 4,
         max: 22,
         value: W.map.zoom,
-        slide: function (event, ui) {
-          W.map.zoomTo(ui.value);
+        slide(event, ui) {
+          W.map.zoomTo(ui.value)
         },
-      });
+      })
 
-      W.map.events.register("zoomend", null, ZLI);
-      zliResizeObserver = new ResizeObserver(ZLIDeferred);
+      W.map.events.register("zoomend", null, ZLI)
+      zliResizeObserver = new ResizeObserver(ZLIDeferred)
       zliResizeObserver.observe(
-        document.getElementById("street-view-container")
-      );
-      zliResizeObserver.observe(document.getElementById("sidebar"));
+        document.getElementById("street-view-container"),
+      )
+      zliResizeObserver.observe(document.getElementById("sidebar"))
     } else {
       if (yslider) {
-        yslider.destroy();
+        yslider.destroy()
       }
-      W.map.events.unregister("zoomend", null, ZLI);
+      W.map.events.unregister("zoomend", null, ZLI)
       if (zliResizeObserver !== null) {
-        zliResizeObserver.disconnect();
+        zliResizeObserver.disconnect()
       }
     }
-    moveSVRecentreIcons();
+    moveSVRecentreIcons()
   }
   function ZLIDeferred() {
     // The ResizeObserver attached to the StreetView container fires not only when the container is
@@ -2029,37 +2027,37 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // before the StreetView container has finished redrawing - on such systems, if we were to call
     // ZLI directly from the RO event, the zoom bar would end up being trashed again if the user
     // resized using the divider, so we add a short delay after the RO event before calling ZLI.
-    setTimeout(ZLI, 200);
+    setTimeout(ZLI, 200)
     // Likewise for the function used to relocate the SV and recentre icons...
-    setTimeout(moveSVRecentreIcons, 200);
+    setTimeout(moveSVRecentreIcons, 200)
   }
   function ZLI() {
     if (yslider) {
-      //Need to reset the OpenLayers-created settings from the zoom bar when it's redrawn
-      //Overall bar
-      yslider.div.style.left = "";
-      yslider.div.style.top = "";
-      //zoom in/out buttons
-      yslider.buttons[0].style = "";
+      // Need to reset the OpenLayers-created settings from the zoom bar when it's redrawn
+      // Overall bar
+      yslider.div.style.left = ""
+      yslider.div.style.top = ""
+      // zoom in/out buttons
+      yslider.buttons[0].style = ""
       yslider.buttons[0].innerHTML = modifyHTML(
-        "<div class='olControlZoomButton fa fa-plus' ></div>"
-      );
-      yslider.buttons[1].style = "";
+        "<div class='olControlZoomButton fa fa-plus' ></div>",
+      )
+      yslider.buttons[1].style = ""
       yslider.buttons[1].innerHTML = modifyHTML(
-        "<div class='olControlZoomButton fa fa-minus' ></div>"
-      );
-      //slider stops
-      yslider.zoombarDiv.classList.add("yslider-stops");
-      yslider.zoombarDiv.classList.remove("olButton");
-      yslider.zoombarDiv.style = "";
-      //slider
-      yslider.slider.innerHTML = modifyHTML("");
-      yslider.slider.style = "";
-      yslider.slider.classList.add("slider");
-      yslider.moveZoomBar();
-      //Actually set the ZLI
-      yslider.slider.innerText = W.map.getZoom();
-      yslider.slider.title = "Zoom level indicator by WMEFU";
+        "<div class='olControlZoomButton fa fa-minus' ></div>",
+      )
+      // slider stops
+      yslider.zoombarDiv.classList.add("yslider-stops")
+      yslider.zoombarDiv.classList.remove("olButton")
+      yslider.zoombarDiv.style = ""
+      // slider
+      yslider.slider.innerHTML = modifyHTML("")
+      yslider.slider.style = ""
+      yslider.slider.classList.add("slider")
+      yslider.moveZoomBar()
+      // Actually set the ZLI
+      yslider.slider.innerText = W.map.getZoom()
+      yslider.slider.title = "Zoom level indicator by WMEFU"
       switch (W.map.getZoom()) {
         case 4:
         case 5:
@@ -2071,21 +2069,21 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         case 11:
         case 12:
         case 13:
-          yslider.slider.style.background = "#ef9a9a";
+          yslider.slider.style.background = "#ef9a9a"
           yslider.slider.title +=
-            "\nCannot permalink any segments at this zoom level";
-          break;
+            "\nCannot permalink any segments at this zoom level"
+          break
         case 14:
         case 15:
-          yslider.slider.style.background = "#ffe082";
+          yslider.slider.style.background = "#ffe082"
           yslider.slider.title +=
-            "\nCan only permalink primary or higher at this zoom level";
-          break;
+            "\nCan only permalink primary or higher at this zoom level"
+          break
         default:
-          yslider.slider.style.background = "#ffffff";
+          yslider.slider.style.background = "#ffffff"
           yslider.slider.title +=
-            "\nCan permalink any segments at this zoom level";
-          break;
+            "\nCan permalink any segments at this zoom level"
+          break
       }
 
       if (W.map.getZoom() < 12) {
@@ -2097,7 +2095,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           ) {
             document
               .getElementsByClassName("overlay editingDisabled")[0]
-              .remove();
+              .remove()
           }
         }
 
@@ -2109,31 +2107,31 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         ) {
           let eTop = document
             .getElementById("user-tabs")
-            .getBoundingClientRect().height;
-          eTop = Math.round(eTop) + "px";
+            .getBoundingClientRect().height
+          eTop = `${Math.round(eTop)}px`
           document.getElementsByClassName(
-            "zoom-edit-message editingDisabled"
-          )[0].style.top = eTop;
+            "zoom-edit-message editingDisabled",
+          )[0].style.top = eTop
           document.getElementsByClassName(
-            "zoom-edit-message editingDisabled"
-          )[0].style.left = "0px";
+            "zoom-edit-message editingDisabled",
+          )[0].style.left = "0px"
         }
       }
     }
   }
   function resizeSearch() {
-    let sb = document.querySelector("#search");
+    const sb = document.querySelector("#search")
     if (options.resizeSearchBox) {
-      sb.style.width = "100%";
-      let wcs = window.getComputedStyle(
-        document.querySelector("#primary-toolbar")
-      );
-      let tbAvailable = parseInt(wcs.marginLeft) + parseInt(wcs.marginRight);
+      sb.style.width = "100%"
+      const wcs = window.getComputedStyle(
+        document.querySelector("#primary-toolbar"),
+      )
+      const tbAvailable = parseInt(wcs.marginLeft) + parseInt(wcs.marginRight)
       if (tbAvailable > 0) {
-        sb.style.width = tbAvailable + "px";
+        sb.style.width = `${tbAvailable}px`
       }
     } else {
-      sb.style.width = "";
+      sb.style.width = ""
     }
   }
   function moveSearchThisArea() {
@@ -2142,1218 +2140,973 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         ?.parentElement !== undefined
     ) {
       document.querySelector(
-        "div.w-icon-search"
-      ).parentElement.parentElement.style.zIndex = "5";
+        "div.w-icon-search",
+      ).parentElement.parentElement.style.zIndex = "5"
     }
   }
   function moveUserInfo() {
     // Now functioning correctly for prod & beta
-    let fname = "moveUserInfo";
-    let styles = "";
-    let mStyle = "";
+    const fname = "moveUserInfo"
+    let styles = ""
+    let mStyle = ""
 
     if (getById("_cbMoveUserInfo").checked) {
       // styles += '#user-box-region { margin-left: 5px; }';
-      styles += ".notifications-button { display: flex; }";
-      styles += "#app-head aside #left-app-head .waze-logo { width: 50px; }";
-      styles += ".user-toolbar .notifications-button { padding: 0 4px; }";
+      styles += ".notifications-button { display: flex; }"
+      styles += "#app-head aside #left-app-head .waze-logo { width: 50px; }"
+      styles += ".user-toolbar .notifications-button { padding: 0 4px; }"
       styles +=
-        ".notifications-box-container { transform: translate3d(300px, 0px, 0px) !important; }";
+        ".notifications-box-container { transform: translate3d(300px, 0px, 0px) !important; }"
 
-      addStyle(PREFIX + fname, styles);
+      addStyle(PREFIX + fname, styles)
 
       insertNodeBeforeNode(
         document.querySelector(".user-toolbar"),
-        getById("left-app-head")
-      );
+        getById("left-app-head"),
+      )
       insertNodeBeforeNode(
         document.querySelector("wz-user-box"),
-        getById("left-app-head")
-      );
+        getById("left-app-head"),
+      )
 
-      mStyle = "translate3d(240px, 0px, 0px)";
+      mStyle = "translate3d(240px, 0px, 0px)"
 
-      //Fix to move control button of Invalidated Camera Mass Eraser
+      // Fix to move control button of Invalidated Camera Mass Eraser
       if (getById("_UCME_btn")) {
-        getById("advanced-tools").appendChild(getById("_UCME_btn"));
-        getById("UCME_btn").parentNode.removeChild(getById("UCME_btn"));
+        getById("advanced-tools").appendChild(getById("_UCME_btn"))
+        getById("UCME_btn").parentNode.removeChild(getById("UCME_btn"))
       }
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
       insertNodeAfterNode(
         document.querySelector("wz-user-box"),
-        document.querySelector("#save-button").parentElement.parentElement
-      );
+        document.querySelector("#save-button").parentElement.parentElement,
+      )
       insertNodeAfterNode(
         document.querySelector(".user-toolbar"),
-        document.querySelector("#save-button").parentElement.parentElement
-      );
+        document.querySelector("#save-button").parentElement.parentElement,
+      )
     }
 
-    unfloat();
+    unfloat()
 
     // Keep the user profile box aligned to the profile picture
-    let sr = document.querySelector("wz-user-box");
-    if (sr !== null) sr = sr.shadowRoot;
+    let sr = document.querySelector("wz-user-box")
+    if (sr !== null) sr = sr.shadowRoot
     if (sr !== null) {
-      let mObj = sr.querySelector("wz-menu");
+      const mObj = sr.querySelector("wz-menu")
       if (mObj !== null) {
-        mObj.style.transform = mStyle;
+        mObj.style.transform = mStyle
       }
     }
   }
   function RemoveTopBarCompression() {
     document
       .getElementsByTagName("wz-header")[0]
-      .shadowRoot.querySelector(".content-wrapper").style.height = "";
-    let bObj = document.getElementsByClassName("restricted-driving-area")[0]
-      .parentElement;
-    bObj.style.position = "";
+      .shadowRoot.querySelector(".content-wrapper").style.height = ""
+    const bObj = document.getElementsByClassName("restricted-driving-area")[0]
+      .parentElement
+    bObj.style.position = ""
   }
   function ApplyTopBarShadowRootWzButtonCompression() {
-    let retval = true;
+    let retval = true
 
     if (getById("_cbShrinkTopBars").checked) {
-      let compress = getById("_inpUICompression").value;
+      const compress = getById("_inpUICompression").value
       if (compress > 0) {
-        const c1 = ["", "35px", "24px"];
-        let tbRoot = document.querySelector("#app-head");
+        const c1 = ["", "35px", "24px"]
+        const tbRoot = document.querySelector("#app-head")
         if (tbRoot != null) {
-          let btnWraps = tbRoot.querySelectorAll(".toolbar-button-wrapper");
+          const btnWraps = tbRoot.querySelectorAll(".toolbar-button-wrapper")
           for (let i = 0; i < btnWraps.length; ++i) {
-            let btnElm = btnWraps[i].querySelector("wz-button");
+            const btnElm = btnWraps[i].querySelector("wz-button")
 
             if (btnElm !== undefined) {
-              let srButton = btnElm?.shadowRoot?.querySelector(".wz-button");
+              const srButton = btnElm?.shadowRoot?.querySelector(".wz-button")
               if (srButton !== undefined && srButton !== null) {
-                srButton.style.height = c1[compress];
+                srButton.style.height = c1[compress]
               } else {
-                retval = false;
+                retval = false
               }
             }
           }
         }
       }
     }
-    return retval;
+    return retval
   }
   function shrinkTopBars() {
-    let fname = "shrinkTopBars";
-    let styles = "";
+    const fname = "shrinkTopBars"
+    let styles = ""
     if (getById("_cbShrinkTopBars").checked) {
-      let contrast = getById("_inpUIContrast").value;
-      let compress = getById("_inpUICompression").value;
+      const contrast = getById("_inpUIContrast").value
+      const compress = getById("_inpUICompression").value
 
-      //always do this stuff
-      //event mode button
-      styles +=
-        "#mode-switcher-region .title-button .icon { font-size: 13px; font-weight: bold; color: var(--color-black); }";
-      //black bar
-      styles += "#topbar-container { pointer-events: none; }";
-      styles +=
-        "#map #topbar-container .topbar > div { pointer-events: initial; }";
-      //change toolbar buttons - from JustinS83
-      $("#mode-switcher-region .title-button .icon").removeClass(
-        "w-icon-caret-down"
-      );
-      $("#mode-switcher-region .title-button .icon").addClass("fa fa-calendar");
-      // HN editing tweaks
-      styles += "#map-lightbox .content { pointer-events: none; }";
-      styles += "#map-lightbox .content > div { pointer-events: initial; }";
-      styles +=
-        "#map-lightbox .content .header { pointer-events: none !important; }";
-      styles +=
-        ".toolbar .toolbar-button.add-house-number { background-color: #61cbff; float: right; font-weight: bold; }";
-      styles +=
-        ".waze-icon-exit { background-color: #61cbff; font-weight: bold; }";
+      // always do this stuff
       // event mode button
       styles +=
-        ".toolbar.toolbar-mte .add-button { background-color: orange; font-weight: bold; }";
+        "#mode-switcher-region .title-button .icon { font-size: 13px; font-weight: bold; color: var(--color-black); }"
+      // black bar
+      styles += "#topbar-container { pointer-events: none; }"
+      styles +=
+        "#map #topbar-container .topbar > div { pointer-events: initial; }"
+      // change toolbar buttons - from JustinS83
+      $("#mode-switcher-region .title-button .icon").removeClass(
+        "w-icon-caret-down",
+      )
+      $("#mode-switcher-region .title-button .icon").addClass("fa fa-calendar")
+      // HN editing tweaks
+      styles += "#map-lightbox .content { pointer-events: none; }"
+      styles += "#map-lightbox .content > div { pointer-events: initial; }"
+      styles +=
+        "#map-lightbox .content .header { pointer-events: none !important; }"
+      styles +=
+        ".toolbar .toolbar-button.add-house-number { background-color: #61cbff; float: right; font-weight: bold; }"
+      styles +=
+        ".waze-icon-exit { background-color: #61cbff; font-weight: bold; }"
+      // event mode button
+      styles +=
+        ".toolbar.toolbar-mte .add-button { background-color: orange; font-weight: bold; }"
 
       // fix for narrow windows and new toolbar
-      let nbuttons = 3 + (getById("_cbUnfloatButtons").checked ? 2 : 0);
-      let minW = nbuttons * [58, 49, 33][compress] + [80, 65, 55][compress];
-      styles += "#edit-buttons { min-width: " + minW + "px; }";
-      styles += "#toolbar { padding: 0px ; }";
+      const nbuttons = 3 + (getById("_cbUnfloatButtons").checked ? 2 : 0)
+      const minW = nbuttons * [58, 49, 33][compress] + [80, 65, 55][compress]
+      styles += `#edit-buttons { min-width: ${minW}px; }`
+      styles += "#toolbar { padding: 0px ; }"
 
       if (compress > 0) {
-        const c1 = ["", "35px", "24px"];
-        const c2 = ["", "13px", "12px"];
+        const c1 = ["", "35px", "24px"]
+        const c2 = ["", "13px", "12px"]
 
-        //if we're in beta, remove the WME logo/beta badge (which isn't so important) to leave space for the build ID (which is)
+        // if we're in beta, remove the WME logo/beta badge (which isn't so important) to leave space for the build ID (which is)
         if (document.getElementById("env-badge") !== null) {
-          styles += "#logo-and-env { display: none !important; }";
+          styles += "#logo-and-env { display: none !important; }"
         }
 
-        //overall menu bar
-        styles += "#left-app-head { height: " + c1[compress] + " !important; }";
-        styles += "#app-head { height: " + c1[compress] + "; }";
-        styles += "#toolbar { height: " + c1[compress] + " !important; }";
+        // overall menu bar
+        styles += `#left-app-head { height: ${c1[compress]} !important; }`
+        styles += `#app-head { height: ${c1[compress]}; }`
+        styles += `#toolbar { height: ${c1[compress]} !important; }`
 
-        styles +=
-          ".group-title-tooltip-wrap { height: " +
-          c1[compress] +
-          " !important; }";
-        styles +=
-          ".restricted-driving-area wz-tooltip-target { height: " +
-          c1[compress] +
-          " !important; }";
-        styles += ".edit-area { height: calc(100% - " + c1[compress] + "); }";
-        styles += "#primary-toolbar>div { height: " + c1[compress] + "; }";
-        styles += "#user-toolbar { height: " + c1[compress] + "; }";
-        styles +=
-          "wz-user-box { scale: " +
-          (parseInt(c1[compress]) * 100) / 36 +
-          "%; }";
+        styles += `.group-title-tooltip-wrap { height: ${
+          c1[compress]
+        } !important; }`
+        styles += `.restricted-driving-area wz-tooltip-target { height: ${
+          c1[compress]
+        } !important; }`
+        styles += `.edit-area { height: calc(100% - ${c1[compress]}); }`
+        styles += `#primary-toolbar>div { height: ${c1[compress]}; }`
+        styles += `#user-toolbar { height: ${c1[compress]}; }`
+        styles += `wz-user-box { scale: ${(parseInt(c1[compress]) * 100) / 36}%; }`
 
-        styles +=
-          "#app-head aside .short-title { font-size: " +
-          c2[compress] +
-          "; margin-right: 4px; }";
-        styles +=
-          "#app-head aside #debug { padding-right: " +
-          ["", "10px", "6px"][compress] +
-          "; line-height: " +
-          ["", "15px", "12px"][compress] +
-          "; white-space: nowrap; }";
+        styles += `#app-head aside .short-title { font-size: ${
+          c2[compress]
+        }; margin-right: 4px; }`
+        styles += `#app-head aside #debug { padding-right: ${
+          ["", "10px", "6px"][compress]
+        }; line-height: ${
+          ["", "15px", "12px"][compress]
+        }; white-space: nowrap; }`
 
-        styles +=
-          ".mode-switcher-view .title-button .icon { line-height: " +
-          c1[compress] +
-          "; }";
-        styles +=
-          ".mode-switcher-view .dropdown-menu { top: " + c1[compress] + "; }";
-        styles += ".toolbar { font-size: " + c2[compress] + "; }";
-        styles += ".toolbar { height: " + c1[compress] + " !important; }";
+        styles += `.mode-switcher-view .title-button .icon { line-height: ${
+          c1[compress]
+        }; }`
+        styles += `.mode-switcher-view .dropdown-menu { top: ${c1[compress]}; }`
+        styles += `.toolbar { font-size: ${c2[compress]}; }`
+        styles += `.toolbar { height: ${c1[compress]} !important; }`
 
-        styles += ".toolbar { gap: 4px; }";
-        styles += ".toolbar-collection-view { gap: 4px !important; }";
-        styles += ".toolbar .toolbar-group { margin-right: 0px !important; }";
-        styles += "#edit-buttons { gap: 2px; }";
-        styles += "#search { flex: 2 1 auto; }";
+        styles += ".toolbar { gap: 4px; }"
+        styles += ".toolbar-collection-view { gap: 4px !important; }"
+        styles += ".toolbar .toolbar-group { margin-right: 0px !important; }"
+        styles += "#edit-buttons { gap: 2px; }"
+        styles += "#search { flex: 2 1 auto; }"
 
-        //search box
-        styles +=
-          "#search { padding-top: " +
-          ["", "3px", "1px"][compress] +
-          " !important; }";
-        styles +=
-          ".form-search { height: " + ["", "27px", "22px"][compress] + "; }";
-        styles +=
-          ".form-search .search-query { height: " +
-          ["", "27px", "22px"][compress] +
-          "; font-size: " +
-          c2[compress] +
-          "; }";
-        styles +=
-          ".form-search .input-wrapper .search-icon { font-size: " +
-          ["", "18px", "16px"][compress] +
-          "; left: " +
-          ["", "9px", "6px"][compress] +
-          "; }";
-        styles +=
-          ".form-search .search-query { padding-left: " +
-          ["", "34px", "24px"][compress] +
-          ";; }";
+        // search box
+        styles += `#search { padding-top: ${
+          ["", "3px", "1px"][compress]
+        } !important; }`
+        styles += `.form-search { height: ${["", "27px", "22px"][compress]}; }`
+        styles += `.form-search .search-query { height: ${
+          ["", "27px", "22px"][compress]
+        }; font-size: ${c2[compress]}; }`
+        styles += `.form-search .input-wrapper .search-icon { font-size: ${
+          ["", "18px", "16px"][compress]
+        }; left: ${["", "9px", "6px"][compress]}; }`
+        styles += `.form-search .search-query { padding-left: ${
+          ["", "34px", "24px"][compress]
+        };; }`
 
-        //edit-buttons section
-        styles +=
-          "#edit-buttons { margin-right: " +
-          ["", "9px", "2px"][compress] +
-          "; }";
-        //toolbar dropdowns
-        styles +=
-          ".toolbar .toolbar-group { margin-right: " +
-          ["", "14px", "8px"][compress] +
-          "; padding-top: 0px; height: " +
-          c1[compress] +
-          "; }";
-        styles +=
-          ".toolbar .group-title { height: " +
-          ["", "34px", "24px"][compress] +
-          "; line-height: " +
-          ["", "34px", "24px"][compress] +
-          "; }";
-        styles +=
-          ".toolbar .dropdown-menu { top: " +
-          ["", "34px", "24px"][compress] +
-          " !important; left: " +
-          ["", "7px", "4px"][compress] +
-          " !important; }";
-        styles +=
-          "wz-menu { top: " + ["", "34px", "24px"][compress] + " !important; }";
+        // edit-buttons section
+        styles += `#edit-buttons { margin-right: ${
+          ["", "9px", "2px"][compress]
+        }; }`
+        // toolbar dropdowns
+        styles += `.toolbar .toolbar-group { margin-right: ${
+          ["", "14px", "8px"][compress]
+        }; padding-top: 0px; height: ${c1[compress]}; }`
+        styles += `.toolbar .group-title { height: ${
+          ["", "34px", "24px"][compress]
+        }; line-height: ${["", "34px", "24px"][compress]}; }`
+        styles += `.toolbar .dropdown-menu { top: ${
+          ["", "34px", "24px"][compress]
+        } !important; left: ${["", "7px", "4px"][compress]} !important; }`
+        styles += `wz-menu { top: ${["", "34px", "24px"][compress]} !important; }`
 
-        //toolbar buttons
-        styles +=
-          ".toolbar .toolbar-button { margin-top: " +
-          ["", "3px", "1px"][compress] +
-          "; margin-left: 3px; padding-left: " +
-          ["", "10px", "5px"][compress] +
-          "; padding-right: " +
-          ["", "10px", "5px"][compress] +
-          "; height: " +
-          ["", "27px", "22px"][compress] +
-          "; line-height: " +
-          ["", "27px", "22px"][compress] +
-          "; }";
-        styles +=
-          ".toolbar .toolbar-button { padding-left: " +
-          ["", "2px", "2px"][compress] +
-          "; padding-right: " +
-          ["", "2px", "2px"][compress] +
-          "; }";
-        styles +=
-          ".toolbar .toolbar-button .item-container { padding-left: " +
-          ["", "9px", "2px"][compress] +
-          "; padding-right: " +
-          ["", "9px", "2px"][compress] +
-          "; }";
-        styles +=
-          ".toolbar .item-icon { font-size: " +
-          ["", "22px", "20px"][compress] +
-          " !important; }";
+        // toolbar buttons
+        styles += `.toolbar .toolbar-button { margin-top: ${
+          ["", "3px", "1px"][compress]
+        }; margin-left: 3px; padding-left: ${
+          ["", "10px", "5px"][compress]
+        }; padding-right: ${["", "10px", "5px"][compress]}; height: ${
+          ["", "27px", "22px"][compress]
+        }; line-height: ${["", "27px", "22px"][compress]}; }`
+        styles += `.toolbar .toolbar-button { padding-left: ${
+          ["", "2px", "2px"][compress]
+        }; padding-right: ${["", "2px", "2px"][compress]}; }`
+        styles += `.toolbar .toolbar-button .item-container { padding-left: ${
+          ["", "9px", "2px"][compress]
+        }; padding-right: ${["", "9px", "2px"][compress]}; }`
+        styles += `.toolbar .item-icon { font-size: ${
+          ["", "22px", "20px"][compress]
+        } !important; }`
 
-        styles +=
-          ".toolbar .toolbar-button > .item-icon { top: " +
-          ["", "5px", "2px"][compress] +
-          "; }";
-        styles +=
-          ".toolbar .toolbar-separator { height: " +
-          ["", "34px", "22px"][compress] +
-          "; }";
+        styles += `.toolbar .toolbar-button > .item-icon { top: ${
+          ["", "5px", "2px"][compress]
+        }; }`
+        styles += `.toolbar .toolbar-separator { height: ${
+          ["", "34px", "22px"][compress]
+        }; }`
 
-        styles += ".toolbar-button-wrapper { padding: 0!important; }";
+        styles += ".toolbar-button-wrapper { padding: 0!important; }"
 
-        //extra hack for my Permalink Counter button
+        // extra hack for my Permalink Counter button
+        styles += `.WMEFUPCicon { margin-top: ${
+          ["", "4px !important", "2px !important"][compress]
+        }; }`
+        // floating buttons
+        styles += `.overlay-button { height: ${
+          ["", "33px", "26px"][compress]
+        }; width: ${["", "33px", "26px"][compress]}; font-size: ${
+          ["", "22px", "20px"][compress]
+        }; padding: ${["", "3px", "1px"][compress]}; }`
+        styles += `#Info_div { height: ${
+          ["", "33px", "26px"][compress]
+        } !important; width: ${["", "33px", "26px"][compress]} !important; }`
+        styles += `.zoom-bar-container {width: ${
+          ["", "33px", "26px"][compress]
+        } !important; }`
+        styles += `.zoom-bar-container .overlay-button {height: ${
+          ["", "33px", "26px"][compress]
+        } !important; }`
         styles +=
-          ".WMEFUPCicon { margin-top: " +
-          ["", "4px !important", "2px !important"][compress] +
-          "; }";
-        //floating buttons
-        styles +=
-          ".overlay-button { height: " +
-          ["", "33px", "26px"][compress] +
-          "; width: " +
-          ["", "33px", "26px"][compress] +
-          "; font-size: " +
-          ["", "22px", "20px"][compress] +
-          "; padding: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        styles +=
-          "#Info_div { height: " +
-          ["", "33px", "26px"][compress] +
-          " !important; width: " +
-          ["", "33px", "26px"][compress] +
-          " !important; }";
-        styles +=
-          ".zoom-bar-container {width: " +
-          ["", "33px", "26px"][compress] +
-          " !important; }";
-        styles +=
-          ".zoom-bar-container .overlay-button {height: " +
-          ["", "33px", "26px"][compress] +
-          " !important; }";
-        styles +=
-          "#overlay-buttons .overlay-buttons-container > div:last-child { margin-bottom: 0; }";
-        //layers menu
+          "#overlay-buttons .overlay-buttons-container > div:last-child { margin-bottom: 0; }"
+        // layers menu
         // styles += '.layer-switcher .toolbar-button { margin-top: ' + ['','1px','0px'][compress] + ' !important; font-size: ' + ['','22px','20px'][compress] + ' !important; height: ' + ['','32px','24px'][compress] + '; }';
-        //user button
-        styles +=
-          "#user-box-region { margin-right: " +
-          ["", "8px", "2px"][compress] +
-          "; }";
-        styles +=
-          ".user-box-avatar { height: " +
-          ["", "32px", "23px"][compress] +
-          " !important; font-size: " +
-          ["", "22px", "20px"][compress] +
-          "; }";
-        styles +=
-          ".app .level-icon { width: " +
-          ["", "32px", "23px"][compress] +
-          " !important;  height: " +
-          ["", "32px", "23px"][compress] +
-          " !important;}";
-        //new save menu
-        styles +=
-          ".changes-log-region { top: " +
-          ["", "26px", "21px"][compress] +
-          "; }";
-        //black bar
-        styles +=
-          ".topbar { height: " +
-          ["", "24px", "18px"][compress] +
-          "; line-height: " +
-          ["", "24px", "18px"][compress] +
-          "; }";
-        //fix for WME Presets button
-        styles += "#WMEPresetsDiv > i { height: 100%;}";
+        // user button
+        styles += `#user-box-region { margin-right: ${
+          ["", "8px", "2px"][compress]
+        }; }`
+        styles += `.user-box-avatar { height: ${
+          ["", "32px", "23px"][compress]
+        } !important; font-size: ${["", "22px", "20px"][compress]}; }`
+        styles += `.app .level-icon { width: ${
+          ["", "32px", "23px"][compress]
+        } !important;  height: ${["", "32px", "23px"][compress]} !important;}`
+        // new save menu
+        styles += `.changes-log-region { top: ${["", "26px", "21px"][compress]}; }`
+        // black bar
+        styles += `.topbar { height: ${
+          ["", "24px", "18px"][compress]
+        }; line-height: ${["", "24px", "18px"][compress]}; }`
+        // fix for WME Presets button
+        styles += "#WMEPresetsDiv > i { height: 100%;}"
         // remove the unecessary space to the left of the notification icon
-        styles += ".secondary-toolbar-spacer { display: none; }";
+        styles += ".secondary-toolbar-spacer { display: none; }"
 
         // All the stuff that can no longer be done via CSS due to shadowroot...
-        ApplyTopBarShadowRootWzButtonCompression();
+        ApplyTopBarShadowRootWzButtonCompression()
 
         document
           .querySelector("wz-header")
           .shadowRoot.querySelector(".content-wrapper").style.height =
-          c1[compress];
+          c1[compress]
         document
           .querySelector("wz-header")
           .shadowRoot.querySelector(".content-wrapper").style.padding =
-          "0px 16px 0px 16px";
+          "0px 16px 0px 16px"
         document
           .querySelector("#delete-button")
           .shadowRoot.querySelector("button")
-          .setAttribute("style", "height: auto!important;");
+          .setAttribute("style", "height: auto!important;")
         document
           .querySelector("#undo-button")
           .shadowRoot.querySelector("button")
-          .setAttribute("style", "height: auto!important;");
+          .setAttribute("style", "height: auto!important;")
         document
           .querySelector("#redo-button")
           .shadowRoot.querySelector("button")
-          .setAttribute("style", "height: auto!important;");
+          .setAttribute("style", "height: auto!important;")
         document
           .querySelector("#notification-button")
           .shadowRoot.querySelector("button")
-          .setAttribute("style", "height: auto!important;");
+          .setAttribute("style", "height: auto!important;")
 
         document
           .querySelector(".reload-button")
           .shadowRoot.querySelector("button")
-          .setAttribute("style", "min-width: auto!important;");
+          .setAttribute("style", "min-width: auto!important;")
         document
           .querySelector(".layer-switcher-button")
           .shadowRoot.querySelector("button")
-          .setAttribute("style", "min-width: auto!important;");
+          .setAttribute("style", "min-width: auto!important;")
       } else {
-        RemoveTopBarCompression();
+        RemoveTopBarCompression()
       }
       if (contrast > 0) {
-        //toolbar dropdown menus
-        styles += ".toolbar .group-title { color: var(--color-black); }";
+        // toolbar dropdown menus
+        styles += ".toolbar .group-title { color: var(--color-black); }"
+        styles += `.toolbar .toolbar-button { border-radius: 8px; ${GetBorderContrast(
+          contrast,
+          false,
+        )}color: var(--color-black); }`
+        // layers icon - until Waze fix it
         styles +=
-          ".toolbar .toolbar-button { border-radius: 8px; " +
-          GetBorderContrast(contrast, false) +
-          "color: var(--color-black); }";
-        //layers icon - until Waze fix it
-        styles +=
-          ".layer-switcher .waze-icon-layers.toolbar-button{ background-color: var(--color-white); }";
+          ".layer-switcher .waze-icon-layers.toolbar-button{ background-color: var(--color-white); }"
       }
-      addStyle(PREFIX + fname, styles);
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
-      //change toolbar buttons - from JustinS83
+      removeStyle(PREFIX + fname)
+      // change toolbar buttons - from JustinS83
       $("#mode-switcher-region .title-button .icon").removeClass(
-        "fa fa-calendar"
-      );
+        "fa fa-calendar",
+      )
       $("#mode-switcher-region .title-button .icon").addClass(
-        "fa fa-angle-down"
-      );
+        "fa fa-angle-down",
+      )
 
-      RemoveTopBarCompression();
+      RemoveTopBarCompression()
     }
 
-    window.dispatchEvent(new Event("resize"));
+    window.dispatchEvent(new Event("resize"))
   }
   function FALSEcompressSegmentTab() {
     getById("_cbCompressSegmentTab").checked =
-      getById("_cbextraCBSection").checked;
-    compressSegmentTab();
+      getById("_cbextraCBSection").checked
+    compressSegmentTab()
   }
   function compressSegmentTab() {
-    let fname = "compressSegmentTab";
+    const fname = "compressSegmentTab"
 
     // Apply a permanently active styling fix to enable wrapping in the drives tab,
     // to counter the effects of lengthening the datetime string format...
     let styles = `
       .list-item-card-title { white-space: pre-wrap; }
-    `;
+    `
 
-    addStyle(PREFIX + fname + "_permanent", styles);
+    addStyle(`${PREFIX + fname}_permanent`, styles)
 
     // Now go and do the optional styling stuff
-    styles = "";
+    styles = ""
     if (getById("_cbCompressSegmentTab").checked) {
-      var contrast = getById("_inpUIContrast").value;
-      var compress = getById("_inpUICompression").value;
+      const contrast = getById("_inpUIContrast").value
+      const compress = getById("_inpUICompression").value
 
       styles += `
         #sidebar .tab-content .tab-pane { padding: 0; }
         #sidebar #links:before { display: none; }
         .map-comment-name-editor .edit-button { display: block !important; }
         .closures-list { height: auto; }
-      `;
+      `
 
       if (compress > 0) {
-        //Lock level
-        styles += ".lock-level-selector { display: flex; }";
+        // Lock level
+        styles += ".lock-level-selector { display: flex; }"
         styles +=
-          "#edit-panel .lock-edit-view label { line-height: 140% !important; }";
+          "#edit-panel .lock-edit-view label { line-height: 140% !important; }"
         styles +=
-          "#edit-panel .lock-edit-view label { height: auto !important; width: auto !important; }";
+          "#edit-panel .lock-edit-view label { height: auto !important; width: auto !important; }"
         styles +=
-          "#edit-panel .lock-edit-view label { margin-right: 2px !important; }";
+          "#edit-panel .lock-edit-view label { margin-right: 2px !important; }"
         styles +=
-          "#edit-panel .lock-edit-view label { margin-bottom: 6px !important; }";
-        //general compression enhancements
+          "#edit-panel .lock-edit-view label { margin-bottom: 6px !important; }"
+        // general compression enhancements
+        styles += `#sidebar { line-height: ${
+          ["", "18px", "16px"][compress]
+        } !important;}`
+        styles += `#sidebar .tab-content .tab-pane { padding: ${
+          ["", "8px", "1px"][compress]
+        }; }`
+        styles += `#sidebar #sidebarContent { font-size: ${
+          ["", "13px", "12px"][compress]
+        }; }`
+        styles += `#sidebar #advanced-tools { padding: ${
+          ["", "0 9px", "0 4px"][compress]
+        }; }`
+        styles += `#sidebar .waze-staff-tools { margin-bottom: ${
+          ["", "9px", "4px"][compress]
+        }; height: ${["", "25px", "20px"][compress]}; }`
+        styles += `#sidebar .categories-card-content { row-gap: ${
+          ["", "3px", "0px"][compress]
+        }; }`
+        // Tabs
+        styles += `#sidebar .nav-tabs { padding-bottom: ${
+          ["", "3px", "2px"][compress]
+        }; }`
+        styles += `#sidebar #user-info #user-tabs { padding: ${
+          ["", "0 9px", "0 4px"][compress]
+        }; }`
+        styles += `#sidebar .tabs-container { padding: ${
+          ["", "0 9px", "0 4px"][compress]
+        }; }`
+        styles += `#sidebar .nav-tabs li a { margin-top: ${
+          ["", "2px", "1px"][compress]
+        }; margin-left: ${["", "3px", "1px"][compress]}; padding: ${
+          ["", "0 6px", "0 2px"][compress]
+        }; line-height: ${["", "24px", "21px"][compress]}; height: ${
+          ["", "24px", "21px"][compress]
+        }; }`
+        styles += "#sidebar .nav-tabs li { flex-grow: 0; }"
+        // Feed
+        styles += `.feed-item { margin-bottom: ${["", "3px", "1px"][compress]}; }`
+        styles += `.feed-item .inner { padding: ${["", "5px", "0px"][compress]}; }`
+        styles += `.feed-item .content .title { margin-bottom: ${
+          ["", "1px", "0px"][compress]
+        }; }`
+        styles += `.feed-item .motivation { margin-bottom: ${
+          ["", "2px", "0px"][compress]
+        }; }`
+        // Drives & Areas
+        styles += `#sidebar .message { margin-bottom: ${
+          ["", "6px", "2px"][compress]
+        }; }`
+        styles += `#sidebar .result-list .result { padding: ${
+          ["", "6px 17px", "2px 9px"][compress]
+        }; margin-bottom: ${["", "3px", "1px"][compress]}; }`
         styles +=
-          "#sidebar { line-height: " +
-          ["", "18px", "16px"][compress] +
-          " !important;}";
+          "#sidebar .result-list .session { background-color: lightgrey; }"
         styles +=
-          "#sidebar .tab-content .tab-pane { padding: " +
-          ["", "8px", "1px"][compress] +
-          "; }";
+          "#sidebar .result-list .session-available { background-color: var(--color-white); }"
         styles +=
-          "#sidebar #sidebarContent { font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar #advanced-tools { padding: " +
-          ["", "0 9px", "0 4px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .waze-staff-tools { margin-bottom: " +
-          ["", "9px", "4px"][compress] +
-          "; height: " +
-          ["", "25px", "20px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .categories-card-content { row-gap: " +
-          ["", "3px", "0px"][compress] +
-          "; }";
-        //Tabs
-        styles +=
-          "#sidebar .nav-tabs { padding-bottom: " +
-          ["", "3px", "2px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar #user-info #user-tabs { padding: " +
-          ["", "0 9px", "0 4px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .tabs-container { padding: " +
-          ["", "0 9px", "0 4px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .nav-tabs li a { margin-top: " +
-          ["", "2px", "1px"][compress] +
-          "; margin-left: " +
-          ["", "3px", "1px"][compress] +
-          "; padding: " +
-          ["", "0 6px", "0 2px"][compress] +
-          "; line-height: " +
-          ["", "24px", "21px"][compress] +
-          "; height: " +
-          ["", "24px", "21px"][compress] +
-          "; }";
-        styles += "#sidebar .nav-tabs li { flex-grow: 0; }";
-        //Feed
-        styles +=
-          ".feed-item { margin-bottom: " + ["", "3px", "1px"][compress] + "; }";
-        styles +=
-          ".feed-item .inner { padding: " +
-          ["", "5px", "0px"][compress] +
-          "; }";
-        styles +=
-          ".feed-item .content .title { margin-bottom: " +
-          ["", "1px", "0px"][compress] +
-          "; }";
-        styles +=
-          ".feed-item .motivation { margin-bottom: " +
-          ["", "2px", "0px"][compress] +
-          "; }";
-        //Drives & Areas
-        styles +=
-          "#sidebar .message { margin-bottom: " +
-          ["", "6px", "2px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .result-list .result { padding: " +
-          ["", "6px 17px", "2px 9px"][compress] +
-          "; margin-bottom: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .result-list .session { background-color: lightgrey; }";
-        styles +=
-          "#sidebar .result-list .session-available { background-color: var(--color-white); }";
-        styles +=
-          "#sidebar .result-list .result.selected { background-color: lightgreen; }";
-        styles += "div#sidepanel-drives { height: auto !important; }";
+          "#sidebar .result-list .result.selected { background-color: lightgreen; }"
+        styles += "div#sidepanel-drives { height: auto !important; }"
 
-        //SEGMENT EDIT PANEL
-        //general changes
-        //checkbox groups
-        styles +=
-          "#sidebar .controls-container { padding-top: " +
-          ["", "4px", "1px"][compress] +
-          "; display: inline-block; font-size: " +
-          ["", "12px", "11px"][compress] +
-          "; }";
-        styles +=
-          '#sidebar .controls-container input[type="checkbox"] + label { padding-left: ' +
-          ["", "21px", "17px"][compress] +
-          " !important; } }";
-        //form groups
-        styles +=
-          "#sidebar .form-group { margin-bottom: " +
-          ["", "5px", "0px"][compress] +
-          "; }";
-        //dropdown inputs
-        styles +=
-          "#sidebar .form-control { height: " +
-          ["", "27px", "19px"][compress] +
-          "; padding-top: " +
-          ["", "4px", "0px"][compress] +
-          "; padding-bottom: " +
-          ["", "4px", "0px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; color: var(--color-black); }";
-        //buttons
-        styles +=
-          "#edit-panel .waze-btn { padding-top: 0px !important; padding-bottom: " +
-          ["", "3px", "1px"][compress] +
-          "; height: " +
-          ["", "20px", "18px"][compress] +
-          " !important; line-height: " +
-          ["", "20px", "18px"][compress] +
-          " !important; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
+        // SEGMENT EDIT PANEL
+        // general changes
+        // checkbox groups
+        styles += `#sidebar .controls-container { padding-top: ${
+          ["", "4px", "1px"][compress]
+        }; display: inline-block; font-size: ${
+          ["", "12px", "11px"][compress]
+        }; }`
+        styles += `#sidebar .controls-container input[type="checkbox"] + label { padding-left: ${
+          ["", "21px", "17px"][compress]
+        } !important; } }`
+        // form groups
+        styles += `#sidebar .form-group { margin-bottom: ${
+          ["", "5px", "0px"][compress]
+        }; }`
+        // dropdown inputs
+        styles += `#sidebar .form-control { height: ${
+          ["", "27px", "19px"][compress]
+        }; padding-top: ${["", "4px", "0px"][compress]}; padding-bottom: ${
+          ["", "4px", "0px"][compress]
+        }; font-size: ${
+          ["", "13px", "12px"][compress]
+        }; color: var(--color-black); }`
+        // buttons
+        styles += `#edit-panel .waze-btn { padding-top: 0px !important; padding-bottom: ${
+          ["", "3px", "1px"][compress]
+        }; height: ${["", "20px", "18px"][compress]} !important; line-height: ${
+          ["", "20px", "18px"][compress]
+        } !important; font-size: ${["", "13px", "12px"][compress]}; }`
         //			styles += '#edit-panel .waze-btn { padding-top: ' + ['','3px','0px'][compress] + ' !important; padding-bottom: ' + ['','3px','1px'][compress] + '; height: ' + ['','20px','18px'][compress] + ' !important; line-height: ' + ['','20px','18px'][compress] + ' !important; font-size: ' + ['','13px','12px'][compress] + '; }';
-        //radio button controls
+        // radio button controls
+        styles += `.waze-radio-container label { height: ${
+          ["", "19px", "16px"][compress]
+        }; width: ${["", "19px", "16px"][compress]}; line-height: ${
+          ["", "19px", "16px"][compress]
+        }; font-size: ${["", "13px", "12px"][compress]}; margin-bottom: ${
+          ["", "3px", "1px"][compress]
+        }; }`
+        styles += `.waze-radio-container label { width: auto; padding-left: ${
+          ["", "6px", "3px"][compress]
+        } !important; padding-right: ${
+          ["", "6px", "3px"][compress]
+        } !important; }`
+        // text input areas
+        styles += "#sidebar textarea.form-control { height: auto; }"
+        styles += "#sidebar textarea { max-width: unset; }"
+        // specific changes
+        // Selected segments info
+        styles += `#edit-panel .selection { padding-top: ${
+          ["", "8px", "2px"][compress]
+        }; padding-bottom: ${["", "8px", "4px"][compress]}; }`
+        styles += `#edit-panel .segment .direction-message { margin-bottom: ${
+          ["", "9px", "3px"][compress]
+        }; }`
+        // Segment details (closure warning)
+        styles += `#edit-panel .segment .segment-details { padding: ${
+          ["", "10px", "5px"][compress]
+        }; padding-top: 0px; }`
+        // All control labels
+        styles += `#edit-panel .control-label { font-size: ${
+          ["", "11px", "10px"][compress]
+        }; margin-bottom: ${["", "4px", "1px"][compress]}; }`
+        // Address input
+        styles += `#edit-panel .address-edit-view { cursor: pointer; margin-bottom: ${
+          ["", "6px", "2px"][compress]
+        }!important; }`
+        styles += `#edit-panel .address-edit-input { padding: ${
+          ["", "4px", "1px"][compress]
+        }; font-size: ${["", "13px", "12px"][compress]}; }`
+        styles += `.tts-button { height: ${["", "28px", "21px"][compress]}; }`
+        // alt names
+        styles += `.alt-street-list { margin-bottom: ${
+          ["", "4px", "0px"][compress]
+        }; }`
+        styles += `#edit-panel .add-alt-street-form .alt-street { padding-top: ${
+          ["", "13px", "3px"][compress]
+        }; padding-bottom: ${["", "13px", "3px"][compress]}; }`
+        styles += `#edit-panel .add-alt-street-form .alt-street .alt-street-delete { top: ${
+          ["", "12px", "4px"][compress]
+        }; }`
+        styles += `#edit-panel .segment .address-edit-view .address-form .action-buttons { padding-top: ${
+          ["", "11px", "6px"][compress]
+        }; padding-bottom: ${["", "11px", "6px"][compress]}; margin-top: ${
+          ["", "5px", "0px"][compress]
+        }; height: ${["", "45px", "28px"][compress]}; }`
+        styles += `#edit-panel .add-alt-street-form .new-alt-street { padding-top: ${
+          ["", "8px", "3px"][compress]
+        }; padding-bottom: ${["", "8px", "3px"][compress]}; }`
+        // restrictions control
+        styles += `#edit-panel .restriction-list { margin-bottom: ${
+          ["", "5px", "0px"][compress]
+        }; }`
+        // speed limit controls
+        styles += `#edit-panel .speed-limit { margin-top: ${
+          ["", "0px", "-5px"][compress]
+        }; margin-bottom: ${["", "5px", "2px"][compress]};}`
+        styles += `#edit-panel .segment .speed-limit label { margin-bottom: ${
+          ["", "3px", "1px"][compress]
+        }; }`
+        styles += `#edit-panel .segment .speed-limit .form-control { height: ${
+          ["", "23px", "19px"][compress]
+        }; padding-top: ${["", "4px", "2px"][compress]}; font-size: ${
+          ["", "13px", "12px"][compress]
+        }; width: 5em; margin-left: 0px; }`
+        styles += `#edit-panel .segment .speed-limit .direction-label { font-size: ${
+          ["", "12px", "11px"][compress]
+        }; line-height: ${["", "2.0em", "1.8em"][compress]}; }`
+        styles += `#edit-panel .segment .speed-limit .unit-label { font-size: ${
+          ["", "12px", "11px"][compress]
+        }; line-height: ${["", "2.0em", "1.8em"][compress]}; margin-left: 0px;}`
         styles +=
-          ".waze-radio-container label { height: " +
-          ["", "19px", "16px"][compress] +
-          "; width: " +
-          ["", "19px", "16px"][compress] +
-          "; line-height: " +
-          ["", "19px", "16px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; margin-bottom: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
+          "#edit-panel .segment .speed-limit .average-speed-camera { margin-left: 40px; }"
         styles +=
-          ".waze-radio-container label { width: auto; padding-left: " +
-          ["", "6px", "3px"][compress] +
-          " !important; padding-right: " +
-          ["", "6px", "3px"][compress] +
-          " !important; }";
-        //text input areas
-        styles += "#sidebar textarea.form-control { height: auto; }";
-        styles += "#sidebar textarea { max-width: unset; }";
-        //specific changes
-        //Selected segments info
+          "#edit-panel .segment .speed-limit .average-speed-camera .camera-icon { vertical-align: top; }"
+        styles += `#edit-panel .segment .speed-limit .verify-buttons { margin-bottom: ${
+          ["", "5px", "0px"][compress]
+        }; }`
+        // more actions section
+        styles += `#edit-panel .more-actions { padding-top: ${
+          ["", "6px", "2px"][compress]
+        }; }`
         styles +=
-          "#edit-panel .selection { padding-top: " +
-          ["", "8px", "2px"][compress] +
-          "; padding-bottom: " +
-          ["", "8px", "4px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .segment .direction-message { margin-bottom: " +
-          ["", "9px", "3px"][compress] +
-          "; }";
-        //Segment details (closure warning)
-        styles +=
-          "#edit-panel .segment .segment-details { padding: " +
-          ["", "10px", "5px"][compress] +
-          "; padding-top: 0px; }";
-        //All control labels
-        styles +=
-          "#edit-panel .control-label { font-size: " +
-          ["", "11px", "10px"][compress] +
-          "; margin-bottom: " +
-          ["", "4px", "1px"][compress] +
-          "; }";
-        //Address input
-        styles +=
-          "#edit-panel .address-edit-view { cursor: pointer; margin-bottom: " +
-          ["", "6px", "2px"][compress] +
-          "!important; }";
-        styles +=
-          "#edit-panel .address-edit-input { padding: " +
-          ["", "4px", "1px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        styles +=
-          ".tts-button { height: " + ["", "28px", "21px"][compress] + "; }";
-        //alt names
-        styles +=
-          ".alt-street-list { margin-bottom: " +
-          ["", "4px", "0px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .add-alt-street-form .alt-street { padding-top: " +
-          ["", "13px", "3px"][compress] +
-          "; padding-bottom: " +
-          ["", "13px", "3px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .add-alt-street-form .alt-street .alt-street-delete { top: " +
-          ["", "12px", "4px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .segment .address-edit-view .address-form .action-buttons { padding-top: " +
-          ["", "11px", "6px"][compress] +
-          "; padding-bottom: " +
-          ["", "11px", "6px"][compress] +
-          "; margin-top: " +
-          ["", "5px", "0px"][compress] +
-          "; height: " +
-          ["", "45px", "28px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .add-alt-street-form .new-alt-street { padding-top: " +
-          ["", "8px", "3px"][compress] +
-          "; padding-bottom: " +
-          ["", "8px", "3px"][compress] +
-          "; }";
-        //restrictions control
-        styles +=
-          "#edit-panel .restriction-list { margin-bottom: " +
-          ["", "5px", "0px"][compress] +
-          "; }";
-        //speed limit controls
-        styles +=
-          "#edit-panel .speed-limit { margin-top: " +
-          ["", "0px", "-5px"][compress] +
-          "; margin-bottom: " +
-          ["", "5px", "2px"][compress] +
-          ";}";
-        styles +=
-          "#edit-panel .segment .speed-limit label { margin-bottom: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .segment .speed-limit .form-control { height: " +
-          ["", "23px", "19px"][compress] +
-          "; padding-top: " +
-          ["", "4px", "2px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; width: 5em; margin-left: 0px; }";
-        styles +=
-          "#edit-panel .segment .speed-limit .direction-label { font-size: " +
-          ["", "12px", "11px"][compress] +
-          "; line-height: " +
-          ["", "2.0em", "1.8em"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .segment .speed-limit .unit-label { font-size: " +
-          ["", "12px", "11px"][compress] +
-          "; line-height: " +
-          ["", "2.0em", "1.8em"][compress] +
-          "; margin-left: 0px;}";
-        styles +=
-          "#edit-panel .segment .speed-limit .average-speed-camera { margin-left: 40px; }";
-        styles +=
-          "#edit-panel .segment .speed-limit .average-speed-camera .camera-icon { vertical-align: top; }";
-        styles +=
-          "#edit-panel .segment .speed-limit .verify-buttons { margin-bottom: " +
-          ["", "5px", "0px"][compress] +
-          "; }";
-        //more actions section
-        styles +=
-          "#edit-panel .more-actions { padding-top: " +
-          ["", "6px", "2px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .more-actions .waze-btn.waze-btn-white { padding-left: 0px; padding-right: 0px; }";
+          "#edit-panel .more-actions .waze-btn.waze-btn-white { padding-left: 0px; padding-right: 0px; }"
 
-        //additional attributes
-        styles +=
-          "#edit-panel .additional-attributes { margin-bottom: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        //history items
-        styles +=
-          ".toggleHistory { padding: " + ["", "7px", "3px"][compress] + "; }";
-        styles +=
-          ".element-history-item:not(:last-child) { margin-bottom: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        styles +=
-          ".element-history-item .tx-header { padding: " +
-          ["", "6px", "2px"][compress] +
-          "; }";
-        styles +=
-          ".element-history-item .tx-header .tx-author-date { margin-bottom: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        styles +=
-          ".element-history-item .tx-content { padding: " +
-          ["", "7px 7px 7px 22px", "4px 4px 4px 22px"][compress] +
-          "; }";
-        styles +=
-          ".loadMoreContainer { padding: " +
-          ["", "5px 0px", "3px 0px"][compress] +
-          "; }";
-        //closures tab
-        styles +=
-          ".closures-tab wz-button { transform: scale(" +
-          ["", "0.85", "0.7"][compress] +
-          "); padding: 0px!important; }";
-        styles +=
-          ".closures > div:not(.closures-list) { padding: " +
-          ["", "0px", "0px"][compress] +
-          "; }";
-        styles +=
-          "body { --wz-text-input-height: " +
-          ["", "30px", "20px"][compress] +
-          "; }";
-        styles +=
-          "body { --wz-select-height: " +
-          ["", "30px", "20px"][compress] +
-          "; }";
-        styles +=
-          "input.wz-text-input { height: " +
-          ["", "30px", "20px"][compress] +
-          "; }";
-        styles +=
-          ".edit-closure .closure-nodes .closure-node-item .closure-node-control { padding: " +
-          ["", "7px", "2px"][compress] +
-          "; }";
-        //closures list
-        styles +=
-          ".closures-list .add-closure-button { line-height: " +
-          ["", "20px", "18px"][compress] +
-          "; }";
-        styles +=
-          ".closures-list .closure-item:not(:last-child) { margin-bottom: " +
-          ["", "6px", "2px"][compress] +
-          "; }";
-        styles +=
-          ".closures-list .closure-item .details { padding: " +
-          ["", "5px", "0px"][compress] +
-          "; font-size: " +
-          ["", "12px", "11px"][compress] +
-          "; }";
-        styles +=
-          ".closures-list .closure-item .buttons { top: " +
-          ["", "7px", "4px"][compress] +
-          "; }";
-        //tweak for Junction Box button
-        styles += "#edit-panel .junction-actions > button { width: inherit; }";
+        // additional attributes
+        styles += `#edit-panel .additional-attributes { margin-bottom: ${
+          ["", "3px", "1px"][compress]
+        }; }`
+        // history items
+        styles += `.toggleHistory { padding: ${["", "7px", "3px"][compress]}; }`
+        styles += `.element-history-item:not(:last-child) { margin-bottom: ${
+          ["", "3px", "1px"][compress]
+        }; }`
+        styles += `.element-history-item .tx-header { padding: ${
+          ["", "6px", "2px"][compress]
+        }; }`
+        styles += `.element-history-item .tx-header .tx-author-date { margin-bottom: ${
+          ["", "3px", "1px"][compress]
+        }; }`
+        styles += `.element-history-item .tx-content { padding: ${
+          ["", "7px 7px 7px 22px", "4px 4px 4px 22px"][compress]
+        }; }`
+        styles += `.loadMoreContainer { padding: ${
+          ["", "5px 0px", "3px 0px"][compress]
+        }; }`
+        // closures tab
+        styles += `.closures-tab wz-button { transform: scale(${
+          ["", "0.85", "0.7"][compress]
+        }); padding: 0px!important; }`
+        styles += `.closures > div:not(.closures-list) { padding: ${
+          ["", "0px", "0px"][compress]
+        }; }`
+        styles += `body { --wz-text-input-height: ${
+          ["", "30px", "20px"][compress]
+        }; }`
+        styles += `body { --wz-select-height: ${["", "30px", "20px"][compress]}; }`
+        styles += `input.wz-text-input { height: ${
+          ["", "30px", "20px"][compress]
+        }; }`
+        styles += `.edit-closure .closure-nodes .closure-node-item .closure-node-control { padding: ${
+          ["", "7px", "2px"][compress]
+        }; }`
+        // closures list
+        styles += `.closures-list .add-closure-button { line-height: ${
+          ["", "20px", "18px"][compress]
+        }; }`
+        styles += `.closures-list .closure-item:not(:last-child) { margin-bottom: ${
+          ["", "6px", "2px"][compress]
+        }; }`
+        styles += `.closures-list .closure-item .details { padding: ${
+          ["", "5px", "0px"][compress]
+        }; font-size: ${["", "12px", "11px"][compress]}; }`
+        styles += `.closures-list .closure-item .buttons { top: ${
+          ["", "7px", "4px"][compress]
+        }; }`
+        // tweak for Junction Box button
+        styles += "#edit-panel .junction-actions > button { width: inherit; }"
 
-        //PLACE DETAILS
+        // PLACE DETAILS
+        styles += `#edit-panel .navigation-point-list { margin-bottom: ${
+          ["", "4px", "0px"][compress]
+        }; }`
+        // alert
+        styles += `#edit-panel .header-alert { margin-bottom: ${
+          ["", "6px", "2px"][compress]
+        }; padding: ${["", "6px 32px", "2px 32px"][compress]}; }`
+        // address input
+        styles += `#edit-panel .full-address { padding-top: ${
+          ["", "4px", "1px"][compress]
+        }; padding-bottom: ${["", "4px", "1px"][compress]}; font-size: ${
+          ["", "13px", "12px"][compress]
+        }; }`
+        // alt names
+        styles += `#edit-panel .aliases-view .list li { margin: ${
+          ["", "12px 0", "4px 0"][compress]
+        }; }`
+        styles += "#edit-panel .aliases-view .delete { line-height: inherit; }"
+        // categories
+        styles += `#edit-panel .categories .select2-search-choice .category { margin: ${
+          ["", "2px 0 2px 4px", "1px 0 1px 3px"][compress]
+        }; height: ${["", "18px", "15px"][compress]}; line-height: ${
+          ["", "18px", "15px"][compress]
+        }; }`
+        styles += `#edit-panel .categories .select2-search-field input { height: ${
+          ["", "18px", "17px"][compress]
+        }; }`
+        styles += `#edit-panel .categories .select2-choices { min-height: ${
+          ["", "26px", "19px"][compress]
+        }; }`
         styles +=
-          "#edit-panel .navigation-point-list { margin-bottom: " +
-          ["", "4px", "0px"][compress] +
-          "; }";
-        //alert
+          "#edit-panel .categories .select2-container { margin-bottom: 0px; }"
+        // entry/exit points
+        styles += `#edit-panel .navigation-point-view .navigation-point-list-item .preview { padding: ${
+          ["", "3px 7px", "0px 4px"][compress]
+        }; font-size: ${["", "13px", "12px"][compress]}; }`
+        styles += `#edit-panel .navigation-point-view .add-button { height: ${
+          ["", "28px", "18px"][contrast]
+        }; line-height: ${["", "17px", "16px"][contrast]}; font-size: ${
+          ["", "13px", "12px"][compress]
+        }; }`
+        // type buttons
+        styles += `#sidebar .area-btn, #sidebar .point-btn { display: flex; align-items: center; justify-content: center; height: ${
+          ["", "22px", "20px"][compress]
+        }; line-height: ${["", "19px", "16px"][compress]}; font-size: ${
+          ["", "13px", "12px"][compress]
+        }; }`
         styles +=
-          "#edit-panel .header-alert { margin-bottom: " +
-          ["", "6px", "2px"][compress] +
-          "; padding: " +
-          ["", "6px 32px", "2px 32px"][compress] +
-          "; }";
-        //address input
-        styles +=
-          "#edit-panel .full-address { padding-top: " +
-          ["", "4px", "1px"][compress] +
-          "; padding-bottom: " +
-          ["", "4px", "1px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        //alt names
-        styles +=
-          "#edit-panel .aliases-view .list li { margin: " +
-          ["", "12px 0", "4px 0"][compress] +
-          "; }";
-        styles += "#edit-panel .aliases-view .delete { line-height: inherit; }";
-        //categories
-        styles +=
-          "#edit-panel .categories .select2-search-choice .category { margin: " +
-          ["", "2px 0 2px 4px", "1px 0 1px 3px"][compress] +
-          "; height: " +
-          ["", "18px", "15px"][compress] +
-          "; line-height: " +
-          ["", "18px", "15px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .categories .select2-search-field input { height: " +
-          ["", "18px", "17px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .categories .select2-choices { min-height: " +
-          ["", "26px", "19px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .categories .select2-container { margin-bottom: 0px; }";
-        //entry/exit points
-        styles +=
-          "#edit-panel .navigation-point-view .navigation-point-list-item .preview { padding: " +
-          ["", "3px 7px", "0px 4px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .navigation-point-view .add-button { height: " +
-          ["", "28px", "18px"][contrast] +
-          "; line-height: " +
-          ["", "17px", "16px"][contrast] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        //type buttons
-        styles +=
-          "#sidebar .area-btn, #sidebar .point-btn { display: flex; align-items: center; justify-content: center; height: " +
-          ["", "22px", "20px"][compress] +
-          "; line-height: " +
-          ["", "19px", "16px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .area-btn:before, #sidebar .point-btn:before { top: 0px; margin-right: 8px; }";
-        //external providers
-        styles +=
-          ".select2-container { font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .external-providers-view .external-provider-item { margin-bottom: " +
-          ["", "6px", "2px"][compress] +
-          "; }";
-        styles +=
-          ".external-providers-view > div > ul { margin-bottom: " +
-          ["", "4px", "0px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .external-providers-view .add { padding: " +
-          ["", "3px 12px", "1px 9px"][compress] +
-          "; }";
-        styles +=
-          "#edit-panel .waze-btn.waze-btn-smaller { line-height: " +
-          ["", "26px", "21px"][compress] +
-          "; }";
-        //residential toggle
-        styles +=
-          "#edit-panel .toggle-residential { height: " +
-          ["", "27px", "22px"][compress] +
-          "; }";
-        //more info
-        styles +=
-          ".service-checkbox { font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
+          "#sidebar .area-btn:before, #sidebar .point-btn:before { top: 0px; margin-right: 8px; }"
+        // external providers
+        styles += `.select2-container { font-size: ${
+          ["", "13px", "12px"][compress]
+        }; }`
+        styles += `#edit-panel .external-providers-view .external-provider-item { margin-bottom: ${
+          ["", "6px", "2px"][compress]
+        }; }`
+        styles += `.external-providers-view > div > ul { margin-bottom: ${
+          ["", "4px", "0px"][compress]
+        }; }`
+        styles += `#edit-panel .external-providers-view .add { padding: ${
+          ["", "3px 12px", "1px 9px"][compress]
+        }; }`
+        styles += `#edit-panel .waze-btn.waze-btn-smaller { line-height: ${
+          ["", "26px", "21px"][compress]
+        }; }`
+        // residential toggle
+        styles += `#edit-panel .toggle-residential { height: ${
+          ["", "27px", "22px"][compress]
+        }; }`
+        // more info
+        styles += `.service-checkbox { font-size: ${
+          ["", "13px", "12px"][compress]
+        }; }`
 
-        //PARKING LOT SPECIFIC
-        styles += ".parking-type-option{ display: inline-block; }";
-        styles +=
-          ".payment-checkbox { display: inline-block; min-width: " +
-          ["", "48%", "31%"][compress] +
-          "; }";
-        styles +=
-          ".service-checkbox { display: inline-block; min-width: 49%; font-size: " +
-          ["", "12px", "11px"][compress] +
-          "; }";
-        styles += ".lot-checkbox { display: inline-block; min-width: 49%; }";
+        // PARKING LOT SPECIFIC
+        styles += ".parking-type-option{ display: inline-block; }"
+        styles += `.payment-checkbox { display: inline-block; min-width: ${
+          ["", "48%", "31%"][compress]
+        }; }`
+        styles += `.service-checkbox { display: inline-block; min-width: 49%; font-size: ${
+          ["", "12px", "11px"][compress]
+        }; }`
+        styles += ".lot-checkbox { display: inline-block; min-width: 49%; }"
 
-        //MAP COMMENTS
-        styles +=
-          "#sidebar .map-comment-name-editor { padding: " +
-          ["", "10px", "5px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .map-comment-name-editor .edit-button { margin-top: 0px; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; padding-top: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .conversation-view .no-comments { padding: " +
-          ["", "10px 15px", "5px 15px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .map-comment-feature-editor .conversation-view .comment-list { padding-top: " +
-          ["", "8px", "1px"][compress] +
-          "; padding-bottom: " +
-          ["", "8px", "1px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .map-comment-feature-editor .conversation-view .comment-list .comment .comment-content { padding: " +
-          ["", "6px 0px", "2px 0px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .conversation-view .comment .text { padding: " +
-          ["", "6px 9px", "3px 4px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .conversation-view .new-comment-form { padding-top: " +
-          ["", "10px", "5px"][compress] +
-          "; }";
-        styles +=
-          "#sidebar .map-comment-feature-editor .clear-btn { height: " +
-          ["", "26px", "19px"][compress] +
-          "; line-height: " +
-          ["", "26px", "19px"][compress] +
-          "; }";
-        //Compression for WME Speedhelper
-        styles +=
-          ".clearfix.controls.speed-limit { margin-top: " +
-          ["", "-4px", "-8px"][compress] +
-          "; }";
-        //Compression for WME Clicksaver
-        styles +=
-          ".rth-btn-container { margin-bottom: " +
-          ["", "2px", "-1px"][compress] +
-          "; }";
-        styles +=
-          "#csRoutingTypeContainer { height: " +
-          ["", "23px", "16px"][compress] +
-          " !important; margin-top: " +
-          ["", "-2px", "-4px"][compress] +
-          "; }";
-        styles +=
-          "#csElevationButtonsContainer { margin-bottom: " +
-          ["", "2px", "-1px"][compress] +
-          " !important; }";
-        //tweak for WME Clicksaver tab controls
-        styles += "#sidepanel-clicksaver .controls-container { width: 100%; }";
-        //tweak for JAI tab controls
-        styles += "#sidepanel-ja .controls-container { width: 100%; }";
-        //tweaks for UR-MP Tracker
-        styles +=
-          "#sidepanel-urt { margin-left: " +
-          ["", "-5px", "0px"][compress] +
-          " !important; }";
-        styles +=
-          "#urt-main-title { margin-top: " +
-          ["", "-5px", "0px"][compress] +
-          " !important; }";
-        //tweaks for my own panel
-        styles +=
-          "#fuContent { line-height: " +
-          ["", "10px", "9px"][compress] +
-          " !important; }";
+        // MAP COMMENTS
+        styles += `#sidebar .map-comment-name-editor { padding: ${
+          ["", "10px", "5px"][compress]
+        }; }`
+        styles += `#sidebar .map-comment-name-editor .edit-button { margin-top: 0px; font-size: ${
+          ["", "13px", "12px"][compress]
+        }; padding-top: ${["", "3px", "1px"][compress]}; }`
+        styles += `#sidebar .conversation-view .no-comments { padding: ${
+          ["", "10px 15px", "5px 15px"][compress]
+        }; }`
+        styles += `#sidebar .map-comment-feature-editor .conversation-view .comment-list { padding-top: ${
+          ["", "8px", "1px"][compress]
+        }; padding-bottom: ${["", "8px", "1px"][compress]}; }`
+        styles += `#sidebar .map-comment-feature-editor .conversation-view .comment-list .comment .comment-content { padding: ${
+          ["", "6px 0px", "2px 0px"][compress]
+        }; }`
+        styles += `#sidebar .conversation-view .comment .text { padding: ${
+          ["", "6px 9px", "3px 4px"][compress]
+        }; font-size: ${["", "13px", "12px"][compress]}; }`
+        styles += `#sidebar .conversation-view .new-comment-form { padding-top: ${
+          ["", "10px", "5px"][compress]
+        }; }`
+        styles += `#sidebar .map-comment-feature-editor .clear-btn { height: ${
+          ["", "26px", "19px"][compress]
+        }; line-height: ${["", "26px", "19px"][compress]}; }`
+        // Compression for WME Speedhelper
+        styles += `.clearfix.controls.speed-limit { margin-top: ${
+          ["", "-4px", "-8px"][compress]
+        }; }`
+        // Compression for WME Clicksaver
+        styles += `.rth-btn-container { margin-bottom: ${
+          ["", "2px", "-1px"][compress]
+        }; }`
+        styles += `#csRoutingTypeContainer { height: ${
+          ["", "23px", "16px"][compress]
+        } !important; margin-top: ${["", "-2px", "-4px"][compress]}; }`
+        styles += `#csElevationButtonsContainer { margin-bottom: ${
+          ["", "2px", "-1px"][compress]
+        } !important; }`
+        // tweak for WME Clicksaver tab controls
+        styles += "#sidepanel-clicksaver .controls-container { width: 100%; }"
+        // tweak for JAI tab controls
+        styles += "#sidepanel-ja .controls-container { width: 100%; }"
+        // tweaks for UR-MP Tracker
+        styles += `#sidepanel-urt { margin-left: ${
+          ["", "-5px", "0px"][compress]
+        } !important; }`
+        styles += `#urt-main-title { margin-top: ${
+          ["", "-5px", "0px"][compress]
+        } !important; }`
+        // tweaks for my own panel
+        styles += `#fuContent { line-height: ${
+          ["", "10px", "9px"][compress]
+        } !important; }`
 
         // scripts panel
-        styles += "#user-tabs { padding: 0px !important; }";
+        styles += "#user-tabs { padding: 0px !important; }"
       }
 
       if (contrast > 0) {
-        //contrast enhancements
+        // contrast enhancements
 
-        //general
-        styles +=
-          "#sidebar .form-group { border-top: 1px solid " +
-          ["", "lightgrey", "grey"][contrast] +
-          "; }";
-        styles +=
-          "#sidebar .text { color: " +
-          ["", "darkslategrey", "black"][contrast] +
-          "; }";
-        styles += "#sidebar {background-color: var(--color-primary-200); }";
-        styles += ":root {--background_variant: #242628; }";
+        // general
+        styles += `#sidebar .form-group { border-top: 1px solid ${
+          ["", "lightgrey", "grey"][contrast]
+        }; }`
+        styles += `#sidebar .text { color: ${
+          ["", "darkslategrey", "black"][contrast]
+        }; }`
+        styles += "#sidebar {background-color: var(--color-primary-200); }"
+        styles += ":root {--background_variant: #242628; }"
 
-        //text colour
-        styles += "#sidebar { color: var(--color-black); }";
-        //advanced tools section
-        styles += "#sidebar waze-staff-tools { background-color: #c7c7c7; }";
-        //Tabs
+        // text colour
+        styles += "#sidebar { color: var(--color-black); }"
+        // advanced tools section
+        styles += "#sidebar waze-staff-tools { background-color: #c7c7c7; }"
+        // Tabs
+        styles += `#sidebar .nav-tabs { ${GetBorderContrast(contrast, false)}}`
+        styles += `#sidebar .nav-tabs li a { ${GetBorderContrast(contrast, true)}}`
+        // Fix the un-noticeable feed refresh button
         styles +=
-          "#sidebar .nav-tabs { " + GetBorderContrast(contrast, false) + "}";
+          "span.fa.fa-repeat.feed-refresh.nav-tab-icon { width: 19px; color: orangered; }"
         styles +=
-          "#sidebar .nav-tabs li a { " +
-          GetBorderContrast(contrast, true) +
-          "}";
-        //Fix the un-noticeable feed refresh button
+          "span.fa.fa-repeat.feed-refresh.nav-tab-icon:hover { color: red; font-weight: bold; font-size: 15px; }"
+        // Feed
+        styles += `.feed-item { ${GetBorderContrast(contrast, false)}}`
+        styles += `.feed-issue .content .title .type { color: ${
+          ["", "black", "black"][contrast]
+        }; font-weight: bold; }`
+        styles += `.feed-issue .content .timestamp { color: ${
+          ["", "darkslategrey", "black"][contrast]
+        }; }`
+        styles += `.feed-issue .content .subtext { color: ${
+          ["", "darkslategrey", "black"][contrast]
+        }; }`
+        styles += ".feed-item .motivation { font-weight: bold; }"
+        // Drives & Areas
+        styles += `#sidebar .result-list .result { ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        // Segment edit panel
+        styles += "#edit-panel .selection { font-size: 13px; }"
         styles +=
-          "span.fa.fa-repeat.feed-refresh.nav-tab-icon { width: 19px; color: orangered; }";
+          "#edit-panel .segment .direction-message { color: orangered; }"
+        styles += `#edit-panel .address-edit-input { color: var(--color-black); ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        styles += `#sidebar .form-control { ${GetBorderContrast(contrast, false)}}`
+        // radio buttons when disabled
         styles +=
-          "span.fa.fa-repeat.feed-refresh.nav-tab-icon:hover { color: red; font-weight: bold; font-size: 15px; }";
-        //Feed
-        styles += ".feed-item { " + GetBorderContrast(contrast, false) + "}";
+          '.waze-radio-container input[type="radio"]:disabled:checked + label { color: var(--color-black); opacity: 0.7; font-weight:600; }'
+        // override border for lock levels
         styles +=
-          ".feed-issue .content .title .type { color: " +
-          ["", "black", "black"][contrast] +
-          "; font-weight: bold; }";
+          "#sidebar .waze-radio-container { border: 0 none !important; }"
+        styles += `#edit-panel .waze-btn { color: var(--color-black); ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        styles += `.waze-radio-container label  { ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        // history items
         styles +=
-          ".feed-issue .content .timestamp { color: " +
-          ["", "darkslategrey", "black"][contrast] +
-          "; }";
+          ".toggleHistory { color: var(--color-black); text-align: center; }"
         styles +=
-          ".feed-issue .content .subtext { color: " +
-          ["", "darkslategrey", "black"][contrast] +
-          "; }";
-        styles += ".feed-item .motivation { font-weight: bold; }";
-        //Drives & Areas
+          ".element-history-item .tx-header { color: var(--color-black); }"
+        styles += `.element-history-item .tx-header a { color: ${
+          ["", "royalblue", "black"][contrast]
+        }!important; }`
+        styles += `.element-history-item.closed .tx-header { border-radius: 8px; ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        styles += `.loadMoreHistory { ${GetBorderContrast(contrast, false)}}`
+        // closures list
+        styles += `.closures-list .closure-item .details { border-radius: 8px; ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
         styles +=
-          "#sidebar .result-list .result { " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        //Segment edit panel
-        styles += "#edit-panel .selection { font-size: 13px; }";
+          ".closures-list .closure-item .dates { color: var(--color-black); }"
         styles +=
-          "#edit-panel .segment .direction-message { color: orangered; }";
+          ".closures-list .closure-item .dates .date-label { opacity: 1; }"
+        // Place details
+        // alert
+        styles += "#edit-panel .alert-danger { color: red; }"
+        // address input
+        styles += `#edit-panel .full-address { color: var(--color-black); ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        styles += "#edit-panel a.waze-link { font-weight: bold; }"
+        // the almost invisible alternate name link
+        styles += `#edit-panel .add.waze-link { color: ${
+          ["", "royalblue", "black"][contrast]
+        }!important; }`
+        // categories
         styles +=
-          "#edit-panel .address-edit-input { color: var(--color-black); " +
-          GetBorderContrast(contrast, false) +
-          "}";
+          "#edit-panel .categories .select2-search-choice .category { text-transform: inherit; font-weight: bold; background: gray; }"
+        // entry/exit points
+        styles += `#edit-panel .navigation-point-view .navigation-point-list-item .preview { ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        styles += `#edit-panel .navigation-point-view .add-button { ${GetBorderContrast(
+          contrast,
+          false,
+        )} margin-top: 2px; padding: 0 5px; color: ${
+          ["", "royalblue", "black"][contrast]
+        }!important; }`
+        // type buttons
+        styles += `#sidebar .point-btn { color: var(--color-black); ${GetBorderContrast(
+          contrast,
+          true,
+        )}}`
+        // external providers
+        styles += `.select2-container { color: teal; ${GetBorderContrast(
+          contrast,
+          true,
+        )}}`
         styles +=
-          "#sidebar .form-control { " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        //radio buttons when disabled
-        styles +=
-          '.waze-radio-container input[type="radio"]:disabled:checked + label { color: var(--color-black); opacity: 0.7; font-weight:600; }';
-        //override border for lock levels
-        styles +=
-          "#sidebar .waze-radio-container { border: 0 none !important; }";
-        styles +=
-          "#edit-panel .waze-btn { color: var(--color-black); " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        styles +=
-          ".waze-radio-container label  { " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        //history items
-        styles +=
-          ".toggleHistory { color: var(--color-black); text-align: center; }";
-        styles +=
-          ".element-history-item .tx-header { color: var(--color-black); }";
-        styles +=
-          ".element-history-item .tx-header a { color: " +
-          ["", "royalblue", "black"][contrast] +
-          "!important; }";
-        styles +=
-          ".element-history-item.closed .tx-header { border-radius: 8px; " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        styles +=
-          ".loadMoreHistory { " + GetBorderContrast(contrast, false) + "}";
-        //closures list
-        styles +=
-          ".closures-list .closure-item .details { border-radius: 8px; " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        styles +=
-          ".closures-list .closure-item .dates { color: var(--color-black); }";
-        styles +=
-          ".closures-list .closure-item .dates .date-label { opacity: 1; }";
-        //Place details
-        //alert
-        styles += "#edit-panel .alert-danger { color: red; }";
-        //address input
-        styles +=
-          "#edit-panel .full-address { color: var(--color-black); " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        styles += "#edit-panel a.waze-link { font-weight: bold; }";
-        //the almost invisible alternate name link
-        styles +=
-          "#edit-panel .add.waze-link { color: " +
-          ["", "royalblue", "black"][contrast] +
-          "!important; }";
-        //categories
-        styles +=
-          "#edit-panel .categories .select2-search-choice .category { text-transform: inherit; font-weight: bold; background: gray; }";
-        //entry/exit points
-        styles +=
-          "#edit-panel .navigation-point-view .navigation-point-list-item .preview { " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        styles +=
-          "#edit-panel .navigation-point-view .add-button { " +
-          GetBorderContrast(contrast, false) +
-          " margin-top: 2px; padding: 0 5px; color: " +
-          ["", "royalblue", "black"][contrast] +
-          "!important; }";
-        //type buttons
-        styles +=
-          "#sidebar .point-btn { color: var(--color-black); " +
-          GetBorderContrast(contrast, true) +
-          "}";
-        //external providers
-        styles +=
-          ".select2-container { color: teal; " +
-          GetBorderContrast(contrast, true) +
-          "}";
-        styles +=
-          ".select2-container .select2-choice { color: var(--color-black); }";
-        //residential toggle
-        styles += "#edit-panel .toggle-residential { font-weight: bold; }";
-        //COMMENTS
-        styles +=
-          ".map-comment-name-editor { border-color: " +
-          ["", "darkgrey", "grey"][contrast] +
-          "; }";
+          ".select2-container .select2-choice { color: var(--color-black); }"
+        // residential toggle
+        styles += "#edit-panel .toggle-residential { font-weight: bold; }"
+        // COMMENTS
+        styles += `.map-comment-name-editor { border-color: ${
+          ["", "darkgrey", "grey"][contrast]
+        }; }`
       }
-      //fix for buttons of WME Image Overlay script
+      // fix for buttons of WME Image Overlay script
       styles +=
-        "#sidepanel-imageoverlays > div.result-list button { height: 24px; }";
-      addStyle(PREFIX + fname, styles);
+        "#sidepanel-imageoverlays > div.result-list button { height: 24px; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
-      removeStyle(PREFIX + "hideHeadlights");
+      removeStyle(PREFIX + fname)
+      removeStyle(`${PREFIX}hideHeadlights`)
     }
 
-    restyleDropDownEntries();
+    restyleDropDownEntries()
   }
   function restyleDropDownEntries() {
-    let compress = getById("_inpUICompression").value;
-    let enabled = getById("_cbCompressSegmentTab").checked;
+    const compress = getById("_inpUICompression").value
+    const enabled = getById("_cbCompressSegmentTab").checked
     if (enabled === true && compress > 0) {
-      compressDropDownEntries();
+      compressDropDownEntries()
     } else {
-      uncompressDropDownEntries();
+      uncompressDropDownEntries()
     }
   }
   function compressDropDownEntries() {
-    let n = document.querySelectorAll("wz-option").length;
+    let n = document.querySelectorAll("wz-option").length
     while (n) {
-      let obj = document.querySelectorAll("wz-option")[n - 1];
+      const obj = document.querySelectorAll("wz-option")[n - 1]
       if (obj != undefined) {
-        let mi = obj.shadowRoot.querySelector(".wz-menu-item");
+        const mi = obj.shadowRoot.querySelector(".wz-menu-item")
         if (mi != null) {
-          mi.style.lineHeight = "130%";
-          mi.style.height = "100%";
+          mi.style.lineHeight = "130%"
+          mi.style.height = "100%"
         }
       }
-      --n;
+      --n
     }
   }
   function uncompressDropDownEntries() {
-    let n = document.querySelectorAll("wz-option").length;
+    let n = document.querySelectorAll("wz-option").length
     while (n) {
-      let obj = document.querySelectorAll("wz-option")[n - 1];
+      const obj = document.querySelectorAll("wz-option")[n - 1]
       if (obj != undefined) {
-        let mi = obj.shadowRoot.querySelector(".wz-menu-item");
+        const mi = obj.shadowRoot.querySelector(".wz-menu-item")
         if (mi != null) {
           mi.style.lineHeight =
-            "var(--wz-menu-option-height, var(--wz-option-height, 40px));";
+            "var(--wz-menu-option-height, var(--wz-option-height, 40px));"
           mi.style.height =
-            "var(--wz-menu-option-height, var(--wz-option-height, 40px))";
+            "var(--wz-menu-option-height, var(--wz-option-height, 40px))"
         }
       }
-      --n;
+      --n
     }
   }
   function hideUnuseableStuff() {
     if (W?.model?.getTopCountry === undefined) {
       // getTopCountry takes a short while to become available, so keep checking at regular
       // intervals until it's there to be used...
-      setTimeout(hideUnuseableStuff, 100);
+      setTimeout(hideUnuseableStuff, 100)
     } else {
-      let fname = "hideUnuseableStuff";
-      let styles = "";
+      const fname = "hideUnuseableStuff"
+      let styles = ""
 
       // Hide the headlights reminder checkbox for segments in countries that don't use it
       if (W?.model?.getTopCountry()?.allowHeadlightsReminderRank === null) {
-        styles += ".headlights-reminder { display: none !important; }";
+        styles += ".headlights-reminder { display: none !important; }"
       }
 
       // Hide the restricted areas toolbar button for anyone who can't make use of it
@@ -3362,528 +3115,447 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         true
       ) {
         styles +=
-          "wz-button.restricted-driving-area { display: none !important; }";
+          "wz-button.restricted-driving-area { display: none !important; }"
       }
 
       if (styles !== "") {
-        addStyle(PREFIX + fname, styles);
+        addStyle(PREFIX + fname, styles)
       }
     }
   }
   function compressLayersMenu() {
-    let fname = "compressLayersMenu";
-    removeStyle(PREFIX + fname);
-    let styles = "";
+    const fname = "compressLayersMenu"
+    removeStyle(PREFIX + fname)
+    let styles = ""
     if (getById("_cbCompressLayersMenu").checked) {
-      getById("layersColControls").style.opacity = "1";
-      let contrast = getById("_inpUIContrast").value;
-      let compress = getById("_inpUICompression").value;
+      getById("layersColControls").style.opacity = "1"
+      const contrast = getById("_inpUIContrast").value
+      const compress = getById("_inpUICompression").value
       if (compress > 0) {
-        //VERTICAL CHANGES
-        //change menu to autoheight - not working
+        // VERTICAL CHANGES
+        // change menu to autoheight - not working
         // styles += '.layer-switcher .menu { height: auto; width: auto; max-height: calc(100% - 26px); overflow-y: scroll }';
-        //change menu to auto-width
-        styles += ".layer-switcher .menu { width: auto }";
-        styles += ".layer-switcher .menu.hide-layer-switcher { left: 100% }";
-        //menu title
-        styles +=
-          ".layer-switcher .menu > .title { font-size: " +
-          ["", "14px", "12px"][compress] +
-          "; padding-bottom: " +
-          ["", "7px", "2px"][compress] +
-          "; padding-top: " +
-          ["", "7px", "2px"][compress] +
-          " }";
-        styles +=
-          ".layer-switcher .menu > .title .w-icon-x { font-size: " +
-          ["", "21px", "18px"][compress] +
-          " }";
-        styles +=
-          ".layer-switcher .scrollable { height: calc(100% - " +
-          ["", "39px", "29px"][compress] +
-          ") }";
-        //menu group headers
-        styles +=
-          ".layer-switcher .layer-switcher-toggler-tree-category { padding: " +
-          ["", "5px", "2px"][compress] +
-          " 0; height: " +
-          ["", "30px", "20px"][compress] +
-          " }";
-        //menu items
-        styles +=
-          ".layer-switcher li { line-height: " +
-          ["", "20px", "16px"][compress] +
-          "}";
-        styles +=
-          ".layer-switcher .togglers ul li .wz-checkbox { margin-bottom: " +
-          ["", "3px", "0px"][compress] +
-          " }";
-        styles +=
-          ".wz-checkbox { min-height: " + ["", "20px", "16px"][compress] + " }";
-        styles +=
-          '.wz-checkbox input[type="checkbox"] + label { line-height: ' +
-          ["", "20px", "16px"][compress] +
-          "; font-size: " +
-          ["", "12px", "11px"][compress] +
-          " }";
-        styles +=
-          '.wz-checkbox input[type="checkbox"] + label:before { font-size: ' +
-          ["", "13px", "10px"][compress] +
-          "; height: " +
-          ["", "16px", "14px"][compress] +
-          "; width: " +
-          ["", "16px", "14px"][compress] +
-          "; line-height: " +
-          ["", "12px", "11px"][compress] +
-          " }";
-        //HORIZONTAL CHANGES
-        styles +=
-          ".layer-switcher .togglers ul { padding-left: " +
-          ["", "19px", "12px"][compress] +
-          "; }";
-        styles +=
-          ".layer-switcher .togglers .group { padding: " +
-          ["", "0 8px 0 4px", "0 4px 0 2px"][compress] +
-          " }";
+        // change menu to auto-width
+        styles += ".layer-switcher .menu { width: auto }"
+        styles += ".layer-switcher .menu.hide-layer-switcher { left: 100% }"
+        // menu title
+        styles += `.layer-switcher .menu > .title { font-size: ${
+          ["", "14px", "12px"][compress]
+        }; padding-bottom: ${["", "7px", "2px"][compress]}; padding-top: ${
+          ["", "7px", "2px"][compress]
+        } }`
+        styles += `.layer-switcher .menu > .title .w-icon-x { font-size: ${
+          ["", "21px", "18px"][compress]
+        } }`
+        styles += `.layer-switcher .scrollable { height: calc(100% - ${
+          ["", "39px", "29px"][compress]
+        }) }`
+        // menu group headers
+        styles += `.layer-switcher .layer-switcher-toggler-tree-category { padding: ${
+          ["", "5px", "2px"][compress]
+        } 0; height: ${["", "30px", "20px"][compress]} }`
+        // menu items
+        styles += `.layer-switcher li { line-height: ${
+          ["", "20px", "16px"][compress]
+        }}`
+        styles += `.layer-switcher .togglers ul li .wz-checkbox { margin-bottom: ${
+          ["", "3px", "0px"][compress]
+        } }`
+        styles += `.wz-checkbox { min-height: ${["", "20px", "16px"][compress]} }`
+        styles += `.wz-checkbox input[type="checkbox"] + label { line-height: ${
+          ["", "20px", "16px"][compress]
+        }; font-size: ${["", "12px", "11px"][compress]} }`
+        styles += `.wz-checkbox input[type="checkbox"] + label:before { font-size: ${
+          ["", "13px", "10px"][compress]
+        }; height: ${["", "16px", "14px"][compress]}; width: ${
+          ["", "16px", "14px"][compress]
+        }; line-height: ${["", "12px", "11px"][compress]} }`
+        // HORIZONTAL CHANGES
+        styles += `.layer-switcher .togglers ul { padding-left: ${
+          ["", "19px", "12px"][compress]
+        }; }`
+        styles += `.layer-switcher .togglers .group { padding: ${
+          ["", "0 8px 0 4px", "0 4px 0 2px"][compress]
+        } }`
         if (getById("_cbLayersColumns").checked) {
-          //2 column stuff
-          styles += ".layer-switcher .scrollable { columns: 2; }";
+          // 2 column stuff
+          styles += ".layer-switcher .scrollable { columns: 2; }"
           styles +=
-            "li.group { break-inside: avoid; page-break-inside: avoid; }";
-          //prevent city names showing up when it should be hidden
+            "li.group { break-inside: avoid; page-break-inside: avoid; }"
+          // prevent city names showing up when it should be hidden
           styles +=
-            ' .layer-switcher ul[class^="collapsible"].collapse-layer-switcher-group { visibility: collapse }';
+            ' .layer-switcher ul[class^="collapsible"].collapse-layer-switcher-group { visibility: collapse }'
+          styles += `.layer-switcher .menu { overflow-x: hidden; overflow-y: scroll; height: auto; max-height: calc(100% - ${
+            ["", "39px", "29px"][compress]
+          }) }`
           styles +=
-            ".layer-switcher .menu { overflow-x: hidden; overflow-y: scroll; height: auto; max-height: calc(100% - " +
-            ["", "39px", "29px"][compress] +
-            ") }";
-          styles +=
-            ".layer-switcher .scrollable { overflow-x: hidden; overflow-y: hidden; height: unset }";
+            ".layer-switcher .scrollable { overflow-x: hidden; overflow-y: hidden; height: unset }"
         }
         // fix from ABelter for layers menu
         styles +=
-          ' .layer-switcher ul[class^="collapsible"] { max-height: none; }';
+          ' .layer-switcher ul[class^="collapsible"] { max-height: none; }'
       } else {
-        //2-columns not available without compression
-        getById("layersColControls").style.opacity = "0.5";
+        // 2-columns not available without compression
+        getById("layersColControls").style.opacity = "0.5"
       }
       if (contrast > 0) {
         styles +=
-          ".controls-container.main.toggler { color: var(--color-white); background: dimgray }";
+          ".controls-container.main.toggler { color: var(--color-white); background: dimgray }"
         styles +=
-          ".layer-switcher .toggler.main .label-text { text-transform: inherit }";
-        //labels
+          ".layer-switcher .toggler.main .label-text { text-transform: inherit }"
+        // labels
         styles +=
-          ".layer-switcher .layer-switcher-toggler-tree-category > .label-text { color: black }";
+          ".layer-switcher .layer-switcher-toggler-tree-category > .label-text { color: black }"
         styles +=
-          '.wz-checkbox input[type="checkbox"] + label { WME: FU; color: black }';
-        //group separator
-        styles +=
-          ".layer-switcher .togglers .group { border-bottom: 1px solid " +
-          ["", "lightgrey", "grey"][contrast] +
-          " }";
-        //column rule
-        styles +=
-          ".layer-switcher .scrollable { column-rule: 1px solid " +
-          ["", "lightgrey", "grey"][contrast] +
-          " }";
+          '.wz-checkbox input[type="checkbox"] + label { WME: FU; color: black }'
+        // group separator
+        styles += `.layer-switcher .togglers .group { border-bottom: 1px solid ${
+          ["", "lightgrey", "grey"][contrast]
+        } }`
+        // column rule
+        styles += `.layer-switcher .scrollable { column-rule: 1px solid ${
+          ["", "lightgrey", "grey"][contrast]
+        } }`
       }
       if (getById("_cbLayersMenuMoreOptions").checked === true) {
         styles +=
-          '.layer-switcher ul[class^="collapsible"].collapse-layer-switcher-group { visibility: inherit; max-height: inherit }';
+          '.layer-switcher ul[class^="collapsible"].collapse-layer-switcher-group { visibility: inherit; max-height: inherit }'
         styles +=
-          ".layer-switcher i.toggle-category { visibility: hidden; width: 0 }";
+          ".layer-switcher i.toggle-category { visibility: hidden; width: 0 }"
       }
-      addStyle(PREFIX + fname, styles);
+      addStyle(PREFIX + fname, styles)
     } else {
-      getById("layersColControls").style.opacity = "0.5";
-      removeStyle(PREFIX + fname);
+      getById("layersColControls").style.opacity = "0.5"
+      removeStyle(PREFIX + fname)
     }
   }
   function changePassVisibility() {
-    ReportObserver.disconnect();
-    let panelContainer = document.querySelector("#panel-container");
-    let passes = panelContainer.querySelectorAll(".activeHovSubscriptions");
-    let pDisp = "none";
+    ReportObserver.disconnect()
+    const panelContainer = document.querySelector("#panel-container")
+    const passes = panelContainer.querySelectorAll(".activeHovSubscriptions")
+    let pDisp = "none"
     if (panelContainer.querySelector("#_cbCollapsePasses").checked === false) {
-      pDisp = "";
+      pDisp = ""
     }
     for (let i = 0; i < passes.length; ++i) {
-      passes[i].style.display = pDisp;
+      passes[i].style.display = pDisp
     }
     ReportObserver.observe(document.querySelector("#panel-container"), {
       childList: true,
       subtree: true,
-    });
+    })
   }
-  var ReportObserver = new MutationObserver(function (mutations) {
-    AddCollapsiblePasses();
-  });
+  var ReportObserver = new MutationObserver(mutations => {
+    AddCollapsiblePasses()
+  })
   function AddCollapsiblePasses() {
-    let panelContainer = document.querySelector("#panel-container");
+    const panelContainer = document.querySelector("#panel-container")
     if (panelContainer.getBoundingClientRect().width > 0) {
-      let passes = panelContainer.querySelectorAll(".activeHovSubscriptions");
+      const passes = panelContainer.querySelectorAll(".activeHovSubscriptions")
       if (passes.length > 0) {
         if (panelContainer.querySelector("#_cbCollapsePasses") == null) {
-          ReportObserver.disconnect();
-          let upHeader = panelContainer
+          ReportObserver.disconnect()
+          const upHeader = panelContainer
             .querySelector(".reporter-preferences")
-            .querySelector(".title");
-          upHeader.innerHTML +=
-            " | Hide passes (" +
-            passes.length +
-            ') <input type="checkbox" id="_cbCollapsePasses" checked/>';
+            .querySelector(".title")
+          upHeader.innerHTML += ` | Hide passes (${
+            passes.length
+          }) <input type="checkbox" id="_cbCollapsePasses" checked/>`
           document
             .getElementById("_cbCollapsePasses")
-            .addEventListener("click", changePassVisibility, true);
-          changePassVisibility();
+            .addEventListener("click", changePassVisibility, true)
+          changePassVisibility()
         }
       }
     }
   }
   function restyleReports() {
-    let fname = "restyleReports";
-    let styles = "";
+    const fname = "restyleReports"
+    let styles = ""
     if (getById("_cbRestyleReports").checked) {
-      let contrast = getById("_inpUIContrast").value;
-      let compress = getById("_inpUICompression").value;
+      const contrast = getById("_inpUIContrast").value
+      const compress = getById("_inpUICompression").value
 
       // Stops Reject/Approve buttons being partially/completely cut off...
-      styles += ".place-update-edit .place-update { max-height: 100%; }";
+      styles += ".place-update-edit .place-update { max-height: 100%; }"
 
       if (compress > 0) {
-        //report header
+        // report header
         // Remove title text - we know what the panel contains, because we've asked WME to open it...
-        styles += "#panel-container .main-title { display: none!important; }";
+        styles += "#panel-container .main-title { display: none!important; }"
+        styles += `#panel-container .issue-panel-header { padding: ${
+          ["", "9px 36px", "1px 36px"][compress]
+        }; line-height: ${["", "19px", "17px"][compress]}; }`
+        styles += `#panel-container .issue-panel-header .dot { top: ${
+          ["", "15px", "7px"][compress]
+        }; }`
+        // special treatment for More Information checkboxes (with legends)
         styles +=
-          "#panel-container .issue-panel-header { padding: " +
-          ["", "9px 36px", "1px 36px"][compress] +
-          "; line-height: " +
-          ["", "19px", "17px"][compress] +
-          "; }";
+          "#panel-container .problem-edit .more-info .legend { left: 20px; top: 3px; }"
         styles +=
-          "#panel-container .issue-panel-header .dot { top: " +
-          ["", "15px", "7px"][compress] +
-          "; }";
-        //special treatment for More Information checkboxes (with legends)
-        styles +=
-          "#panel-container .problem-edit .more-info .legend { left: 20px; top: 3px; }";
-        styles +=
-          '#panel-container .more-info input[type="checkbox"] + label { padding-left: 33px !important; }';
+          '#panel-container .more-info input[type="checkbox"] + label { padding-left: 33px !important; }'
         // User preferences section
         styles +=
-          "#panel-container .preferences-container { gap: 0px !important; }";
-        //report body
-        styles +=
-          "#panel-container .body { line-height: " +
-          ["", "15px", "13px"][compress] +
-          "; font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; }";
-        //problem description
-        styles +=
-          "#panel-container .collapsible { padding: " +
-          ["", "9px", "3px"][compress] +
-          "; }";
+          "#panel-container .preferences-container { gap: 0px !important; }"
+        // report body
+        styles += `#panel-container .body { line-height: ${
+          ["", "15px", "13px"][compress]
+        }; font-size: ${["", "13px", "12px"][compress]}; }`
+        // problem description
+        styles += `#panel-container .collapsible { padding: ${
+          ["", "9px", "3px"][compress]
+        }; }`
 
-        //comments
-        ////styles += '#panel-container .conversation-view .comment .comment-content { padding: ' + ['','6px 9px','2px 3px'][compress] + '; }';
-        styles +=
-          "#panel-container .comment .text { padding: " +
-          ["", "7px 9px", "4px 4px"][compress] +
-          "; }";
+        // comments
+        /// /styles += '#panel-container .conversation-view .comment .comment-content { padding: ' + ['','6px 9px','2px 3px'][compress] + '; }';
+        styles += `#panel-container .comment .text { padding: ${
+          ["", "7px 9px", "4px 4px"][compress]
+        }; }`
         // Remove padding around comment boxes
-        styles += "#panel-container wz-list { padding: 0px!important; }";
-        ////styles += '#panel-container .wz-list-item .list-item-wrapper { padding-bottom: 0px!important; padding-top: 0px!important; }';
-        //new comment entry
-        styles +=
-          "#panel-container .conversation-view .new-comment-form { padding: " +
-          ["", "8px 9px 6px 9px", "1px 3px 2px 3px"][compress] +
-          "; }";
-        //send button
-        styles +=
-          "#panel-container .conversation-view .send-button { padding: " +
-          ["", "4px 16px", "2px 12px"][compress] +
-          "; box-shadow: " +
-          ["", "3px 3px 4px 0 #def7ff", "3px 2px 4px 0 #def7ff"][compress] +
-          "; }";
-        //lower buttons
-        styles +=
-          "#panel-container > div > div > div.actions > div > div { padding-top: " +
-          ["", "6px", "3px"][compress] +
-          "; }";
-        styles +=
-          "#panel-container .close-details.section { font-size: " +
-          ["", "13px", "12px"][compress] +
-          "; line-height: " +
-          ["", "13px", "9px"][compress] +
-          "; }";
-        styles +=
-          "#panel-container .problem-edit .actions .controls-container label { height: " +
-          ["", "28px", "21px"][compress] +
-          "; line-height: " +
-          ["", "28px", "21px"][compress] +
-          "; margin-bottom: " +
-          ["", "5px", "2px"][compress] +
-          "; }";
-        styles +=
-          "#panel-container .waze-plain-btn { height: " +
-          ["", "30px", "20px"][compress] +
-          "; line-height: " +
-          ["", "30px", "20px"][compress] +
-          "; }";
-        styles +=
-          ".panel .navigation { margin-top: " +
-          ["", "6px", "2px"][compress] +
-          "; }";
-        //WMEFP All PM button
-        styles +=
-          "#WMEFP-UR-ALLPM { top: " +
-          ["", "5px", "0px"][compress] +
-          " !important; }";
+        styles += "#panel-container wz-list { padding: 0px!important; }"
+        /// /styles += '#panel-container .wz-list-item .list-item-wrapper { padding-bottom: 0px!important; padding-top: 0px!important; }';
+        // new comment entry
+        styles += `#panel-container .conversation-view .new-comment-form { padding: ${
+          ["", "8px 9px 6px 9px", "1px 3px 2px 3px"][compress]
+        }; }`
+        // send button
+        styles += `#panel-container .conversation-view .send-button { padding: ${
+          ["", "4px 16px", "2px 12px"][compress]
+        }; box-shadow: ${
+          ["", "3px 3px 4px 0 #def7ff", "3px 2px 4px 0 #def7ff"][compress]
+        }; }`
+        // lower buttons
+        styles += `#panel-container > div > div > div.actions > div > div { padding-top: ${
+          ["", "6px", "3px"][compress]
+        }; }`
+        styles += `#panel-container .close-details.section { font-size: ${
+          ["", "13px", "12px"][compress]
+        }; line-height: ${["", "13px", "9px"][compress]}; }`
+        styles += `#panel-container .problem-edit .actions .controls-container label { height: ${
+          ["", "28px", "21px"][compress]
+        }; line-height: ${["", "28px", "21px"][compress]}; margin-bottom: ${
+          ["", "5px", "2px"][compress]
+        }; }`
+        styles += `#panel-container .waze-plain-btn { height: ${
+          ["", "30px", "20px"][compress]
+        }; line-height: ${["", "30px", "20px"][compress]}; }`
+        styles += `.panel .navigation { margin-top: ${
+          ["", "6px", "2px"][compress]
+        }; }`
+        // WMEFP All PM button
+        styles += `#WMEFP-UR-ALLPM { top: ${
+          ["", "5px", "0px"][compress]
+        } !important; }`
       }
       if (contrast > 0) {
-        styles +=
-          "#panel-container .section { border-bottom: 1px solid " +
-          ["", "lightgrey", "grey"][contrast] +
-          "; }";
-        styles +=
-          "#panel-container .close-panel { border-color: " +
-          ["", "lightgrey", "grey"][contrast] +
-          "; }";
-        styles += "#panel-container .main-title { font-weight: 900; }";
-        styles +=
-          "#panel-container .reported { color: " +
-          ["", "darkslategrey", "black"][contrast] +
-          "; }";
-        styles +=
-          "#panel-container .date { color: " +
-          ["", "#6d6d6d", "#3d3d3d"][contrast] +
-          "; }";
-        styles +=
-          "#panel-container .comment .text { " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        styles +=
-          "#panel-container .comment-content.reporter .username { color: " +
-          ["", "#159dc6", "#107998"][contrast] +
-          "; }";
-        styles +=
-          "#panel-container .conversation-view .new-comment-form textarea { " +
-          GetBorderContrast(contrast, false) +
-          "}";
-        styles +=
-          "#panel-container .top-section { border-bottom: 1px solid " +
-          ["", "lightgrey", "grey"][contrast] +
-          "; }";
-        styles +=
-          "#panel-container .waze-plain-btn { font-weight: 800; color: " +
-          ["", "#159dc6", "#107998"][contrast] +
-          "; }";
+        styles += `#panel-container .section { border-bottom: 1px solid ${
+          ["", "lightgrey", "grey"][contrast]
+        }; }`
+        styles += `#panel-container .close-panel { border-color: ${
+          ["", "lightgrey", "grey"][contrast]
+        }; }`
+        styles += "#panel-container .main-title { font-weight: 900; }"
+        styles += `#panel-container .reported { color: ${
+          ["", "darkslategrey", "black"][contrast]
+        }; }`
+        styles += `#panel-container .date { color: ${
+          ["", "#6d6d6d", "#3d3d3d"][contrast]
+        }; }`
+        styles += `#panel-container .comment .text { ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        styles += `#panel-container .comment-content.reporter .username { color: ${
+          ["", "#159dc6", "#107998"][contrast]
+        }; }`
+        styles += `#panel-container .conversation-view .new-comment-form textarea { ${GetBorderContrast(
+          contrast,
+          false,
+        )}}`
+        styles += `#panel-container .top-section { border-bottom: 1px solid ${
+          ["", "lightgrey", "grey"][contrast]
+        }; }`
+        styles += `#panel-container .waze-plain-btn { font-weight: 800; color: ${
+          ["", "#159dc6", "#107998"][contrast]
+        }; }`
       }
-      addStyle(PREFIX + fname, styles);
+      addStyle(PREFIX + fname, styles)
       if (wmeFUinitialising) {
-        setTimeout(draggablePanel, 5000);
+        setTimeout(draggablePanel, 5000)
       } else {
-        draggablePanel();
+        draggablePanel()
       }
 
       ReportObserver.observe(document.querySelector("#panel-container"), {
         childList: true,
         subtree: true,
-      });
-      AddCollapsiblePasses();
+      })
+      AddCollapsiblePasses()
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
       if (jQuery.ui) {
         if ($("#panel-container").hasClass("ui-draggable")) {
-          $("#panel-container").draggable("destroy");
+          $("#panel-container").draggable("destroy")
         }
-        getById("panel-container").style = "";
+        getById("panel-container").style = ""
       }
-      ReportObserver.disconnect();
+      ReportObserver.disconnect()
     }
-    window.dispatchEvent(new Event("resize"));
+    window.dispatchEvent(new Event("resize"))
   }
   function draggablePanel() {
     if (jQuery.ui) {
       if ($("#panel-container").draggable) {
-        $("#panel-container").draggable({ handle: ".header" });
+        $("#panel-container").draggable({ handle: ".header" })
       }
     }
   }
   function enhanceChat() {
-    let fname = "enhanceChat";
-    let styles = "";
+    const fname = "enhanceChat"
+    let styles = ""
     if (getById("_cbEnhanceChat").checked) {
-      removeStyle(PREFIX + fname);
-      let contrast = getById("_inpUIContrast").value;
-      let compress = getById("_inpUICompression").value;
-      let mapY = getById("map").clientHeight;
-      let chatY = Math.floor(mapY * 0.5);
-      let chatHeaderY = [50, 35, 20][compress];
-      let chatMessageInputY = [39, 31, 23][compress];
-      let chatMessagesY = chatY - chatHeaderY - chatMessageInputY;
-      let chatUsersY = chatY - chatHeaderY;
-      //change chat width to 35% of whole window
-      styles += "#chat .messages { width: calc(25vw); min-width: 200px;}";
-      styles += "#map.street-view-mode #chat .messages { width: calc(25vw); }";
-      styles += "#chat .messages .message-list { margin-bottom: 0px; }";
+      removeStyle(PREFIX + fname)
+      const contrast = getById("_inpUIContrast").value
+      const compress = getById("_inpUICompression").value
+      const mapY = getById("map").clientHeight
+      const chatY = Math.floor(mapY * 0.5)
+      const chatHeaderY = [50, 35, 20][compress]
+      const chatMessageInputY = [39, 31, 23][compress]
+      const chatMessagesY = chatY - chatHeaderY - chatMessageInputY
+      const chatUsersY = chatY - chatHeaderY
+      // change chat width to 35% of whole window
+      styles += "#chat .messages { width: calc(25vw); min-width: 200px;}"
+      styles += "#map.street-view-mode #chat .messages { width: calc(25vw); }"
+      styles += "#chat .messages .message-list { margin-bottom: 0px; }"
       styles +=
-        "#chat .messages .new-message { position: inherit; width: unset; }";
+        "#chat .messages .new-message { position: inherit; width: unset; }"
       styles +=
-        "#map.street-view-mode #chat .messages .new-message { position: inherit; width: unset; }";
-      styles += "#chat .users { width: calc(10vw); min-width: 120px; }";
+        "#map.street-view-mode #chat .messages .new-message { position: inherit; width: unset; }"
+      styles += "#chat .users { width: calc(10vw); min-width: 120px; }"
       styles +=
-        "#chat .messages .message-list .message.normal-message { max-width: unset; }";
-      //change chat height to 50% of map view
-      styles +=
-        "#chat .messages .message-list { min-height: " +
-        chatMessagesY +
-        "px; }";
-      styles += "#chat .users { max-height: " + chatUsersY + "px; }";
+        "#chat .messages .message-list .message.normal-message { max-width: unset; }"
+      // change chat height to 50% of map view
+      styles += `#chat .messages .message-list { min-height: ${chatMessagesY}px; }`
+      styles += `#chat .users { max-height: ${chatUsersY}px; }`
 
       //		#chat .messages .unread-messages-notification width=70%, bottom64px>
       if (compress > 0) {
-        //do compression
-        //header
-        styles += "#chat .header { line-height: " + chatHeaderY + "px; }";
+        // do compression
+        // header
+        styles += `#chat .header { line-height: ${chatHeaderY}px; }`
 
-        styles +=
-          "#chat .header .dropdown .dropdown-toggle { line-height: " +
-          ["", "30px", "22px"][compress] +
-          "; }";
-        styles +=
-          "#chat .header button { line-height: " +
-          ["", "20px", "19px"][compress] +
-          "; font-size: " +
-          ["", "13px", "11px"][compress] +
-          "; height: " +
-          ["", "20px", "19px"][compress] +
-          "; }";
-        //message list
-        styles +=
-          "#chat .messages .message-list { padding: " +
-          ["", "9px", "3px"][compress] +
-          "; }";
-        styles +=
-          "#chat .messages .message-list .message.normal-message { padding: " +
-          ["", "6px", "2px"][compress] +
-          "; }";
-        styles +=
-          "#chat .messages .message-list .message { margin-bottom: " +
-          ["", "8px", "2px"][compress] +
-          "; line-height: " +
-          ["", "16px", "14px"][compress] +
-          "; font-size: " +
-          ["", "12px", "11px"][compress] +
-          "; }";
-        styles +=
-          "#chat .messages .new-message input { height: " +
-          chatMessageInputY +
-          "px; }";
-        //user list
-        styles +=
-          "#chat .users { padding: " + ["", "8px", "1px"][compress] + "; }";
-        styles +=
-          "#chat ul.user-list a.user { padding: " +
-          ["", "2px", "1px"][compress] +
-          "; }";
-        styles +=
-          "#chat ul.user-list a.user .rank { width: " +
-          ["", "25px", "20px"][compress] +
-          "; height: " +
-          ["", "20px", "16px"][compress] +
-          "; margin-right: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        styles +=
-          "#chat ul.user-list a.user .username { line-height: " +
-          ["", "21px", "17px"][compress] +
-          "; }";
-        styles +=
-          "#chat ul.user-list a.user:hover .crosshair { margin-top: " +
-          ["", "3px", "1px"][compress] +
-          "; right: " +
-          ["", "3px", "1px"][compress] +
-          "; }";
-        //fix for WME Chat Addon
-        styles += "#chat .users > ul > li > a { margin: 0px !important; }";
+        styles += `#chat .header .dropdown .dropdown-toggle { line-height: ${
+          ["", "30px", "22px"][compress]
+        }; }`
+        styles += `#chat .header button { line-height: ${
+          ["", "20px", "19px"][compress]
+        }; font-size: ${["", "13px", "11px"][compress]}; height: ${
+          ["", "20px", "19px"][compress]
+        }; }`
+        // message list
+        styles += `#chat .messages .message-list { padding: ${
+          ["", "9px", "3px"][compress]
+        }; }`
+        styles += `#chat .messages .message-list .message.normal-message { padding: ${
+          ["", "6px", "2px"][compress]
+        }; }`
+        styles += `#chat .messages .message-list .message { margin-bottom: ${
+          ["", "8px", "2px"][compress]
+        }; line-height: ${["", "16px", "14px"][compress]}; font-size: ${
+          ["", "12px", "11px"][compress]
+        }; }`
+        styles += `#chat .messages .new-message input { height: ${
+          chatMessageInputY
+        }px; }`
+        // user list
+        styles += `#chat .users { padding: ${["", "8px", "1px"][compress]}; }`
+        styles += `#chat ul.user-list a.user { padding: ${
+          ["", "2px", "1px"][compress]
+        }; }`
+        styles += `#chat ul.user-list a.user .rank { width: ${
+          ["", "25px", "20px"][compress]
+        }; height: ${["", "20px", "16px"][compress]}; margin-right: ${
+          ["", "3px", "1px"][compress]
+        }; }`
+        styles += `#chat ul.user-list a.user .username { line-height: ${
+          ["", "21px", "17px"][compress]
+        }; }`
+        styles += `#chat ul.user-list a.user:hover .crosshair { margin-top: ${
+          ["", "3px", "1px"][compress]
+        }; right: ${["", "3px", "1px"][compress]}; }`
+        // fix for WME Chat Addon
+        styles += "#chat .users > ul > li > a { margin: 0px !important; }"
       }
       if (contrast > 0) {
-        //header
+        // header
+        styles += `#chat .header { color: var(--color-black); background-color: ${
+          ["", "#d9d9d9", "#bfbfbf"][contrast]
+        }; }`
+        styles += `#chat .messages .message-list { background-color: ${
+          ["", "#e8e8e8", "lightgrey"][contrast]
+        }; }`
         styles +=
-          "#chat .header { color: var(--color-black); background-color: " +
-          ["", "#d9d9d9", "#bfbfbf"][contrast] +
-          "; }";
+          "#chat .messages .message-list .message.normal-message { color: var(--color-black); float: left; }"
         styles +=
-          "#chat .messages .message-list { background-color: " +
-          ["", "#e8e8e8", "lightgrey"][contrast] +
-          "; }";
+          "#chat .messages .message-list .message.normal-message .from { color: darkslategrey; font-weight: bold; font-style: italic; }"
         styles +=
-          "#chat .messages .message-list .message.normal-message { color: var(--color-black); float: left; }";
-        styles +=
-          "#chat .messages .message-list .message.normal-message .from { color: darkslategrey; font-weight: bold; font-style: italic; }";
-        styles +=
-          "#chat .messages .message-list .message.own-message .from { color: var(--color-black); background-color: #a1dcf5; }";
-        //user message timestamps
-        styles +=
-          "#chat > div.chat-body > div.messages > div.message-list > div > div.from > span { color: " +
-          ["", "darkslategrey", "black"][contrast] +
-          " !important; }";
-        //system message timestamps
-        styles +=
-          "#chat > div.chat-body > div.messages > div.message-list > div > div.body > div > span { color: " +
-          ["", "darkslategrey", "black"][contrast] +
-          " !important; }";
-        //fix for WME Chat Addon
-        styles += "#chat .body > div { color: black !important; }";
+          "#chat .messages .message-list .message.own-message .from { color: var(--color-black); background-color: #a1dcf5; }"
+        // user message timestamps
+        styles += `#chat > div.chat-body > div.messages > div.message-list > div > div.from > span { color: ${
+          ["", "darkslategrey", "black"][contrast]
+        } !important; }`
+        // system message timestamps
+        styles += `#chat > div.chat-body > div.messages > div.message-list > div > div.body > div > span { color: ${
+          ["", "darkslategrey", "black"][contrast]
+        } !important; }`
+        // fix for WME Chat Addon
+        styles += "#chat .body > div { color: black !important; }"
       }
-      //fix for Chat Addon timestamps running up against names
+      // fix for Chat Addon timestamps running up against names
       styles +=
-        "#chat > div.chat-body > div.messages > div.message-list > div > div.from > span { margin-left: 5px; }";
-      addStyle(PREFIX + fname, styles);
+        "#chat > div.chat-body > div.messages > div.message-list > div > div.from > span { margin-left: 5px; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function narrowSidePanel() {
-    let fname = "narrowSidePanel";
-    let styles = "";
+    const fname = "narrowSidePanel"
+    let styles = ""
     if (getById("_cbNarrowSidePanel").checked) {
-      //sidebar width
-      styles += ".row-fluid #sidebar { width: 250px; }";
-      //map width
-      styles += ".show-sidebar .row-fluid .fluid-fixed { margin-left: 250px; }";
-      //user info tweaks
-      styles += "#sidebar #user-info #user-box { padding: 0 0 5px 0; }";
-      styles += "#sidebar #user-details { width: 250px; }";
+      // sidebar width
+      styles += ".row-fluid #sidebar { width: 250px; }"
+      // map width
+      styles += ".show-sidebar .row-fluid .fluid-fixed { margin-left: 250px; }"
+      // user info tweaks
+      styles += "#sidebar #user-info #user-box { padding: 0 0 5px 0; }"
+      styles += "#sidebar #user-details { width: 250px; }"
       styles +=
-        "#sidebar #user-details .user-profile .level-icon { margin: 0; }";
+        "#sidebar #user-details .user-profile .level-icon { margin: 0; }"
       styles +=
-        "#sidebar #user-details .user-profile .user-about { max-width: 161px; }";
-      //gradient bars
-      styles += "#sidebar .tab-scroll-gradient { width: 220px; }";
-      styles += "#sidebar #links:before { width: 236px; }";
-      //feed
-      styles += ".feed-item .content { max-width: 189px; }";
-      //segment edit panel
+        "#sidebar #user-details .user-profile .user-about { max-width: 161px; }"
+      // gradient bars
+      styles += "#sidebar .tab-scroll-gradient { width: 220px; }"
+      styles += "#sidebar #links:before { width: 236px; }"
+      // feed
+      styles += ".feed-item .content { max-width: 189px; }"
+      // segment edit panel
       styles +=
-        "#edit-panel .more-actions .waze-btn.waze-btn-white { width: 122px; }";
-      //tweak for WME Bookmarks
-      styles += "#divBookmarksContent .divName { max-width: 164px; }";
-      //tweak for WME PH buttons
+        "#edit-panel .more-actions .waze-btn.waze-btn-white { width: 122px; }"
+      // tweak for WME Bookmarks
+      styles += "#divBookmarksContent .divName { max-width: 164px; }"
+      // tweak for WME PH buttons
       styles +=
-        "#WMEPH_runButton .btn { font-size: 11px; padding: 2px !important; }";
-      addStyle(PREFIX + fname, styles);
+        "#WMEPH_runButton .btn { font-size: 11px; padding: 2px !important; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
-    compressSegmentTab();
-    window.dispatchEvent(new Event("resize"));
+    compressSegmentTab()
+    window.dispatchEvent(new Event("resize"))
   }
   function shiftAerials() {
-    let siLayerNames = [
+    const siLayerNames = [
       "satellite_imagery",
       "merged_collection_by_latest_no_candid",
       "merged_collection_by_quality_no_candid",
@@ -3893,34 +3565,34 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       "satellite_geoeye1_ortho_rgb",
       "satellite_skysat_ortho_rgb",
       "satellite_pneo_ortho_rgb",
-    ];
+    ]
 
     // calculate meters/pixel for current map view, taking into account how the
     // map projection stretches things out the further from the equator you get
-    let metersPerPixel = W.map.getResolution();
-    let mapCentre = new OpenLayers.LonLat();
-    mapCentre.lon = W.map.getCenter().lon;
-    mapCentre.lat = W.map.getCenter().lat;
+    let metersPerPixel = W.map.getResolution()
+    const mapCentre = new OpenLayers.LonLat()
+    mapCentre.lon = W.map.getCenter().lon
+    mapCentre.lat = W.map.getCenter().lat
     mapCentre.transform(
       new OpenLayers.Projection("EPSG:900913"),
-      new OpenLayers.Projection("EPSG:4326")
-    );
-    let latAdj = Math.cos((mapCentre.lat * Math.PI) / 180);
-    metersPerPixel *= latAdj;
+      new OpenLayers.Projection("EPSG:4326"),
+    )
+    const latAdj = Math.cos((mapCentre.lat * Math.PI) / 180)
+    metersPerPixel *= latAdj
 
     if (metersPerPixel == 0) {
-      metersPerPixel = 0.001;
+      metersPerPixel = 0.001
     }
 
-    let sLeft = Math.round(options.arialShiftX / metersPerPixel) + "px";
-    let sTop = Math.round(-options.arialShiftY / metersPerPixel) + "px";
+    const sLeft = `${Math.round(options.arialShiftX / metersPerPixel)}px`
+    const sTop = `${Math.round(-options.arialShiftY / metersPerPixel)}px`
 
-    if (options.arialOpacity < 10) options.arialOpacity = 10;
+    if (options.arialOpacity < 10) options.arialOpacity = 10
 
-    let sLeftO = Math.round(options.arialShiftXO / metersPerPixel) + "px";
-    let sTopO = Math.round(-options.arialShiftYO / metersPerPixel) + "px";
+    const sLeftO = `${Math.round(options.arialShiftXO / metersPerPixel)}px`
+    const sTopO = `${Math.round(-options.arialShiftYO / metersPerPixel)}px`
 
-    if (options.arialOpacityO < 10) options.arialOpacityO = 10;
+    if (options.arialOpacityO < 10) options.arialOpacityO = 10
 
     if (
       options.arialShiftX != 0 ||
@@ -3928,400 +3600,388 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       options.arialShiftXO != 0 ||
       options.arialShiftYO != 0
     ) {
-      $("#WMEFU_AS").fadeIn(20);
+      $("#WMEFU_AS").fadeIn(20)
     } else {
-      $("#WMEFU_AS").fadeOut(20);
+      $("#WMEFU_AS").fadeOut(20)
     }
 
     // Apply the shift and opacity to all available imagery layers
     for (let i = 0; i < siLayerNames.length; ++i) {
-      let siLayer = W.map.getLayersByName(siLayerNames[i]);
+      const siLayer = W.map.getLayersByName(siLayerNames[i])
       if (siLayer.length == 1) {
-        let siDiv = siLayer[0].div;
+        const siDiv = siLayer[0].div
         if (i === 0) {
           // Standard layer
-          siDiv.style.left = sLeft;
-          siDiv.style.top = sTop;
-          siDiv.style.opacity = options.arialOpacity / 100;
+          siDiv.style.left = sLeft
+          siDiv.style.top = sTop
+          siDiv.style.opacity = options.arialOpacity / 100
         } else {
           // Additional layers
-          siDiv.style.left = sLeftO;
-          siDiv.style.top = sTopO;
-          siDiv.style.opacity = options.arialOpacityO / 100;
+          siDiv.style.left = sLeftO
+          siDiv.style.top = sTopO
+          siDiv.style.opacity = options.arialOpacityO / 100
         }
       }
     }
 
-    //turn off Enhance Chat if WME Chat Fix is loaded
+    // turn off Enhance Chat if WME Chat Fix is loaded
     if (document.getElementById("WMEfixChat-setting")) {
       if (getById("_cbEnhanceChat").checked === true) {
         alert(
-          "WME FixUI: Enhance Chat disabled because WME Chat UI Fix detected"
-        );
+          "WME FixUI: Enhance Chat disabled because WME Chat UI Fix detected",
+        )
       }
-      getById("_cbEnhanceChat").checked = false;
+      getById("_cbEnhanceChat").checked = false
     }
   }
   function ApplyArrowFix(aObj) {
     if (aObj.touchedByFUME === undefined) {
-      let rStr = aObj.style.transform;
-      let rFloat = 0;
+      const rStr = aObj.style.transform
+      let rFloat = 0
       if (rStr.indexOf("deg") != -1) {
-        rFloat = parseFloat(rStr.split("(")[1].split("deg")[0]);
+        rFloat = parseFloat(rStr.split("(")[1].split("deg")[0])
       }
-      rFloat += 180.0;
-      aObj.style.transform = "rotate(" + rFloat + "deg) scaleX(-1)";
-      aObj.touchedByFUME = true;
+      rFloat += 180.0
+      aObj.style.transform = `rotate(${rFloat}deg) scaleX(-1)`
+      aObj.touchedByFUME = true
     }
   }
   function RTCArrowsFix() {
     if (W.model.isLeftHand === true) {
-      let rtcDiv = W.map.closuresMarkerLayer.div;
-      let fLen = rtcDiv.querySelectorAll(".forward").length;
+      const rtcDiv = W.map.closuresMarkerLayer.div
+      let fLen = rtcDiv.querySelectorAll(".forward").length
       while (fLen) {
-        ApplyArrowFix(rtcDiv.querySelectorAll(".forward")[fLen - 1]);
-        --fLen;
+        ApplyArrowFix(rtcDiv.querySelectorAll(".forward")[fLen - 1])
+        --fLen
       }
-      let rLen = rtcDiv.querySelectorAll(".backward").length;
+      let rLen = rtcDiv.querySelectorAll(".backward").length
       while (rLen) {
-        ApplyArrowFix(rtcDiv.querySelectorAll(".backward")[rLen - 1]);
-        --rLen;
+        ApplyArrowFix(rtcDiv.querySelectorAll(".backward")[rLen - 1])
+        --rLen
       }
     }
   }
-  var RTCMarkerObserver = new MutationObserver(function (mutations) {
-    RTCArrowsFix();
-  });
+  var RTCMarkerObserver = new MutationObserver(mutations => {
+    RTCArrowsFix()
+  })
   function warnCommentsOff() {
-    let fname = "warnCommentsOff";
+    const fname = "warnCommentsOff"
     if (W.map.getLayerByUniqueName("mapComments").visibility === false) {
-      removeStyle(PREFIX + fname);
-      addStyle(PREFIX + fname, "#app-head { --background_default: #FFC107 ; }");
+      removeStyle(PREFIX + fname)
+      addStyle(PREFIX + fname, "#app-head { --background_default: #FFC107 ; }")
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
     // extra bit because killNodeLayer will be inactive
-    getById("_btnKillNode").style.backgroundColor = "";
+    getById("_btnKillNode").style.backgroundColor = ""
   }
   function adjustGSV() {
-    let fname = "adjustGSV";
-    let styles = "";
-    let C = getById("_inpGSVContrast");
-    let B = getById("_inpGSVBrightness");
-    let I = getById("_cbGSVInvert");
-    if (C.value < 10) C.value = 10;
-    if (B.value < 10) B.value = 10;
-    styles += ".gm-style { filter: contrast(" + C.value + "%) ";
-    styles += "brightness(" + B.value + "%) ";
+    const fname = "adjustGSV"
+    let styles = ""
+    const C = getById("_inpGSVContrast")
+    const B = getById("_inpGSVBrightness")
+    const I = getById("_cbGSVInvert")
+    if (C.value < 10) C.value = 10
+    if (B.value < 10) B.value = 10
+    styles += `.gm-style { filter: contrast(${C.value}%) `
+    styles += `brightness(${B.value}%) `
     if (I.checked) {
-      styles += "invert(1); }";
+      styles += "invert(1); }"
     } else {
-      styles += "invert(0); }";
+      styles += "invert(0); }"
     }
-    removeStyle(PREFIX + fname);
+    removeStyle(PREFIX + fname)
     if (C.value != 100 || B.value != 100 || I.checked)
-      addStyle(PREFIX + fname, styles);
+      addStyle(PREFIX + fname, styles)
   }
   function GSVWidth() {
-    let fname = "GSVWidth";
-    removeStyle(PREFIX + fname);
-    let w = getById("_inpGSVWidth").value;
+    const fname = "GSVWidth"
+    removeStyle(PREFIX + fname)
+    const w = getById("_inpGSVWidth").value
     if (w != 50) {
-      let styles = "";
-      styles +=
-        "#editor-container #map.street-view-mode #waze-map-container { width: " +
-        (100 - w) +
-        "%; }";
-      styles +=
-        "#editor-container #street-view-container { width: " + w + "%; }";
-      styles +=
-        "#editor-container #map #street-view-drag-handle { left: " +
-        (100 - w) +
-        "%; }";
-      addStyle(PREFIX + fname, styles);
+      let styles = ""
+      styles += `#editor-container #map.street-view-mode #waze-map-container { width: ${
+        100 - w
+      }%; }`
+      styles += `#editor-container #street-view-container { width: ${w}%; }`
+      styles += `#editor-container #map #street-view-drag-handle { left: ${
+        100 - w
+      }%; }`
+      addStyle(PREFIX + fname, styles)
     }
-    window.dispatchEvent(new Event("resize"));
+    window.dispatchEvent(new Event("resize"))
   }
   function GSVWidthReset() {
-    getById("waze-map-container").style = null;
-    getById("street-view-container").style = null;
-    getById("street-view-drag-handle").style = null;
+    getById("waze-map-container").style = null
+    getById("street-view-container").style = null
+    getById("street-view-drag-handle").style = null
     // Check for WME Street View Availability
     // This can be removed soon - WME SVA no longer remembers GSV width
     if (localStorage.WMEStreetViewWidth) {
-      localStorage.WMEStreetViewWidth = "";
+      localStorage.WMEStreetViewWidth = ""
     }
-    window.dispatchEvent(new Event("resize"));
+    window.dispatchEvent(new Event("resize"))
   }
   function moveChatIcon() {
-    let fname = "moveChatIcon";
-    let styles = "";
+    const fname = "moveChatIcon"
+    let styles = ""
     if (getById("_cbMoveChatIcon").checked) {
       styles +=
-        "#chat-overlay { left: inherit !important; right: 60px !important;}";
-      styles += "#chat-overlay #chat-toggle { right: 0px !important; }";
-      addStyle(PREFIX + fname, styles);
+        "#chat-overlay { left: inherit !important; right: 60px !important;}"
+      styles += "#chat-overlay #chat-toggle { right: 0px !important; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function highlightInvisible() {
-    let fname = "highlightInvisible";
-    let styles = "";
+    const fname = "highlightInvisible"
+    let styles = ""
     if (getById("_cbHighlightInvisible").checked) {
       styles +=
-        "#chat-overlay.visible-false #chat-toggle button { filter: none; background-color: #ff0000c0; }";
-      addStyle(PREFIX + fname, styles);
+        "#chat-overlay.visible-false #chat-toggle button { filter: none; background-color: #ff0000c0; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function darkenSaveLayer() {
-    let fname = "darkenSaveLayer";
-    let styles = "";
+    const fname = "darkenSaveLayer"
+    let styles = ""
     if (getById("_cbDarkenSaveLayer").checked) {
-      styles += "#popup-overlay { background-color: dimgrey !important; }";
-      addStyle(PREFIX + fname, styles);
+      styles += "#popup-overlay { background-color: dimgrey !important; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function swapRoadsGPS() {
-    let fname = "swapRoadsGPS";
-    let styles = "";
+    const fname = "swapRoadsGPS"
+    let styles = ""
     if (getById("_cbSwapRoadsGPS").checked) {
-      var rlName = "roads";
-      var glName = "gps_points";
-      var roadLayerId = W.map.getLayerByUniqueName(rlName).id;
-      var GPSLayerId = W.map.getLayerByUniqueName(glName).id;
-      var roadLayerZ = W.map.getLayerByUniqueName(rlName).getZIndex();
-      var GPSLayerZ = W.map.getLayerByUniqueName(glName).getZIndex();
+      const rlName = "roads"
+      const glName = "gps_points"
+      const roadLayerId = W.map.getLayerByUniqueName(rlName).id
+      const GPSLayerId = W.map.getLayerByUniqueName(glName).id
+      const roadLayerZ = W.map.getLayerByUniqueName(rlName).getZIndex()
+      const GPSLayerZ = W.map.getLayerByUniqueName(glName).getZIndex()
       logit(
-        "Layers identified\n\tRoads: " +
-          roadLayerId +
-          "," +
-          roadLayerZ +
-          "\n\tGPS: " +
-          GPSLayerId +
-          "," +
-          GPSLayerZ,
-        "info"
-      );
-      styles +=
-        "#" +
-        roadLayerId.replace(/\./g, "\\2e") +
-        " { z-index: " +
-        GPSLayerZ +
-        " !important; }";
-      styles +=
-        "#" +
-        GPSLayerId.replace(/\./g, "\\2e") +
-        " { z-index: " +
-        roadLayerZ +
-        " !important; }";
-      addStyle(PREFIX + fname, styles);
+        `Layers identified\n\tRoads: ${roadLayerId},${roadLayerZ}\n\tGPS: ${
+          GPSLayerId
+        },${GPSLayerZ}`,
+        "info",
+      )
+      styles += `#${roadLayerId.replace(/\./g, "\\2e")} { z-index: ${
+        GPSLayerZ
+      } !important; }`
+      styles += `#${GPSLayerId.replace(/\./g, "\\2e")} { z-index: ${
+        roadLayerZ
+      } !important; }`
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function killNode() {
-    getById(W.map.getLayerByUniqueName("nodes").id + "_root").style.display =
-      "none";
-    getById("_btnKillNode").style.backgroundColor = "yellow";
+    getById(`${W.map.getLayerByUniqueName("nodes").id}_root`).style.display =
+      "none"
+    getById("_btnKillNode").style.backgroundColor = "yellow"
   }
   function toggleKillTurnPopup() {
-    let fname = "toggleKillTurnPopup";
+    const fname = "toggleKillTurnPopup"
     if (killTurnPopup === true) {
-      getById("WMEFUTPB").style.backgroundColor = "inherit";
-      killTurnPopup = false;
-      removeStyle(PREFIX + fname);
+      getById("WMEFUTPB").style.backgroundColor = "inherit"
+      killTurnPopup = false
+      removeStyle(PREFIX + fname)
     } else {
-      getById("WMEFUTPB").style.backgroundColor = "red";
-      killTurnPopup = true;
+      getById("WMEFUTPB").style.backgroundColor = "red"
+      killTurnPopup = true
       addStyle(
         PREFIX + fname,
-        'div[data-theme*="map-tooltip"] { display: none !important; }'
-      );
+        'div[data-theme*="map-tooltip"] { display: none !important; }',
+      )
     }
   }
   function showMapBlockers() {
-    let fname = "showMapBlockers";
-    let styles = "";
+    const fname = "showMapBlockers"
+    let styles = ""
     if (getById("_cbShowMapBlockers").checked) {
-      styles += ".street-view-layer { background-color: rgba(255,0,0,0.3); }";
+      styles += ".street-view-layer { background-color: rgba(255,0,0,0.3); }"
       styles +=
-        ".overlay-buttons-container.top { background-color: rgba(255,0,0,0.3); }";
+        ".overlay-buttons-container.top { background-color: rgba(255,0,0,0.3); }"
       styles +=
-        ".overlay-buttons-container.bottom { background-color: rgba(255,0,0,0.3); }";
+        ".overlay-buttons-container.bottom { background-color: rgba(255,0,0,0.3); }"
       styles +=
-        "#street-view-drag-handle { background-color: rgba(255,0,0,0.3); }";
-      addStyle(PREFIX + fname, styles);
-      fixNodeClosureIcons();
+        "#street-view-drag-handle { background-color: rgba(255,0,0,0.3); }"
+      addStyle(PREFIX + fname, styles)
+      fixNodeClosureIcons()
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function fixNodeClosureIcons() {
-    var closureNodesId = W.map.getLayerByUniqueName("closure_nodes").id;
-    var SVPinId = W.map.getLayersByName("streetViewPin")[0].id;
-    addGlobalStyle("div#" + closureNodesId + " { z-index: 725 !important }");
-    insertNodeBeforeNode(getById(closureNodesId), getById(SVPinId));
+    const closureNodesId = W.map.getLayerByUniqueName("closure_nodes").id
+    const SVPinId = W.map.getLayersByName("streetViewPin")[0].id
+    addGlobalStyle(`div#${closureNodesId} { z-index: 725 !important }`)
+    insertNodeBeforeNode(getById(closureNodesId), getById(SVPinId))
   }
   function disableBridgeButton() {
-    let fname = "disableBridgeButton";
-    let styles = "";
+    const fname = "disableBridgeButton"
+    let styles = ""
     if (getById("_cbDisableBridgeButton").checked) {
-      styles += ".add-bridge { pointer-events: none; opacity: 0.4; }";
-      addStyle(PREFIX + fname, styles);
+      styles += ".add-bridge { pointer-events: none; opacity: 0.4; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function disablePathButton() {
-    let fname = "disablePathButton";
-    let styles = "";
+    const fname = "disablePathButton"
+    let styles = ""
     if (getById("_cbDisablePathButton").checked) {
-      styles += ".path-icon { pointer-events: none; opacity: 0.4; }";
-      addStyle(PREFIX + fname, styles);
+      styles += ".path-icon { pointer-events: none; opacity: 0.4; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function disableKinetic() {
     if (getById("_cbDisableKinetic").checked) {
-      W.map.controls.find((control) => control.dragPan).dragPan.kinetic = null;
+      W.map.controls.find(control => control.dragPan).dragPan.kinetic = null
     } else {
-      W.map.controls.find((control) => control.dragPan).dragPan.kinetic =
-        kineticDragParams;
+      W.map.controls.find(control => control.dragPan).dragPan.kinetic =
+        kineticDragParams
     }
   }
   function disableAnimatedZoom() {
     if (getById("_cbDisableZoomAnimation").checked) {
-      W.map.segmentLayer.map.zoomDuration = 0;
+      W.map.segmentLayer.map.zoomDuration = 0
     } else {
-      W.map.segmentLayer.map.zoomDuration = 20;
+      W.map.segmentLayer.map.zoomDuration = 20
     }
   }
   function disableScrollZoom() {
-    var controller = null;
+    let controller = null
     if (W.map.navigationControl) {
-      controller = W.map.navigationControl;
+      controller = W.map.navigationControl
     } else if (
       W.map.controls.find(
-        (control) => control.CLASS_NAME == "OpenLayers.Control.Navigation"
+        control => control.CLASS_NAME == "OpenLayers.Control.Navigation",
       )
     ) {
       controller = W.map.controls.find(
-        (control) => control.CLASS_NAME == "OpenLayers.Control.Navigation"
-      );
+        control => control.CLASS_NAME == "OpenLayers.Control.Navigation",
+      )
     } else {
       logit(
         "Cannot find zoom wheel controls - please alert script maintainers",
-        "error"
-      );
+        "error",
+      )
     }
     if (controller !== null) {
       if (getById("_cbDisableScrollZoom").checked) {
-        controller.disableZoomWheel();
+        controller.disableZoomWheel()
       } else {
-        controller.enableZoomWheel();
+        controller.enableZoomWheel()
       }
     }
   }
   function PSclicked(event) {
-    if (event.ctrlKey) alert("CTRL");
+    if (event.ctrlKey) alert("CTRL")
     if (W.selectionManager.getSelectedFeatures().length > 0) {
       if (getById("edit-panel").className === "tab-pane active") {
-        getById("edit-panel").className = "tab-pane";
-        getById("sidepanel-feed").className = "tab-pane active";
-        getById("user-tabs").removeAttribute("hidden");
+        getById("edit-panel").className = "tab-pane"
+        getById("sidepanel-feed").className = "tab-pane active"
+        getById("user-tabs").removeAttribute("hidden")
       } else {
-        getById("edit-panel").className = "tab-pane active";
-        getById("sidepanel-feed").className = "tab-pane";
-        getById("user-tabs").setAttribute("hidden", "");
+        getById("edit-panel").className = "tab-pane active"
+        getById("sidepanel-feed").className = "tab-pane"
+        getById("user-tabs").setAttribute("hidden", "")
       }
     }
   }
   function PSicon() {
     if (W.selectionManager.getSelectedFeatures().length > 0) {
-      getById("WMEFUPS").style.color = "red";
+      getById("WMEFUPS").style.color = "red"
     } else {
-      getById("WMEFUPS").style.color = "lightgrey";
+      getById("WMEFUPS").style.color = "lightgrey"
     }
   }
   function PCclicked() {
-    if (location.search.match("segments")) reselectItems("segments", true);
-    else if (location.search.match("venues")) reselectItems("venues", true);
-    else if (location.search.match("nodes")) reselectItems("nodes", false);
+    if (location.search.match("segments")) reselectItems("segments", true)
+    else if (location.search.match("venues")) reselectItems("venues", true)
+    else if (location.search.match("nodes")) reselectItems("nodes", false)
     else if (location.search.match("mapComments"))
-      reselectItems("mapComments", false);
-    else if (location.search.match("cameras")) reselectItems("cameras", false);
+      reselectItems("mapComments", false)
+    else if (location.search.match("cameras")) reselectItems("cameras", false)
   }
   function reselectItems(typeDesc, isArray) {
-    var parameter, IDArray, objectArray, i, object;
-    parameter = location.search.match(
-      new RegExp("[?&]" + typeDesc + "?=([^&]*)")
-    );
+    let parameter
+    let IDArray
+    let objectArray
+    let i
+    let object
+    parameter = location.search.match(new RegExp(`[?&]${typeDesc}?=([^&]*)`))
     if (parameter) {
-      IDArray = parameter[1].split(",");
-      objectArray = [];
+      IDArray = parameter[1].split(",")
+      objectArray = []
       for (i = 0; i < IDArray.length; i++) {
-        object = W.model[typeDesc].objects[IDArray[i]];
-        if (typeof object != "undefined") objectArray.push(object);
+        object = W.model[typeDesc].objects[IDArray[i]]
+        if (typeof object !== "undefined") objectArray.push(object)
       }
       if (isArray) {
-        W.selectionManager.setSelectedModels(objectArray);
+        W.selectionManager.setSelectedModels(objectArray)
       } else {
-        W.selectionManager.setSelectedModels(objectArray[0]);
+        W.selectionManager.setSelectedModels(objectArray[0])
       }
     }
   }
   function createDSASection() {
-    var settingsDiv = null;
-    settingsDiv = document.querySelector("#sidepanel-prefs > div > form");
+    let settingsDiv = null
+    settingsDiv = document.querySelector("#sidepanel-prefs > div > form")
     if (!settingsDiv) {
-      logit("WME Settings div not there yet - looping...", "warning");
-      setTimeout(createDSASection, 500);
-      return;
+      logit("WME Settings div not there yet - looping...", "warning")
+      setTimeout(createDSASection, 500)
+      return
     }
     if (localStorage.dontShowAgain) {
-      var dontShowAgain = JSON.parse(localStorage.dontShowAgain);
-      var DSGroup = document.createElement("div");
-      DSGroup.classList = "form-group";
-      var DSLabel = document.createElement("label");
-      DSLabel.classList = "control-label";
-      DSLabel.innerHTML = modifyHTML("Disabled WME warnings");
-      DSLabel.title = "This section will not update if you disable a warning\n";
-      DSLabel.title += "from a WME pop-up. Re-load the page if you need\n";
-      DSLabel.title += "to re-enable a warning you have just disabled.\n\n";
-      DSLabel.title += "SECTION ADDED BY WME Fix UI.";
-      DSGroup.appendChild(DSLabel);
-      DSGroup.appendChild(document.createElement("br"));
-      var DSCC = document.createElement("div");
-      DSCC.classList = "controls-container";
-      var DSInput;
-      for (var property in dontShowAgain) {
-        DSInput = document.createElement("input");
-        DSInput.type = "checkbox";
-        DSInput.id = "WMEFUDScb_" + property.toString();
-        DSInput.setAttribute("orig", property.toString());
-        DSInput.checked = dontShowAgain[property];
-        DSLabel = document.createElement("label");
-        DSLabel.setAttribute("for", DSInput.id);
-        DSLabel.innerText = property.toString();
-        DSCC.appendChild(DSInput);
-        DSCC.appendChild(DSLabel);
-        DSCC.appendChild(document.createElement("br"));
-        DSInput.onclick = DSIclicked;
+      const dontShowAgain = JSON.parse(localStorage.dontShowAgain)
+      const DSGroup = document.createElement("div")
+      DSGroup.classList = "form-group"
+      let DSLabel = document.createElement("label")
+      DSLabel.classList = "control-label"
+      DSLabel.innerHTML = modifyHTML("Disabled WME warnings")
+      DSLabel.title = "This section will not update if you disable a warning\n"
+      DSLabel.title += "from a WME pop-up. Re-load the page if you need\n"
+      DSLabel.title += "to re-enable a warning you have just disabled.\n\n"
+      DSLabel.title += "SECTION ADDED BY WME Fix UI."
+      DSGroup.appendChild(DSLabel)
+      DSGroup.appendChild(document.createElement("br"))
+      const DSCC = document.createElement("div")
+      DSCC.classList = "controls-container"
+      let DSInput
+      for (const property in dontShowAgain) {
+        DSInput = document.createElement("input")
+        DSInput.type = "checkbox"
+        DSInput.id = `WMEFUDScb_${property.toString()}`
+        DSInput.setAttribute("orig", property.toString())
+        DSInput.checked = dontShowAgain[property]
+        DSLabel = document.createElement("label")
+        DSLabel.setAttribute("for", DSInput.id)
+        DSLabel.innerText = property.toString()
+        DSCC.appendChild(DSInput)
+        DSCC.appendChild(DSLabel)
+        DSCC.appendChild(document.createElement("br"))
+        DSInput.onclick = DSIclicked
       }
-      DSGroup.appendChild(DSCC);
-      settingsDiv.appendChild(DSGroup);
+      DSGroup.appendChild(DSCC)
+      settingsDiv.appendChild(DSGroup)
     }
   }
   function DSIclicked(e) {
-    var DSA = JSON.parse(localStorage.dontShowAgain);
-    DSA[e.target.getAttribute("orig")] = e.target.checked;
-    localStorage.dontShowAgain = JSON.stringify(DSA);
+    const DSA = JSON.parse(localStorage.dontShowAgain)
+    DSA[e.target.getAttribute("orig")] = e.target.checked
+    localStorage.dontShowAgain = JSON.stringify(DSA)
   }
 
   // These two event handlers act in concert with the change log restyling carried
@@ -4333,18 +3993,18 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
   // and WME keyboard shortcut causes the log to appear, hence this slightly
   // contrived workaround to essentially replicate the visibility changes WME
   // ought to be doing itself...
-  let inSaveDetails = false;
-  let inSaveButton = false;
+  let inSaveDetails = false
+  let inSaveButton = false
   function saveMouseOver() {
-    let styles = ".changes-log { display: block !important; }";
-    addStyle(PREFIX, styles);
+    const styles = ".changes-log { display: block !important; }"
+    addStyle(PREFIX, styles)
 
-    inSaveButton = true;
-    window.setTimeout(addSaveDetailsEventListeners, 100);
+    inSaveButton = true
+    window.setTimeout(addSaveDetailsEventListeners, 100)
   }
   function saveMouseOut() {
-    inSaveButton = false;
-    window.setTimeout(saveMouseOutDeferred, 1000);
+    inSaveButton = false
+    window.setTimeout(saveMouseOutDeferred, 1000)
   }
   function addSaveDetailsEventListeners() {
     // Since adding the above fix, it's come to my attention that it has the potential to break
@@ -4357,25 +4017,25 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (document.querySelector(".changes-log") !== null) {
       document
         .querySelector(".changes-log")
-        .addEventListener("mouseover", saveDetailsMouseOver, true);
+        .addEventListener("mouseover", saveDetailsMouseOver, true)
       document
         .querySelector(".changes-log")
-        .addEventListener("mouseout", saveDetailsMouseOut, true);
+        .addEventListener("mouseout", saveDetailsMouseOut, true)
     }
   }
   function saveDetailsMouseOver() {
     // The mouseover handler simply sets a flag to let the rest of the script know that we're
     // in the popup
-    inSaveDetails = true;
+    inSaveDetails = true
   }
   function saveDetailsMouseOut() {
     // Whilst the mouseout handler both clears the flag and also calls the mouseout handler for
     // the save button (to hide the popup) unless the corresponding flag for the button itself
     // hasn't been set by its mouseover handler - i.e. we only want to hide the popup if the
     // mouse is over neither the save button or the details popup...
-    inSaveDetails = false;
+    inSaveDetails = false
     if (inSaveButton == false) {
-      saveMouseOut();
+      saveMouseOut()
     }
   }
   function saveMouseOutDeferred() {
@@ -4387,40 +4047,40 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // button and popup, rather than out of the button in some other direction, and therefore
     // we should avoid hiding the popup...
     if (inSaveDetails == false && inSaveButton == false) {
-      let styles = ".changes-log { display: none !important; }";
-      addStyle(PREFIX, styles);
+      const styles = ".changes-log { display: none !important; }"
+      addStyle(PREFIX, styles)
     }
   }
   function disableSaveBlocker() {
-    let fname = "disableSaveBlocker";
-    let styles = "";
+    const fname = "disableSaveBlocker"
+    let styles = ""
     if (getById("_cbDisableSaveBlocker").checked) {
-      styles += "#popup-overlay { z-index: 0 !important; }";
-      styles += ".changes-log { display: none !important; }";
-      addStyle(PREFIX + fname, styles);
+      styles += "#popup-overlay { z-index: 0 !important; }"
+      styles += ".changes-log { display: none !important; }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function disableUITransitions() {
-    let fname = "disableUITransitions";
-    let styles = "";
-    let sliderTrans = "";
+    const fname = "disableUITransitions"
+    let styles = ""
+    let sliderTrans = ""
 
     // Side panel and main menu fixes we can apply directly via CSS mods...
     if (getById("_cbDisableUITransitions").checked) {
-      styles += ".collapsible-container { transition: none!important; }";
-      styles += "#issue-tracker-filter-region { transition: none!important; }";
-      styles += ".menu { transition: none!important; }";
-      addStyle(PREFIX + fname, styles);
+      styles += ".collapsible-container { transition: none!important; }"
+      styles += "#issue-tracker-filter-region { transition: none!important; }"
+      styles += ".menu { transition: none!important; }"
+      addStyle(PREFIX + fname, styles)
 
       sliderTrans =
-        ".wz-slider::before {transition:all 0s linear 0s!important;}";
+        ".wz-slider::before {transition:all 0s linear 0s!important;}"
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
 
       sliderTrans =
-        ".wz-slider::before {transition:all 400ms ease 0s!important;}";
+        ".wz-slider::before {transition:all 400ms ease 0s!important;}"
     }
 
     // And now the stuff hidden in shadowroots...
@@ -4431,49 +4091,49 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // instead apply the override to the parent element as a new CSS entry to be
     // applied to its slider children - this then takes precedence over anything
     // defined on the slider itself...
-    let nTS = document.querySelectorAll("wz-toggle-switch").length;
+    let nTS = document.querySelectorAll("wz-toggle-switch").length
     while (nTS > 0) {
-      let tsObj = document.querySelectorAll("wz-toggle-switch")[nTS - 1];
-      let sr = tsObj.shadowRoot.querySelector(".wz-switch");
+      const tsObj = document.querySelectorAll("wz-toggle-switch")[nTS - 1]
+      const sr = tsObj.shadowRoot.querySelector(".wz-switch")
 
       if (sr !== null) {
         // If we haven't already set up our CSS entry on this parent element, do
         // so now...
         if (sr.querySelector("#fume") == null) {
-          let sliderStyle = document.createElement("style");
-          sliderStyle.id = "fume";
-          sr.insertBefore(sliderStyle, sr.firstChild);
+          const sliderStyle = document.createElement("style")
+          sliderStyle.id = "fume"
+          sr.insertBefore(sliderStyle, sr.firstChild)
         }
 
         // Now we know the parent has our CSS entry, update its contents according to
         // whether we're enabling or disabling transition effects
-        sr.querySelector("#fume").innerHTML = sliderTrans;
+        sr.querySelector("#fume").innerHTML = sliderTrans
       }
-      --nTS;
+      --nTS
     }
   }
   function colourBlindTurns() {
-    let fname = "colourBlindTurns";
-    let styles = "";
+    const fname = "colourBlindTurns"
+    let styles = ""
     if (getById("_cbColourBlindTurns").checked) {
-      styles += ".turn-arrow-state-open { filter: hue-rotate(90deg); }";
-      addStyle(PREFIX + fname, styles);
+      styles += ".turn-arrow-state-open { filter: hue-rotate(90deg); }"
+      addStyle(PREFIX + fname, styles)
     } else {
-      removeStyle(PREFIX + fname);
+      removeStyle(PREFIX + fname)
     }
   }
   function hideLabel(lblObj) {
     if (lblObj !== null) {
-      lblObj.style.fontSize = "0";
-      lblObj.style.width = "0";
+      lblObj.style.fontSize = "0"
+      lblObj.style.width = "0"
     } else {
       // breakpoint
     }
   }
   function showLabel(lblObj) {
     if (lblObj !== null) {
-      lblObj.style.fontSize = "100%";
-      lblObj.style.width = "100%";
+      lblObj.style.fontSize = "100%"
+      lblObj.style.width = "100%"
     } else {
       // breakpoint
     }
@@ -4484,116 +4144,114 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         document
           .querySelector(".toolbar-group-map-comments")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       hideLabel(
         document
           .querySelector(".toolbar-group-venues")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       hideLabel(
         document
           .querySelector(".toolbar-group-drawing")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       hideLabel(
         document
           .querySelector(".toolbar-group-permanent_hazards")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       hideLabel(
         document
           .querySelector(".restricted-driving-area")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
     } else {
       showLabel(
         document
           .querySelector(".toolbar-group-map-comments")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       showLabel(
         document
           .querySelector(".toolbar-group-venues")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       showLabel(
         document
           .querySelector(".toolbar-group-drawing")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       showLabel(
         document
           .querySelector(".toolbar-group-permanent_hazards")
           .querySelector("wz-button")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
       showLabel(
         document
           .querySelector(".restricted-driving-area")
-          .shadowRoot.querySelector(".button-text")
-      );
+          .shadowRoot.querySelector(".button-text"),
+      )
     }
 
-    resizeSearch();
+    resizeSearch()
   }
   function unfloatButtons() {
-    //// remove once we figure out how to stop saves unfloating stuff...
-    return;
+    /// / remove once we figure out how to stop saves unfloating stuff...
+    return
 
-    let fname = "unfloatButtons";
-    layersButton = getByClass("layer-switcher-button")[0];
-    refreshButton = getByClass("reload-button")[0];
-    shareButton = getByClass("share-location-button")[0];
+    const fname = "unfloatButtons"
+    layersButton = getByClass("layer-switcher-button")[0]
+    refreshButton = getByClass("reload-button")[0]
+    shareButton = getByClass("share-location-button")[0]
     if (getById("_cbUnfloatButtons").checked) {
-      unfloat();
+      unfloat()
 
-      //hacks for other scripts
+      // hacks for other scripts
       if (getById("Info_div")) {
         getByClass("bottom overlay-buttons-container")[0].appendChild(
-          getById("Info_div")
-        );
-        getById("Info_div").style.marginTop = "8px";
+          getById("Info_div"),
+        )
+        getById("Info_div").style.marginTop = "8px"
       }
-      if (getById("BeenHere")) getById("BeenHere").style.top = "310px";
-      //temporary hack for new button arrangements Map Nav Historic
+      if (getById("BeenHere")) getById("BeenHere").style.top = "310px"
+      // temporary hack for new button arrangements Map Nav Historic
       if (getById("prevIcon"))
         insertNodeBeforeNode(
           getById("prevIcon").parentNode,
-          getById("nextIcon").parentNode
-        );
+          getById("nextIcon").parentNode,
+        )
 
-      if (wmeFUinitialising) setTimeout(unfloat, 5000);
-    } else {
-      if (!wmeFUinitialising) {
-        float();
-        layersButton.onmouseover = null;
-        document.body.onmouseleave = null;
-        getById("layer-switcher-region").onmouseleave = null;
-        removeStyle(PREFIX + fname);
+      if (wmeFUinitialising) setTimeout(unfloat, 5000)
+    } else if (!wmeFUinitialising) {
+      float()
+      layersButton.onmouseover = null
+      document.body.onmouseleave = null
+      getById("layer-switcher-region").onmouseleave = null
+      removeStyle(PREFIX + fname)
 
-        if (getById("Info_div")) {
-          getByClass("overlay-buttons-container top")[0].appendChild(
-            getById("Info_div")
-          );
-          getById("Info_div").style.marginTop = "";
-        }
-        if (getById("BeenHere")) getById("BeenHere").style.top = "280px";
+      if (getById("Info_div")) {
+        getByClass("overlay-buttons-container top")[0].appendChild(
+          getById("Info_div"),
+        )
+        getById("Info_div").style.marginTop = ""
       }
+      if (getById("BeenHere")) getById("BeenHere").style.top = "280px"
     }
   }
   function unfloat_ReloadClickHandler() {
     // Clicking on the refresh button essentially just calls the following native function,
     // however once we do this then the bloody refresh button loses its onclick hander AGAIN,
     // so we need to reinstate it before we go...
-    W.controller.reloadData();
-    refreshButton.addEventListener("click", unfloat_ReloadClickHandler);
+    W.controller.reloadData()
+    refreshButton.addEventListener("click", unfloat_ReloadClickHandler)
   }
   function SLBRelocate() {
     // Once the mutation observer code has decided that the share location popup needs relocation,
@@ -4603,12 +4261,12 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // Once the popup exists, we first hide it (to avoid it briefly appearing in its native position
     // before being relocated) and then we wait ever so slightly longer before trying to move it,
     // otherwise WME seems to occasionally overwrite our position with the native one again...
-    let tippy = document.querySelector(".tippy-box");
+    const tippy = document.querySelector(".tippy-box")
     if (tippy === null) {
-      window.setTimeout(SLBRelocate, 100);
+      window.setTimeout(SLBRelocate, 100)
     } else {
-      tippy.parentElement.style.visibility = "hidden";
-      window.setTimeout(SLBApplyTransform, 100);
+      tippy.parentElement.style.visibility = "hidden"
+      window.setTimeout(SLBApplyTransform, 100)
     }
   }
   function SLBApplyTransform() {
@@ -4617,16 +4275,16 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // map viewport) with our own (which nudges it a little less to the left, but a lot further down,
     // based on how far away the share location button is).  And then remembering to make it visible
     // again, so the user sees it appearing in the desired position as if it was always meant to be :-)
-    let tippy = document.querySelector(".tippy-box").parentElement;
-    let tipBCR = tippy.getBoundingClientRect();
-    let slbBCR = document
+    const tippy = document.querySelector(".tippy-box").parentElement
+    const tipBCR = tippy.getBoundingClientRect()
+    const slbBCR = document
       .querySelector(".share-location-button")
-      .getBoundingClientRect();
-    let tY = slbBCR.top - tipBCR.bottom + "px";
-    tippy.style.transform = "translate(-20px, " + tY + ")";
-    tippy.style.visibility = "";
+      .getBoundingClientRect()
+    const tY = `${slbBCR.top - tipBCR.bottom}px`
+    tippy.style.transform = `translate(-20px, ${tY})`
+    tippy.style.visibility = ""
   }
-  var OBObserver = new MutationObserver(function (mutations) {
+  var OBObserver = new MutationObserver(mutations => {
     // To check when the share location button popup displays, you'd think we could just use an onclick handler
     // on the share location button itself, but no, that would be FAR too easy...  Whilst setting an onclick
     // does work the first time, the way WME re-renders the button to change it between its selected and
@@ -4640,10 +4298,10 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (getById("_cbUnfloatButtons").checked === true) {
       if (
         document.querySelector(
-          ".share-location-button.overlay-button.overlay-button-active"
+          ".share-location-button.overlay-button.overlay-button-active",
         ) !== null
       ) {
-        SLBRelocate();
+        SLBRelocate()
       }
     }
 
@@ -4660,283 +4318,280 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // Have I ever mentioned how much I love what the devs have done with WME?  I mean, having to deal with
     // random crap like this really, truly, without any question, utterly and completely MAKES my day...
     let nSLB = document.querySelectorAll(
-      ".share-location-button.overlay-button"
-    ).length;
+      ".share-location-button.overlay-button",
+    ).length
     if (nSLB > 1) {
       while (nSLB > 1) {
-        --nSLB;
+        --nSLB
         document
           .querySelectorAll(".share-location-button.overlay-button")
-          [nSLB].remove();
+          [nSLB].remove()
       }
     }
-  });
+  })
   function unfloat() {
-    //temporary
-    return;
+    // temporary
+    return
 
     if (getById("_cbUnfloatButtons").checked === true) {
-      let slb = getByClass("share-location-button")[0];
-      let wcp = getByClass("WazeControlPermalink")[0];
+      const slb = getByClass("share-location-button")[0]
+      const wcp = getByClass("WazeControlPermalink")[0]
       if (slb !== undefined && wcp !== undefined) {
         // as we may end up calling this function multiple times, we first refloat so that any changes
         // made here will always be applied to the default styles rather than any we've already changed
-        float();
+        float()
 
         if (getById("_cbMoveUserInfo").checked === false) {
           insertNodeAfterNode(
             layersButton,
-            document.querySelector("wz-user-box")
-          );
+            document.querySelector("wz-user-box"),
+          )
         } else {
           insertNodeAfterNode(
             layersButton,
-            getById("save-button").parentElement.parentElement
-          );
+            getById("save-button").parentElement.parentElement,
+          )
         }
-        layersButton.classList.add("toolbar-button");
-        layersButton.firstChild.classList.add("item-container");
+        layersButton.classList.add("toolbar-button")
+        layersButton.firstChild.classList.add("item-container")
         layersButton.firstChild.classList.add(
           "item-icon",
           "w-icon",
-          "w-icon-layers"
-        );
+          "w-icon-layers",
+        )
 
         insertNodeBeforeNode(
           refreshButton,
-          document.querySelector(".secondary-toolbar")
-        );
-        refreshButton.classList.add("toolbar-button");
-        refreshButton.firstChild.classList.add("item-container");
+          document.querySelector(".secondary-toolbar"),
+        )
+        refreshButton.classList.add("toolbar-button")
+        refreshButton.firstChild.classList.add("item-container")
         refreshButton.firstChild.classList.add(
           "item-icon",
           "w-icon",
-          "w-icon-refresh"
-        );
+          "w-icon-refresh",
+        )
         // Something's changed in the latest iteration of WME which means that moving the refresh button
         // stops it accepting mouse clicks, so we need to set up a new onclick handler to replicate the
         // desired behaviour...
         refreshButton.addEventListener("click", unfloat_ReloadClickHandler, {
           once: true,
-        });
+        })
 
-        var lmBCR = wcp.getBoundingClientRect();
-        var sbBCR = slb.getBoundingClientRect();
-        var sbTop = lmBCR.top - sbBCR.top - 3;
+        const lmBCR = wcp.getBoundingClientRect()
+        const sbBCR = slb.getBoundingClientRect()
+        const sbTop = lmBCR.top - sbBCR.top - 3
 
-        var styles = "";
+        let styles = ""
+        styles += `.share-location-button { position: absolute; top: ${
+          sbTop
+        }px; height: 18px; }`
         styles +=
-          ".share-location-button { position: absolute; top: " +
-          sbTop +
-          "px; height: 18px; }";
+          "#edit-buttons .overlay-button-disabled { opacity: 0.5; cursor: not-allowed; }"
+        styles += ".share-location-button-region { display: inline-block; }"
+        styles += ".w-icon-layers { top: 0px!important; }"
+        styles += "div.WazeControlPermalink { padding-right: 64px; }"
         styles +=
-          "#edit-buttons .overlay-button-disabled { opacity: 0.5; cursor: not-allowed; }";
-        styles += ".share-location-button-region { display: inline-block; }";
-        styles += ".w-icon-layers { top: 0px!important; }";
-        styles += "div.WazeControlPermalink { padding-right: 64px; }";
-        styles +=
-          "div.share-location-button-region > div > div > i { line-height: 18px; }";
-        styles += "a.w-icon.w-icon-link { line-height:17px; font-size: 20px; }";
+          "div.share-location-button-region > div > div > i { line-height: 18px; }"
+        styles += "a.w-icon.w-icon-link { line-height:17px; font-size: 20px; }"
         // correct button sizing when moved into bottom bar
-        styles += ".share-location-button { height:24px; width:30px; }";
-        addStyle(PREFIX + "unfloatButtons2", styles);
+        styles += ".share-location-button { height:24px; width:30px; }"
+        addStyle(`${PREFIX}unfloatButtons2`, styles)
       }
     }
   }
   function float() {
     // temporary
-    return;
+    return
 
-    let elm = getByClass("overlay-buttons-container top")[0];
+    const elm = getByClass("overlay-buttons-container top")[0]
     if (elm !== undefined) {
-      elm.appendChild(layersButton);
-      layersButton.classList.remove("toolbar-button");
-      layersButton.firstChild.classList.remove("item-container");
+      elm.appendChild(layersButton)
+      layersButton.classList.remove("toolbar-button")
+      layersButton.firstChild.classList.remove("item-container")
       layersButton.firstChild.classList.remove(
         "item-icon",
         "w-icon",
-        "w-icon-layers"
-      );
-      layersButton.firstChild.classList.add("overlay-button");
-      layersButton.firstChild.classList.add("w-icon", "w-icon-layers");
+        "w-icon-layers",
+      )
+      layersButton.firstChild.classList.add("overlay-button")
+      layersButton.firstChild.classList.add("w-icon", "w-icon-layers")
 
-      elm.appendChild(refreshButton);
-      refreshButton.classList.remove("toolbar-button");
-      refreshButton.firstChild.classList.remove("item-container");
+      elm.appendChild(refreshButton)
+      refreshButton.classList.remove("toolbar-button")
+      refreshButton.firstChild.classList.remove("item-container")
       refreshButton.firstChild.classList.remove(
         "item-icon",
         "w-icon",
-        "w-icon-refresh"
-      );
-      refreshButton.firstChild.classList.add("overlay-button");
-      refreshButton.firstChild.classList.add("w-icon", "w-icon-refresh");
+        "w-icon-refresh",
+      )
+      refreshButton.firstChild.classList.add("overlay-button")
+      refreshButton.firstChild.classList.add("w-icon", "w-icon-refresh")
 
-      elm.appendChild(shareButton);
+      elm.appendChild(shareButton)
 
-      removeStyle(PREFIX + "unfloatButtons2");
+      removeStyle(`${PREFIX}unfloatButtons2`)
     }
   }
   function hackGSVHandle() {
-    let fname = "hackGSVHandle";
-    let styles = "";
+    const fname = "hackGSVHandle"
+    let styles = ""
     if (getById("_cbHackGSVHandle").checked) {
       styles +=
-        "#editor-container #map.street-view-mode #street-view-drag-handle { height: 29px; background: lightgrey; font-size: 24px; border-radius: 8px; text-align: center; padding-top: 2px; border: 1px black solid; }";
-      addStyle(PREFIX + fname, styles);
+        "#editor-container #map.street-view-mode #street-view-drag-handle { height: 29px; background: lightgrey; font-size: 24px; border-radius: 8px; text-align: center; padding-top: 2px; border: 1px black solid; }"
+      addStyle(PREFIX + fname, styles)
       getById("street-view-drag-handle").classList.add(
         "w-icon",
-        "w-icon-round-trip"
-      );
+        "w-icon-round-trip",
+      )
       getById("street-view-drag-handle").title =
-        "Double-click to reset\ndefault width.";
+        "Double-click to reset\ndefault width."
     } else {
-      removeStyle(PREFIX + fname);
-      getById("street-view-drag-handle").removeAttribute("class");
-      getById("street-view-drag-handle").removeAttribute("title");
+      removeStyle(PREFIX + fname)
+      getById("street-view-drag-handle").removeAttribute("class")
+      getById("street-view-drag-handle").removeAttribute("title")
     }
   }
   function enlargeGeoNodes(forceOff) {
-    let fname = "enlargeGeoNodes";
-    removeStyle(PREFIX + fname);
-    let styles = "";
+    const fname = "enlargeGeoNodes"
+    removeStyle(PREFIX + fname)
+    let styles = ""
     if (getById("_inpEnlargeGeoNodes").value < 6)
-      getById("_inpEnlargeGeoNodes").value = 6;
+      getById("_inpEnlargeGeoNodes").value = 6
     if (getById("_cbEnlargeGeoNodes").checked && forceOff === false) {
-      let newStyle =
-        "{ transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(" +
-        getById("_inpEnlargeGeoNodes").value / 6 +
-        "); }";
-      styles +=
-        "#" +
-        W.map.getLayerByUniqueName("sketch").id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="1"][r="6"] ' +
-        newStyle;
-      styles +=
-        "#" +
-        W.map.venueLayer.id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="1"][fill="white"][stroke-opacity="1"][r="6"] ' +
-        newStyle;
-      styles +=
-        "#" +
-        W.map.commentLayer.id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="1"][fill="white"][stroke-opacity="1"][r="6"] ' +
-        newStyle;
-      addStyle(PREFIX + fname, styles);
+      const newStyle = `{ transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(${
+        getById("_inpEnlargeGeoNodes").value / 6
+      }); }`
+      styles += `#${
+        W.map.getLayerByUniqueName("sketch").id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="1"][r="6"] ${
+        newStyle
+      }`
+      styles += `#${
+        W.map.venueLayer.id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="1"][fill="white"][stroke-opacity="1"][r="6"] ${
+        newStyle
+      }`
+      styles += `#${
+        W.map.commentLayer.id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="1"][fill="white"][stroke-opacity="1"][r="6"] ${
+        newStyle
+      }`
+      addStyle(PREFIX + fname, styles)
     }
   }
   function enlargeGeoHandles(forceOff) {
-    let fname = "enlargeGeoHandles";
-    removeStyle(PREFIX + fname);
-    let styles = "";
+    const fname = "enlargeGeoHandles"
+    removeStyle(PREFIX + fname)
+    let styles = ""
     if (getById("_inpEnlargeGeoHandles").value < 4)
-      getById("_inpEnlargeGeoHandles").value = 4;
+      getById("_inpEnlargeGeoHandles").value = 4
     if (getById("_cbEnlargeGeoHandlesFU").checked && forceOff === false) {
-      let newStyle =
-        "{ transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(" +
-        getById("_inpEnlargeGeoHandles").value / 4 +
-        "); }";
-      styles +=
-        "#" +
-        W.map.getLayerByUniqueName("sketch").id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="0.6"][r="4"] ' +
-        newStyle;
-      styles +=
-        "#" +
-        W.map.venueLayer.id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="0.6"][stroke-opacity="1"][r="4"]' +
-        newStyle;
-      styles +=
-        "#" +
-        W.map.commentLayer.id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="0.6"][stroke-opacity="1"][r="4"]' +
-        newStyle;
-      addStyle(PREFIX + fname, styles);
+      const newStyle = `{ transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(${
+        getById("_inpEnlargeGeoHandles").value / 4
+      }); }`
+      styles += `#${
+        W.map.getLayerByUniqueName("sketch").id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="0.6"][r="4"] ${
+        newStyle
+      }`
+      styles += `#${
+        W.map.venueLayer.id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="0.6"][stroke-opacity="1"][r="4"]${
+        newStyle
+      }`
+      styles += `#${
+        W.map.commentLayer.id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][fill-opacity="0.6"][stroke-opacity="1"][r="4"]${
+        newStyle
+      }`
+      addStyle(PREFIX + fname, styles)
     }
   }
   function enlargePointMCs() {
-    let fname = "enlargePointMCs";
-    removeStyle(PREFIX + fname);
-    let styles = "";
+    const fname = "enlargePointMCs"
+    removeStyle(PREFIX + fname)
+    let styles = ""
     if (getById("_inpEnlargePointMCs").value < 1)
-      getById("_inpEnlargePointMCs").value = 1;
+      getById("_inpEnlargePointMCs").value = 1
     if (getById("_cbEnlargePointMCs").checked) {
-      let newStyle =
-        "{ fill: #ffff00; fill-opacity: 0.75; transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(" +
-        getById("_inpEnlargePointMCs").value +
-        "); }";
-      let newStyleHover =
-        "{ transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(" +
-        (0.25 + getById("_inpEnlargePointMCs").value / 2) +
-        "); }";
-      styles +=
-        "#" +
-        W.map.commentLayer.id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][stroke="#ffffff"][r="6"]' +
-        newStyle;
-      styles +=
-        "#" +
-        W.map.commentLayer.id +
-        '_vroot [id^="OpenLayers_Geometry_Point_"][stroke="#ffffff"][r="12"]' +
-        newStyleHover;
-      addStyle(PREFIX + fname, styles);
+      const newStyle = `{ fill: #ffff00; fill-opacity: 0.75; transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(${
+        getById("_inpEnlargePointMCs").value
+      }); }`
+      const newStyleHover = `{ transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; transform:scale(${
+        0.25 + getById("_inpEnlargePointMCs").value / 2
+      }); }`
+      styles += `#${
+        W.map.commentLayer.id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][stroke="#ffffff"][r="6"]${
+        newStyle
+      }`
+      styles += `#${
+        W.map.commentLayer.id
+      }_vroot [id^="OpenLayers_Geometry_Point_"][stroke="#ffffff"][r="12"]${
+        newStyleHover
+      }`
+      addStyle(PREFIX + fname, styles)
     }
   }
   function updateTheme() {
     switch (options.theme) {
       case "dark":
-        //add class dark-mode to html
-        document.documentElement.classList.add("dark-mode");
-        break;
+        // add class dark-mode to html
+        document.documentElement.classList.add("dark-mode")
+        break
       case "light":
-        //remove class dark-mode from html
-        document.documentElement.classList.remove("dark-mode");
-        break;
+        // remove class dark-mode from html
+        document.documentElement.classList.remove("dark-mode")
+        break
       case "system":
-        //check if system prefers dark mode
+        // check if system prefers dark mode
         if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          document.documentElement.classList.add("dark-mode");
+          document.documentElement.classList.add("dark-mode")
         } else {
-          document.documentElement.classList.remove("dark-mode");
+          document.documentElement.classList.remove("dark-mode")
         }
       default:
-        break;
+        break
     }
   }
   function addGlobalStyle(css) {
-    var head, style;
-    head = document.getElementsByTagName("head")[0];
+    let head
+    let style
+    head = document.getElementsByTagName("head")[0]
     if (!head) {
-      return;
+      return
     }
-    style = document.createElement("style");
-    style.type = "text/css";
-    style.innerHTML = modifyHTML(css);
-    head.appendChild(style);
+    style = document.createElement("style")
+    style.type = "text/css"
+    style.innerHTML = modifyHTML(css)
+    head.appendChild(style)
   }
   function addStyle(ID, css) {
-    var head, style;
-    head = document.getElementsByTagName("head")[0];
+    let head
+    let style
+    head = document.getElementsByTagName("head")[0]
     if (!head) {
-      return;
+      return
     }
-    removeStyle(ID); // in case it is already there
-    style = document.createElement("style");
-    style.type = "text/css";
-    style.innerHTML = modifyHTML(css);
-    style.id = ID;
-    head.appendChild(style);
+    removeStyle(ID) // in case it is already there
+    style = document.createElement("style")
+    style.type = "text/css"
+    style.innerHTML = modifyHTML(css)
+    style.id = ID
+    head.appendChild(style)
   }
   function removeStyle(ID) {
-    var style = document.getElementById(ID);
+    const style = document.getElementById(ID)
     if (style) {
-      style.parentNode.removeChild(style);
+      style.parentNode.removeChild(style)
     }
   }
   function getByClass(classname, node) {
     if (!node) {
-      node = document.getElementsByTagName("body")[0];
+      node = document.getElementsByTagName("body")[0]
     }
-    return node.getElementsByClassName(classname);
+    return node.getElementsByClassName(classname)
     // var a = [];
     // var re = new RegExp('\\b' + classname + '\\b');
     // var els = node.getElementsByTagName("*");
@@ -4946,72 +4601,72 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // return a;
   }
   function getById(node) {
-    return document.getElementById(node);
+    return document.getElementById(node)
   }
   function insertNodeBeforeNode(insertNode, beforeNode) {
     if (insertNode == null || beforeNode == null) {
-      logit("null node during insert", "error");
+      logit("null node during insert", "error")
     } else {
-      beforeNode.parentNode.insertBefore(insertNode, beforeNode);
+      beforeNode.parentNode.insertBefore(insertNode, beforeNode)
     }
   }
   function insertNodeAfterNode(insertNode, afterNode) {
-    insertNodeBeforeNode(insertNode, afterNode);
-    insertNodeBeforeNode(afterNode, insertNode);
+    insertNodeBeforeNode(insertNode, afterNode)
+    insertNodeBeforeNode(afterNode, insertNode)
   }
   function logit(msg, typ) {
     if (!typ) {
-      console.log(PREFIX + ": " + msg);
+      console.log(`${PREFIX}: ${msg}`)
     } else {
       switch (typ) {
         case "error":
-          console.error(PREFIX + ": " + msg);
-          break;
+          console.error(`${PREFIX}: ${msg}`)
+          break
         case "warning":
-          console.warn(PREFIX + ": " + msg);
-          break;
+          console.warn(`${PREFIX}: ${msg}`)
+          break
         case "info":
-          console.info(PREFIX + ": " + msg);
-          break;
+          console.info(`${PREFIX}: ${msg}`)
+          break
         case "debug":
           if (debug) {
-            console.warn(PREFIX + ": " + msg);
+            console.warn(`${PREFIX}: ${msg}`)
           }
-          break;
+          break
         default:
-          console.log(PREFIX + " unknown message type: " + msg);
-          break;
+          console.log(`${PREFIX} unknown message type: ${msg}`)
+          break
       }
     }
   }
 
   async function loadVueJS() {
-    //check if Vue.js is already loaded
+    // check if Vue.js is already loaded
     if (typeof Vue !== "undefined") {
-      return;
+      return
     }
-    logit("Loading Vue.js");
-    var vuejs = document.createElement("script");
-    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js";
-    document.head.appendChild(vuejs);
+    logit("Loading Vue.js")
+    const vuejs = document.createElement("script")
+    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js"
+    document.head.appendChild(vuejs)
   }
 
   async function loadJqueryUI() {
-    //check if jQuery UI is already loaded
+    // check if jQuery UI is already loaded
     if (typeof jQuery.ui !== "undefined") {
-      return;
+      return
     }
-    logit("Loading jQuery UI");
-    var jqueryui = document.createElement("script");
-    jqueryui.src = "https://code.jquery.com/ui/1.13.3/jquery-ui.min.js";
-    document.head.appendChild(jqueryui);
+    logit("Loading jQuery UI")
+    const jqueryui = document.createElement("script")
+    jqueryui.src = "https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"
+    document.head.appendChild(jqueryui)
   }
 
-  loadVueJS();
-  loadJqueryUI();
+  loadVueJS()
+  loadJqueryUI()
   // Start it running
-  setTimeout(init1, 200);
-})();
+  setTimeout(init1, 200)
+})()
 
 GM_addStyle(`
 :host,
@@ -5316,7 +4971,7 @@ GM_addStyle(`
   color-scheme: dark;
 }
 
-`);
+`)
 
 GM_addStyle(`
   .vue-fail-logo {
@@ -5442,4 +5097,10 @@ GM_addStyle(`
   background-color: var(--color-gray-300);
 }
 
-`);
+.wz-tooltip-content,
+.wz-tooltip-content-holder {
+  pointer-events: none;
+  user-select: none;
+}
+
+`)

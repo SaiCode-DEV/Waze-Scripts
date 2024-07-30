@@ -12,7 +12,7 @@
 // @license      MIT
 // ==/UserScript==
 
-/*global I18n, $, W, OpenLayers*/
+/* global I18n, $, W, OpenLayers */
 
 /* globals OpenLayers: true */
 // Versions Format
@@ -21,20 +21,19 @@
 DEFAULT_SETTINGS = {
   visible: true,
   client_token: "",
-};
-
-(() => {
-  let settings = loadSettings();
+}
+;(() => {
+  const settings = loadSettings()
 
   /**
    * Initialize the settings
    */
   async function settings_init() {
     const { tabLabel, tabPane } =
-      W.userscripts.registerSidebarTab("mapillary-overlay");
+      W.userscripts.registerSidebarTab("mapillary-overlay")
 
-    tabLabel.innerText = "Mapillary";
-    tabLabel.title = "Mapillary Overlay";
+    tabLabel.innerText = "Mapillary"
+    tabLabel.title = "Mapillary Overlay"
 
     tabPane.innerHTML = `
   <div class="mapillary-settings">
@@ -55,37 +54,37 @@ DEFAULT_SETTINGS = {
       <p>Get your Mapillary key from <a href="https://www.mapillary.com/app/settings/developers" target="_blank">Mapillary Developers</a></p>
     </div>
   </div>
-  `;
+  `
 
-    await W.userscripts.waitForElementConnected(tabPane);
+    await W.userscripts.waitForElementConnected(tabPane)
 
-    //check if Vue.js is already loaded
+    // check if Vue.js is already loaded
     while (typeof Vue === "undefined") {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
-    //initialize Vue.js
-    const { createApp, ref } = Vue;
+    // initialize Vue.js
+    const { createApp, ref } = Vue
     try {
-      console.log("Vue.js loaded");
+      console.log("Vue.js loaded")
       createApp({
         setup() {
-          const userSettings = ref(settings);
-          return { userSettings };
+          const userSettings = ref(settings)
+          return { userSettings }
         },
         methods: {
           updateKey(event) {
-            //check if its a valid Mapillary key format (regex)
+            // check if its a valid Mapillary key format (regex)
             if (!event.target.value.match(/^MLY\|[0-9]{16}\|[a-f0-9]{32}$/i)) {
-              return;
+              return
             }
-            console.log(event);
-            saveSettings();
+            console.log(event)
+            saveSettings()
           },
         },
-      }).mount(tabPane);
+      }).mount(tabPane)
     } catch (error) {
-      console.error("Failed to load Vue.js");
-      console.error(error);
+      console.error("Failed to load Vue.js")
+      console.error(error)
       tabPane.innerHTML = `
       <h3>Failed to load Vue.js</h3>
       <p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
@@ -109,7 +108,7 @@ DEFAULT_SETTINGS = {
           </g>
         </svg>
       </div>
-      `;
+      `
     }
   }
 
@@ -120,21 +119,21 @@ DEFAULT_SETTINGS = {
   function loadSettings() {
     try {
       const savedSettings = JSON.parse(
-        localStorage.getItem("mapillary_overlay")
-      );
+        localStorage.getItem("mapillary_overlay"),
+      )
 
       if (!savedSettings || typeof savedSettings !== "object") {
-        return DEFAULT_SETTINGS;
+        return DEFAULT_SETTINGS
       }
 
       // Check if each key in savedSources matches the keys in DEFAULT_SETTINGS
 
       // If all checks passed, use savedSettings
-      return savedSettings;
+      return savedSettings
     } catch (error) {
       // If any check fails, log the error and use DEFAULT_SETTINGS
-      console.error(error.message);
-      return DEFAULT_SETTINGS;
+      console.error(error.message)
+      return DEFAULT_SETTINGS
     }
   }
 
@@ -142,43 +141,39 @@ DEFAULT_SETTINGS = {
    * Save the settings to localStorage
    */
   async function saveSettings() {
-    localStorage.setItem("mapillary_overlay", JSON.stringify(settings));
+    localStorage.setItem("mapillary_overlay", JSON.stringify(settings))
   }
 
   /**
    * Bootstrap the Mapillary overlay
    */
   function mapillary_bootstrap() {
-    uWaze = unsafeWindow.W;
-    uOpenLayers = unsafeWindow.OpenLayers;
+    uWaze = unsafeWindow.W
+    uOpenLayers = unsafeWindow.OpenLayers
     if (
       !uOpenLayers ||
       !uWaze ||
       !uWaze.map ||
       !document.querySelector(".list-unstyled.togglers .group")
     ) {
-      setTimeout(mapillary_bootstrap, 500);
+      setTimeout(mapillary_bootstrap, 500)
     } else {
-      console.log("Loading mapillary Maps...");
-      settings_init();
+      console.log("Loading mapillary Maps...")
+      settings_init()
     }
   }
 
   async function addMap() {
-    //create new Vector Tile Layer
-    //https://tiles.mapillary.com/maps/vtp/mly_map_feature_traffic_sign/2/${z}/${x}/${y}?access_token=${settings.client_token}
+    // create new Vector Tile Layer
+    // https://tiles.mapillary.com/maps/vtp/mly_map_feature_traffic_sign/2/${z}/${x}/${y}?access_token=${settings.client_token}
 
-    const mapillaryLayer = new uOpenLayers.Layer.Vector(
-      "Mapillary Signs",
-      {
-        rendererOptions: { zIndexing: true },
-        protocol: new uOpenLayers.Protocol.HTTP({
-          url: `https://tiles.mapillary.com/maps/vtp/mly_map_feature_traffic_sign/2/\${z}/\${x}/\${y}?access_token=${settings.client_token}`,
-          
-        }),
-      }
-    );
-    W.map.addLayer(mapillaryLayer);
+    const mapillaryLayer = new uOpenLayers.Layer.Vector("Mapillary Signs", {
+      rendererOptions: { zIndexing: true },
+      protocol: new uOpenLayers.Protocol.HTTP({
+        url: `https://tiles.mapillary.com/maps/vtp/mly_map_feature_traffic_sign/2/\${z}/\${x}/\${y}?access_token=${settings.client_token}`,
+      }),
+    })
+    W.map.addLayer(mapillaryLayer)
   }
 
   /**
@@ -186,19 +181,19 @@ DEFAULT_SETTINGS = {
    * @returns {void}
    */
   async function patchOpenLayers() {
-    console.groupCollapsed("Patching missing features...");
+    console.groupCollapsed("Patching missing features...")
     if (!OpenLayers.VERSION_NUMBER.match(/^Release [0-9.]*$/)) {
       console.error(
-        "OpenLayers version mismatch (" +
-          OpenLayers.VERSION_NUMBER +
-          ") - cannot apply patch"
-      );
-      return;
+        `OpenLayers version mismatch (${
+          OpenLayers.VERSION_NUMBER
+        }) - cannot apply patch`,
+      )
+      return
     }
-    loadOLScript("lib/OpenLayers/Protocol");
-    loadOLScript("lib/OpenLayers/Protocol/HTTP");
+    loadOLScript("lib/OpenLayers/Protocol")
+    loadOLScript("lib/OpenLayers/Protocol/HTTP")
 
-    console.groupEnd();
+    console.groupEnd()
   }
 
   /**
@@ -206,37 +201,34 @@ DEFAULT_SETTINGS = {
    * @param {string} filename
    */
   function loadOLScript(filename) {
-    var version = OpenLayers.VERSION_NUMBER.replace(/Release /, "");
-    console.info("Loading openlayers/" + version + "/" + filename + ".js");
+    const version = OpenLayers.VERSION_NUMBER.replace(/Release /, "")
+    console.info(`Loading openlayers/${version}/${filename}.js`)
 
-    var openlayers = document.createElement("script");
-    openlayers.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/openlayers/" +
-      version +
-      "/" +
-      filename +
-      ".js";
-    openlayers.type = "text/javascript";
-    openlayers.async = false;
-    document.head.appendChild(openlayers);
+    const openlayers = document.createElement("script")
+    openlayers.src = `https://cdnjs.cloudflare.com/ajax/libs/openlayers/${
+      version
+    }/${filename}.js`
+    openlayers.type = "text/javascript"
+    openlayers.async = false
+    document.head.appendChild(openlayers)
   }
 
   function loadVueJS() {
-    //check if Vue.js is already loaded
+    // check if Vue.js is already loaded
     if (typeof Vue !== "undefined") {
-      return;
+      return
     }
-    console.log("Loading Vue.js");
-    var vuejs = document.createElement("script");
-    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js";
-    document.head.appendChild(vuejs);
+    console.log("Loading Vue.js")
+    const vuejs = document.createElement("script")
+    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js"
+    document.head.appendChild(vuejs)
   }
 
-  loadVueJS();
-  patchOpenLayers();
-  mapillary_bootstrap();
-  setTimeout(addMap, 5000);
-})();
+  loadVueJS()
+  patchOpenLayers()
+  mapillary_bootstrap()
+  setTimeout(addMap, 5000)
+})()
 
 GM_addStyle(`
 
@@ -250,4 +242,4 @@ GM_addStyle(`
     filter: drop-shadow(0 0 0.75rem rgba(150, 150, 150, 0.8));
   }
 
-`);
+`)

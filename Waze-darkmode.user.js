@@ -528,4 +528,4 @@ img#slackPermalink {
   color: var(--text-color) !important;
 }
 
-`);
+`)

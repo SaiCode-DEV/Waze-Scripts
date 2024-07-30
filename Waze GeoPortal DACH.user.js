@@ -15,7 +15,7 @@
 // @updateURL    https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DACH.meta.js
 // ==/UserScript==
 
-/*global I18n, $, W, OpenLayers*/
+/* global I18n, $, W, OpenLayers */
 
 /* globals OpenLayers: true */
 // Versions Format
@@ -175,43 +175,42 @@ DEFAULT_SOURCES = {
       },
     ],
   },
-};
+}
+;(() => {
+  let uOpenLayers
+  let uWaze
 
-(() => {
-  let uOpenLayers;
-  let uWaze;
+  let shiftPressed = false
 
-  let shiftPressed = false;
-
-  let opacity = localStorage.getItem("geoportal_opacity") || 0.5;
+  let opacity = localStorage.getItem("geoportal_opacity") || 0.5
 
   if (isNaN(opacity)) {
-    opacity = 0.5;
+    opacity = 0.5
   }
 
-  //check if opacity is in a valid range
+  // check if opacity is in a valid range
   if (opacity < 0 || opacity > 1) {
-    opacity = 0.5;
+    opacity = 0.5
   }
 
   // Define WMTS Layers
 
-  const layersList = [];
+  const layersList = []
 
-  let sources = loadSettings();
+  const sources = loadSettings()
 
   /**
    * Define WMTS/WMS Layers. Hide this function for better readability
    */
   function geoportal_init() {
-    const layerControl = $(".layer-switcher").find(".list-unstyled.togglers");
+    const layerControl = $(".layer-switcher").find(".list-unstyled.togglers")
     if (layerControl.length) {
-      console.info(`Loading Geoportal Layers...`);
-      $.each(sources, function (key, country) {
+      console.info(`Loading Geoportal Layers...`)
+      $.each(sources, (key, country) => {
         const controlEntry = `
         <li class="group layer-toggle-${country.flag}" style="${
-          country.enabled ? "" : "display: none;"
-        }">
+    country.enabled ? "" : "display: none;"
+  }">
           <div class="layer-switcher-toggler-tree-category">
             <wz-button class="expand-country-${key}" color="clear-icon" size="xs">
               <i class="toggle-category w-icon w-icon-caret-down"></i>
@@ -222,21 +221,21 @@ DEFAULT_SOURCES = {
           </div>
           <ul class="collapsible-GROUP_OVERLAY ${key}"></ul>
         </li>
-        `;
+        `
         // append the control entry as the second last entry
-        layerControl.children().eq(-1).before(controlEntry);
-        //make the caret clickable
-        $(`.expand-country-${key}`).on("click", function () {
-          $(`.collapsible-GROUP_OVERLAY.${key}`).toggle();
-          //rotate the caret transform: rotate(90deg);
+        layerControl.children().eq(-1).before(controlEntry)
+        // make the caret clickable
+        $(`.expand-country-${key}`).on("click", function() {
+          $(`.collapsible-GROUP_OVERLAY.${key}`).toggle()
+          // rotate the caret transform: rotate(90deg);
           if ($(this).find("i").css("transform") === "none") {
-            $(this).find("i").css("transform", "rotate(-90deg)");
+            $(this).find("i").css("transform", "rotate(-90deg)")
           } else {
-            $(this).find("i").css("transform", "");
+            $(this).find("i").css("transform", "")
           }
-        });
-        country_init(key, country.layers, country.flag);
-      });
+        })
+        country_init(key, country.layers, country.flag)
+      })
     }
   }
 
@@ -247,36 +246,36 @@ DEFAULT_SOURCES = {
    * @param {string} flag
    */
   function country_init(country, layers, flag) {
-    let overlayGroup = $(`ul.collapsible-GROUP_OVERLAY.${country}`);
-    $.each(layers, function (index, source) {
+    const overlayGroup = $(`ul.collapsible-GROUP_OVERLAY.${country}`)
+    $.each(layers, (index, source) => {
       // Make and add layer
       GM.xmlHttpRequest({
         method: "GET",
         url: source.source,
-        onload: (response) => {
-          var responseXML = response.responseXML;
+        onload: response => {
+          let { responseXML } = response
           // Inject responseXML into existing Object (only appropriate for XML content).
           if (!response.responseXML) {
             responseXML = new DOMParser().parseFromString(
               response.responseText,
-              "text/xml"
-            );
+              "text/xml",
+            )
           }
-          //if responseXML is not a XML document, cancel the loading
+          // if responseXML is not a XML document, cancel the loading
           if (!responseXML || responseXML instanceof XMLDocument === false) {
             console.error(
               `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
                 source.name
-              }`
-            );
-            return;
+              }`,
+            )
+            return
           }
 
-          //chec if WMST or WMTS and load the correct format
+          // chec if WMST or WMTS and load the correct format
           if (source.type === "WMTS") {
-            var format = new OpenLayers.Format.WMTSCapabilities();
-            var doc = responseXML;
-            var capabilities = format.read(doc);
+            var format = new OpenLayers.Format.WMTSCapabilities()
+            var doc = responseXML
+            var capabilities = format.read(doc)
             layersList[source.unique] = format.createLayer(capabilities, {
               layer: source.layerName,
               matrixSet: source.matrixSet,
@@ -284,19 +283,19 @@ DEFAULT_SOURCES = {
               isBaseLayer: false,
               requestEncoding: source.requestEncoding ?? "REST",
               visibility: source.active,
-            });
+            })
           } else if (source.type === "WMS") {
-            var format = new OpenLayers.Format.WMSCapabilities();
-            var doc = responseXML;
-            var capabilities = format.read(doc);
+            var format = new OpenLayers.Format.WMSCapabilities()
+            var doc = responseXML
+            var capabilities = format.read(doc)
 
             // Find the specific layer by its name
-            var wmsLayer = capabilities.capability.layers.find(
-              (layer) => layer.name === source.layerName
-            );
+            const wmsLayer = capabilities.capability.layers.find(
+              layer => layer.name === source.layerName,
+            )
 
             if (wmsLayer) {
-              console.log(wmsLayer);
+              console.log(wmsLayer)
               layersList[source.unique] = new OpenLayers.Layer.Tile({
                 source: new OpenLayers.Source.TileWMS({
                   url: wmsLayer.url,
@@ -309,79 +308,79 @@ DEFAULT_SOURCES = {
                 opacity: source.opacity ?? opacity,
                 isBaseLayer: false,
                 visibility: false,
-              });
-              JSON.stringify(result, null, 2);
-              console.log(wmsLayer.url);
+              })
+              JSON.stringify(result, null, 2)
+              console.log(wmsLayer.url)
             } else {
               console.error(
-                `Layer ${source.layerName} not found in WMS capabilities for ${flag} ${source.name}`
-              );
-              return;
+                `Layer ${source.layerName} not found in WMS capabilities for ${flag} ${source.name}`,
+              )
+              return
             }
           }
 
-          uWaze.map.addLayer(layersList[source.unique]);
-          uWaze.map.setLayerIndex(layersList[source.unique], 3);
+          uWaze.map.addLayer(layersList[source.unique])
+          uWaze.map.setLayerIndex(layersList[source.unique], 3)
 
-          //check for errors
+          // check for errors
           if (!layersList[source.unique]) {
             console.error(
               `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
                 source.name
-              }`
-            );
-            return;
+              }`,
+            )
+            return
           }
           if (!layersList[source.unique].url.length) {
             console.error(
               `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
                 source.name
-              }. No URL found in capabilities.`
-            );
-            console.log(layersList[source.unique]);
-            return;
+              }. No URL found in capabilities.`,
+            )
+            console.log(layersList[source.unique])
+            return
           }
 
-          console.debug(layersList[source.unique].url);
+          console.debug(layersList[source.unique].url)
 
           // Make checkbox and add to the section
-          let toggleEntry = $("<li></li>");
-          let checkbox = $("<wz-checkbox></wz-checkbox>", {
+          const toggleEntry = $("<li></li>")
+          const checkbox = $("<wz-checkbox></wz-checkbox>", {
             id: source.unique,
             class: "hydrated",
             checked: layersList[source.unique].getVisibility(),
             text: source.name,
-          });
+          })
 
-          toggleEntry.append(checkbox).toggle(source.enabled);
-          overlayGroup.append(toggleEntry);
+          toggleEntry.append(checkbox).toggle(source.enabled)
+          overlayGroup.append(toggleEntry)
 
-          checkbox.on("click", function (e) {
-            layersList[source.unique].setVisibility(e.target.checked);
-            sources[country].layers[index].active = e.target.checked;
-            saveSettings();
-          });
+          checkbox.on("click", e => {
+            layersList[source.unique].setVisibility(e.target.checked)
+            sources[country].layers[index].active = e.target.checked
+            saveSettings()
+          })
 
           console.log(
-            `${flag} Layer ${index + 1}/${layers.length}: ${source.name} loaded`
-          );
+            `${flag} Layer ${index + 1}/${layers.length}: ${source.name} loaded`,
+          )
         },
-        onerror: (response) => {
+        onerror: response => {
           console.error(
             `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
               source.name
-            }`
-          );
+            }`,
+          )
         },
-        ontimeout: (response) => {
+        ontimeout: response => {
           console.error(
             `Request to ${flag} Layer ${index + 1}/${layers.length}: ${
               source.name
-            } timed out`
-          );
+            } timed out`,
+          )
         },
-      });
-    });
+      })
+    })
   }
 
   /**
@@ -389,11 +388,11 @@ DEFAULT_SOURCES = {
    * @returns {void}
    */
   function ui_init() {
-    //Add a Opacity control to the map controls
-    const controlContainer = $(".overlay-buttons-container.bottom").first();
-    //check if the opacity control already exists
+    // Add a Opacity control to the map controls
+    const controlContainer = $(".overlay-buttons-container.bottom").first()
+    // check if the opacity control already exists
     if (controlContainer.find(".opacity-control-container").length) {
-      return;
+      return
     }
 
     const opacityControl = $(`
@@ -425,93 +424,91 @@ DEFAULT_SOURCES = {
         </wz-tooltip>
     </wz-basic-tooltip>
     </div>
-    `);
-    controlContainer.append(opacityControl);
+    `)
+    controlContainer.append(opacityControl)
 
-    //check if control is pressed an update the value
-    $(document).on("keydown", function (e) {
+    // check if control is pressed an update the value
+    $(document).on("keydown", e => {
       if (e.key == "Shift") {
-        shiftPressed = true;
+        shiftPressed = true
       }
-    });
+    })
 
-    $(document).on("keyup", function (e) {
+    $(document).on("keyup", e => {
       if (e.key == "Shift") {
-        shiftPressed = false;
+        shiftPressed = false
       }
-    });
+    })
 
     // Add event listeners to the opacity control
-    $(".opacity-plus").on("click", function () {
+    $(".opacity-plus").on("click", () => {
       if (shiftPressed) {
-        opacity = 1;
+        opacity = 1
       } else {
-        opacity = Math.min(opacity + 0.1, 1);
+        opacity = Math.min(opacity + 0.1, 1)
       }
-      localStorage.setItem("geoportal_opacity", opacity);
+      localStorage.setItem("geoportal_opacity", opacity)
 
-      $.each(sources, function (index, source) {
-        source.layers.forEach((source) => {
+      $.each(sources, (index, source) => {
+        source.layers.forEach(source => {
           try {
-            layersList[source.unique].setOpacity(opacity);
+            layersList[source.unique].setOpacity(opacity)
           } catch (e) {
-            console.error(`Failed to set opacity for ${source.name}`);
-            return;
+            console.error(`Failed to set opacity for ${source.name}`)
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
-    $(".opacity-minus").on("click", function () {
+    $(".opacity-minus").on("click", () => {
       if (shiftPressed) {
-        opacity = 0;
+        opacity = 0
       } else {
-        opacity = Math.max(opacity - 0.1, 0);
+        opacity = Math.max(opacity - 0.1, 0)
       }
-      localStorage.setItem("geoportal_opacity", opacity);
-      $.each(sources, function (index, source) {
-        source.layers.forEach((source) => {
+      localStorage.setItem("geoportal_opacity", opacity)
+      $.each(sources, (index, source) => {
+        source.layers.forEach(source => {
           try {
-            layersList[source.unique].setOpacity(opacity);
+            layersList[source.unique].setOpacity(opacity)
           } catch (e) {
-            console.error(`Failed to set opacity for ${source.name}`);
-            return;
+            console.error(`Failed to set opacity for ${source.name}`)
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
-    //check every 10 seconds if the opacity control is still there
+    // check every 10 seconds if the opacity control is still there
     setInterval(() => {
       if (
         !$(".overlay-buttons-container.bottom")
           .first()
           .find(".opacity-control-container").length
       ) {
-        console.log("Opacity control not found, re-adding...");
-        $(".overlay-buttons-container.bottom").first().append(opacityControl);
+        console.log("Opacity control not found, re-adding...")
+        $(".overlay-buttons-container.bottom").first().append(opacityControl)
       }
-    }, 10000);
+    }, 10000)
 
-    //add a mutation observer to check if the opacity control is removed
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
+    // add a mutation observer to check if the opacity control is removed
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
         if (!mutation.addedNodes.length) {
-          return;
+          return
         }
-        mutation.addedNodes.forEach((node) => {
+        mutation.addedNodes.forEach(node => {
           if (node.id === "overlay-buttons") {
             $(".overlay-buttons-container.bottom")
               .first()
-              .append(opacityControl);
+              .append(opacityControl)
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
     observer.observe($("#overlay-buttons-region").get(0), {
       childList: true,
-    });
+    })
   }
 
   /**
@@ -519,10 +516,10 @@ DEFAULT_SOURCES = {
    */
   async function settings_init() {
     const { tabLabel, tabPane } =
-      W.userscripts.registerSidebarTab("geoportal-dach");
+      W.userscripts.registerSidebarTab("geoportal-dach")
 
-    tabLabel.innerText = "🌍 Geoportal";
-    tabLabel.title = "Geoportal DACH";
+    tabLabel.innerText = "🌍 Geoportal"
+    tabLabel.title = "Geoportal DACH"
 
     tabPane.innerHTML = `
   <div class="geoportal-settings">
@@ -539,54 +536,54 @@ DEFAULT_SOURCES = {
         </ul>
     </div>
   </div>
-  `;
+  `
 
-    await W.userscripts.waitForElementConnected(tabPane);
+    await W.userscripts.waitForElementConnected(tabPane)
 
-    //check if Vue.js is already loaded
+    // check if Vue.js is already loaded
     while (typeof Vue === "undefined") {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
-    //initialize Vue.js
-    const { createApp, ref } = Vue;
+    // initialize Vue.js
+    const { createApp, ref } = Vue
     try {
-      console.log("Vue.js loaded");
+      console.log("Vue.js loaded")
       createApp({
         setup() {
-          const countries = ref(Object.keys(sources));
-          const layers = ref(sources);
+          const countries = ref(Object.keys(sources))
+          const layers = ref(sources)
 
-          return { countries, layers };
+          return { countries, layers }
         },
         methods: {
           updateCountry(event) {
-            //hide the layers if the country is disabled
+            // hide the layers if the country is disabled
             if (!event.target.checked) {
-              sources[event.target.id].layers.forEach((layer) => {
-                layersList[layer.unique].setVisibility(false);
-              });
+              sources[event.target.id].layers.forEach(layer => {
+                layersList[layer.unique].setVisibility(false)
+              })
             } else {
-              sources[event.target.id].layers.forEach((layer) => {
-                layersList[layer.unique].setVisibility(layer.active);
-              });
+              sources[event.target.id].layers.forEach(layer => {
+                layersList[layer.unique].setVisibility(layer.active)
+              })
             }
             $(`.layer-toggle-${this.layers[event.target.id].flag}`).toggle(
-              event.target.checked
-            );
-            saveSettings();
+              event.target.checked,
+            )
+            saveSettings()
           },
           updateLayer(event) {
-            layersList[event.target.id].setVisibility(event.target.checked);
+            layersList[event.target.id].setVisibility(event.target.checked)
             $(`li wz-checkbox#${event.target.id}`)
               .toggle(event.target.checked)
-              .prop("checked", event.target.checked);
-            saveSettings();
+              .prop("checked", event.target.checked)
+            saveSettings()
           },
         },
-      }).mount(tabPane);
+      }).mount(tabPane)
     } catch (error) {
-      console.error("Failed to load Vue.js");
-      console.error(error);
+      console.error("Failed to load Vue.js")
+      console.error(error)
       tabPane.innerHTML = `
       <h3>Failed to load Vue.js</h3>
       <p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
@@ -610,10 +607,10 @@ DEFAULT_SOURCES = {
           </g>
         </svg>
       </div>
-      `;
+      `
     }
 
-    //if vue got blocked by the CSP, show a message
+    // if vue got blocked by the CSP, show a message
   }
 
   /**
@@ -622,17 +619,15 @@ DEFAULT_SOURCES = {
    */
   function loadSettings() {
     try {
-      const savedSources = JSON.parse(
-        localStorage.getItem("geoportal_sources")
-      );
+      const savedSources = JSON.parse(localStorage.getItem("geoportal_sources"))
 
       if (!savedSources || typeof savedSources !== "object") {
-        return DEFAULT_SOURCES;
+        return DEFAULT_SOURCES
       }
 
       // Check if each key in savedSources matches the keys in DEFAULT_SOURCES
       for (const key in savedSources) {
-        const savedSource = savedSources[key];
+        const savedSource = savedSources[key]
 
         // Check if the structure of savedSource matches the structure of defaultSource
         if (
@@ -640,9 +635,9 @@ DEFAULT_SOURCES = {
           typeof savedSource.flag !== "string" ||
           !Array.isArray(savedSource.layers)
         ) {
-          throw new Error("Invalid country format");
+          throw new Error("Invalid country format")
         }
-        savedSource.enabled = savedSource.enabled ?? true;
+        savedSource.enabled = savedSource.enabled ?? true
 
         for (const layer of savedSource.layers) {
           if (
@@ -653,18 +648,18 @@ DEFAULT_SOURCES = {
             typeof layer.layerName !== "string" ||
             typeof layer.matrixSet !== "string"
           ) {
-            throw new Error("Invalid layer format");
+            throw new Error("Invalid layer format")
           }
-          layer.enabled = layer.enabled ?? true;
-          layer.active = layer.active ?? false;
+          layer.enabled = layer.enabled ?? true
+          layer.active = layer.active ?? false
         }
       }
       // If all checks passed, use savedSources
-      return savedSources;
+      return savedSources
     } catch (error) {
       // If any check fails, log the error and use DEFAULT_SOURCES
-      console.error(error.message);
-      return DEFAULT_SOURCES;
+      console.error(error.message)
+      return DEFAULT_SOURCES
     }
   }
 
@@ -672,27 +667,27 @@ DEFAULT_SOURCES = {
    * Save the settings to localStorage
    */
   async function saveSettings() {
-    localStorage.setItem("geoportal_sources", JSON.stringify(sources));
+    localStorage.setItem("geoportal_sources", JSON.stringify(sources))
   }
 
   /**
    * Bootstrap the Geoportal Overlays
    */
   function geoportal_bootstrap() {
-    uWaze = unsafeWindow.W;
-    uOpenLayers = unsafeWindow.OpenLayers;
+    uWaze = unsafeWindow.W
+    uOpenLayers = unsafeWindow.OpenLayers
     if (
       !uOpenLayers ||
       !uWaze ||
       !uWaze.map ||
       !document.querySelector(".list-unstyled.togglers .group")
     ) {
-      setTimeout(geoportal_bootstrap, 500);
+      setTimeout(geoportal_bootstrap, 500)
     } else {
-      console.log("Loading Geoportal Maps...");
-      settings_init();
-      geoportal_init();
-      ui_init();
+      console.log("Loading Geoportal Maps...")
+      settings_init()
+      geoportal_init()
+      ui_init()
     }
   }
 
@@ -701,30 +696,30 @@ DEFAULT_SOURCES = {
    * @returns {void}
    */
   async function patchOpenLayers() {
-    console.groupCollapsed("Patching missing features...");
+    console.groupCollapsed("Patching missing features...")
     if (!OpenLayers.VERSION_NUMBER.match(/^Release [0-9.]*$/)) {
       console.error(
-        "OpenLayers version mismatch (" +
-          OpenLayers.VERSION_NUMBER +
-          ") - cannot apply patch"
-      );
-      return;
+        `OpenLayers version mismatch (${
+          OpenLayers.VERSION_NUMBER
+        }) - cannot apply patch`,
+      )
+      return
     }
-    loadOLScript("lib/OpenLayers/Format/XML");
-    loadOLScript("lib/OpenLayers/Format/XML/VersionedOGC");
-    loadOLScript("lib/OpenLayers/Layer/WMTS");
-    loadOLScript("lib/OpenLayers/Layer/Tile");
-    loadOLScript("lib/OpenLayers/Format/OWSCommon");
-    loadOLScript("lib/OpenLayers/Format/OWSCommon/v1");
-    loadOLScript("lib/OpenLayers/Format/OWSCommon/v1_1_0");
-    loadOLScript("lib/OpenLayers/Format/WMSCapabilities");
-    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1");
-    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1_3");
-    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1_3_0");
-    loadOLScript("lib/OpenLayers/Format/WMTSCapabilities");
-    loadOLScript("lib/OpenLayers/Format/WMTSCapabilities/v1_0_0");
+    loadOLScript("lib/OpenLayers/Format/XML")
+    loadOLScript("lib/OpenLayers/Format/XML/VersionedOGC")
+    loadOLScript("lib/OpenLayers/Layer/WMTS")
+    loadOLScript("lib/OpenLayers/Layer/Tile")
+    loadOLScript("lib/OpenLayers/Format/OWSCommon")
+    loadOLScript("lib/OpenLayers/Format/OWSCommon/v1")
+    loadOLScript("lib/OpenLayers/Format/OWSCommon/v1_1_0")
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities")
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1")
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1_3")
+    loadOLScript("lib/OpenLayers/Format/WMSCapabilities/v1_3_0")
+    loadOLScript("lib/OpenLayers/Format/WMTSCapabilities")
+    loadOLScript("lib/OpenLayers/Format/WMTSCapabilities/v1_0_0")
 
-    console.groupEnd();
+    console.groupEnd()
   }
 
   /**
@@ -732,36 +727,33 @@ DEFAULT_SOURCES = {
    * @param {string} filename
    */
   function loadOLScript(filename) {
-    var version = OpenLayers.VERSION_NUMBER.replace(/Release /, "");
-    console.info("Loading openlayers/" + version + "/" + filename + ".js");
+    const version = OpenLayers.VERSION_NUMBER.replace(/Release /, "")
+    console.info(`Loading openlayers/${version}/${filename}.js`)
 
-    var openlayers = document.createElement("script");
-    openlayers.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/openlayers/" +
-      version +
-      "/" +
-      filename +
-      ".js";
-    openlayers.type = "text/javascript";
-    openlayers.async = false;
-    document.head.appendChild(openlayers);
+    const openlayers = document.createElement("script")
+    openlayers.src = `https://cdnjs.cloudflare.com/ajax/libs/openlayers/${
+      version
+    }/${filename}.js`
+    openlayers.type = "text/javascript"
+    openlayers.async = false
+    document.head.appendChild(openlayers)
   }
 
   function loadVueJS() {
-    //check if Vue.js is already loaded
+    // check if Vue.js is already loaded
     if (typeof Vue !== "undefined") {
-      return;
+      return
     }
-    console.log("Loading Vue.js");
-    var vuejs = document.createElement("script");
-    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js";
-    document.head.appendChild(vuejs);
+    console.log("Loading Vue.js")
+    const vuejs = document.createElement("script")
+    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js"
+    document.head.appendChild(vuejs)
   }
 
-  loadVueJS();
-  patchOpenLayers();
-  geoportal_bootstrap();
-})();
+  loadVueJS()
+  patchOpenLayers()
+  geoportal_bootstrap()
+})()
 
 GM_addStyle(`
 
@@ -797,4 +789,4 @@ GM_addStyle(`
     filter: drop-shadow(0 0 0.75rem rgba(150, 150, 150, 0.8));
   }
 
-`);
+`)
