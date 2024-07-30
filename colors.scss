@@ -203,7 +203,8 @@ $dark-override: (
     }
   }
 
-  --color-background: var(--color-primary-100);
+  --color-background: var(--color-primary-900);
+  --background_default: var(--color-gray-900);
   --color-white: $dark-white;
   --color-black: $dark-black;
   --always_white: $dark-white;

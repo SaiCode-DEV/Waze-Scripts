@@ -5,7 +5,7 @@
 // @include             /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
 // @supportURL          https://www.waze.com/forum/viewtopic.php?t=334618
 // @version             1.63.257
-// @grant               none
+// @grant           		GM_addStyle
 // ==/UserScript==
 
 /*
@@ -42,9 +42,67 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
   FUME_DATE = "2024-05-07";
   const newVersionNotes = ["Compatibility fix for latest WME release..."];
 
-	PREFIX = "WMEFUME";
+  PREFIX = "WMEFUME";
+  DEFAULT_OPTIONS = {
+    oldVersion: "0.0",
+    moveZoomBar: true,
+    shrinkTopBars: true,
+    restyleSidePanel: true,
+    restyleReports: true,
+    enhanceChat: true,
+    narrowSidePanel: false,
+    arialShiftX: 0,
+    arialShiftY: 0,
+    arialOpacity: 100,
+    arialShiftXO: 0,
+    arialShiftYO: 0,
+    arialOpacityO: 100,
+    fixExternalProviders: true,
+    GSVContrast: 100,
+    GSVBrightness: 100,
+    GSVInvert: false,
+    GSVWidth: 50,
+    restyleLayersMenu: true,
+    layers2Cols: false,
+    moveChatIcon: true,
+    highlightInvisible: true,
+    darkenSaveLayer: true,
+    layersMenuMore: true,
+    UIContrast: 1,
+    UICompression: 1,
+    swapRoadsGPS: true,
+    showMapBlockers: true,
+    tameLockedSegmentMsg: false,
+    hideSegmentPanelLabels: false,
+    tameSegmentTypeMenu: false,
+    tameElevationMenu: false,
+    removeRoutingReminder: false,
+    reEnableSidePanel: false,
+    disableBridgeButton: true,
+    disablePathButton: false,
+    ISODates: true,
+    mondayFirst: false,
+    disableKinetic: false,
+    disableScrollZoom: false,
+    disableAnimatedZoom: false,
+    disableUITransitions: false,
+    disableSaveBlocker: false,
+    colourBlindTurns: false,
+    hideMenuLabels: false,
+    unfloatButtons: false,
+    moveUserInfo: false,
+    hackGSVHandle: false,
+    enlargeGeoNodes: false,
+    geoNodeSize: 8,
+    enlargeGeoHandles: false,
+    geoHandleSize: 6,
+    enlargePointMCs: false,
+    pointMCScale: 1,
+    resizeSearchBox: false,
+    theme: "system",
+  };
 
-  let oldVersion;
+  var options;
   let tabAttempts = 0;
   let debug = true;
   let wmeFUinitialising = true;
@@ -81,21 +139,23 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     this.crossAction = crossAction;
   }
   function abCloseAlertBox() {
-    document.getElementById("abAlerts").childNodes[0].innerHTML =
-      modifyHTML("");
-    document.getElementById("abAlerts").childNodes[1].innerHTML =
-      modifyHTML("");
-    document.getElementById("abAlertTickBtnCaption").innerHTML = modifyHTML("");
-    document.getElementById("abAlertCrossBtnCaption").innerHTML =
-      modifyHTML("");
-    abAlertBoxTickAction = null;
-    abAlertBoxCrossAction = null;
-    document.getElementById("abAlerts").style.visibility = "hidden";
-    document.getElementById("abAlertCrossBtn").style.visibility = "hidden";
-    abAlertBoxInUse = false;
-    if (abAlertBoxStack.length > 0) {
-      abBuildAlertBoxFromStack();
-    }
+    $("#abAlerts").fadeOut(250, function () {
+      document.getElementById("abAlerts").childNodes[0].innerHTML =
+        modifyHTML("");
+      document.getElementById("abAlerts").childNodes[1].innerHTML =
+        modifyHTML("");
+      document.getElementById("abAlertTickBtnCaption").innerHTML =
+        modifyHTML("");
+      document.getElementById("abAlertCrossBtnCaption").innerHTML =
+        modifyHTML("");
+      abAlertBoxTickAction = null;
+      abAlertBoxCrossAction = null;
+      $("#abAlertCrossBtn").hide();
+      abAlertBoxInUse = false;
+      if (abAlertBoxStack.length > 0) {
+        abBuildAlertBoxFromStack();
+      }
+    });
   }
   function abCloseAlertBoxWithTick() {
     if (typeof abAlertBoxTickAction === "function") {
@@ -147,11 +207,8 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     titleContent += '<img src="' + tbIcon + '">';
     titleContent += abAlertBoxStack[0].title;
     titleContent += "</span>";
-    document.getElementById("abAlerts").childNodes[0].innerHTML =
-      modifyHTML(titleContent);
-    document.getElementById("abAlerts").childNodes[1].innerHTML = modifyHTML(
-      abAlertBoxStack[0].content
-    );
+    $("#abAlerts #header").html(titleContent);
+    $("#abAlerts #content").html(abAlertBoxStack[0].content);
     document.getElementById("abAlertTickBtnCaption").innerHTML = modifyHTML(
       abAlertBoxStack[0].tickText
     );
@@ -159,57 +216,41 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       document.getElementById("abAlertCrossBtnCaption").innerHTML = modifyHTML(
         abAlertBoxStack[0].crossText
       );
-      document.getElementById("abAlertCrossBtn").style.visibility = "visible";
+      $("#abAlertCrossBtn").show();
       if (typeof abAlertBoxStack[0].crossAction === "function") {
         abAlertBoxCrossAction = abAlertBoxStack[0].crossAction;
       }
     } else {
-      document.getElementById("abAlertCrossBtn").style.visibility = "hidden";
+      $("#abAlertCrossBtn").hide();
     }
     if (typeof abAlertBoxStack[0].tickAction === "function") {
       abAlertBoxTickAction = abAlertBoxStack[0].tickAction;
     }
-    document.getElementById("abAlerts").style.visibility = "";
+    $("#abAlerts").fadeIn(200);
     abAlertBoxStack.shift();
   }
   function abInitialiseAlertBox() {
     // create a new div to display script alerts
     abAlerts = document.createElement("div");
     abAlerts.id = "abAlerts";
-    abAlerts.style.position = "fixed";
-    abAlerts.style.visibility = "hidden";
-    abAlerts.style.top = "50%";
-    abAlerts.style.left = "50%";
-    abAlerts.style.zIndex = 10000;
-    abAlerts.style.backgroundColor = "aliceblue";
-    abAlerts.style.borderWidth = "3px";
-    abAlerts.style.borderStyle = "solid";
-    abAlerts.style.borderRadius = "10px";
-    abAlerts.style.boxShadow = "5px 5px 10px Silver";
-    abAlerts.style.padding = "4px";
-    abAlerts.style.webkitTransform = "translate(-50%, -50%)";
-    abAlerts.style.transform = "translate(-50%, -50%)";
 
-    var alertsHTML =
-      '<div id="header" style="padding: 4px; background-color:LightBlue; font-weight: bold;">Alert title goes here...</div>';
-    alertsHTML +=
-      '<div id="content" style="padding: 4px; background-color:White; overflow:auto;max-height:500px">Alert content goes here...</div>';
-    alertsHTML += '<div id="controls" align="center" style="padding: 4px;">';
-    alertsHTML +=
-      '<span id="abAlertTickBtn" style="cursor:pointer;font-size:14px;border:thin outset black;padding:2px 10px 2px 10px;">';
-    alertsHTML += '<i class="fa fa-check"> </i>';
-    alertsHTML +=
-      '<span id="abAlertTickBtnCaption" style="font-weight: bold;"></span>';
-    alertsHTML += "</span>";
-    alertsHTML += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-    alertsHTML +=
-      '<span id="abAlertCrossBtn" style="cursor:pointer;font-size:14px;border:thin outset black;padding:2px 10px 2px 10px;">';
-    alertsHTML += '<i class="fa fa-times"> </i>';
-    alertsHTML +=
-      '<span id="abAlertCrossBtnCaption" style="font-weight: bold;"></span>';
-    alertsHTML += "</span>";
-    alertsHTML += "</div>";
+    var alertsHTML = `
+    <div id="header">Alert title goes here...</div>
+    <div id="content">Alert content goes here...</div>
+    <div id="controls" align="center">
+      <span id="abAlertTickBtn">
+        <i class="fa fa-check"> </i>
+        <span id="abAlertTickBtnCaption" style="font-weight: bold;"></span>
+      </span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span id="abAlertCrossBtn">
+        <i class="fa fa-times"> </i>
+        <span id="abAlertCrossBtnCaption" style="font-weight: bold;"></span>
+      </span>
+    </div>
+    `;
     abAlerts.innerHTML = modifyHTML(alertsHTML);
+    abAlerts.style.display = "none";
     document.body.appendChild(abAlerts);
   }
 
@@ -251,7 +292,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
   }
   //Mutation Observer for daterangepicker in Restrictions
   var RestrictionObserver = new MutationObserver(function (mutations) {
-    if (getById("_cbMondayFirst").checked || getById("_cbISODates").checked) {
+    if (options.mondayFirst || options.ISODates) {
       mutations.forEach(function (mutation) {
         if ($(mutation.target).hasClass("modal-content")) {
           if (mutation.addedNodes.length > 0) {
@@ -261,13 +302,13 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
                 $(DRP).data("daterangepicker").locale.daysOfWeek
               );
 
-              if (getById("_cbMondayFirst").checked) {
+              if (options.mondayFirst) {
                 if ($(DRP).data("daterangepicker").locale.firstDay === 0) {
                   $(DRP).data("daterangepicker").locale.firstDay = 1;
                   $(DRP).data("daterangepicker").locale.daysOfWeek = dows;
                 }
               }
-              if (getById("_cbISODates").checked) {
+              if (options.ISODates) {
                 $(DRP).data("daterangepicker").locale.format = "YYYY-MM-DD";
                 DRP.value =
                   $(DRP).data("daterangepicker").startDate._i +
@@ -283,7 +324,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
   // Mutation Observer for segment edit panel
   var SegmentObserver = new MutationObserver(function (mutations) {
     // Tame the locked segment message which, in some locales, takes up rather more space than would be ideal
-    if (getById("_cbTameLockedSegmentMsg").checked) {
+    if (options.tameLockedSegment) {
       let tObj = document.getElementsByClassName("segment-details");
       if (tObj.length > 0) {
         if (
@@ -303,7 +344,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     }
 
     // Hide the labels in the segment edit panel to give more vertical space to the things we need to interact with
-    if (getById("_cbHideSegmentPanelLabels").checked) {
+    if (options.hideSegmentPanelLabels) {
       let tObj = document
         .getElementById("edit-panel")
         .getElementsByTagName("wz-tab");
@@ -320,7 +361,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     }
 
     // Remove those options from the elevation menu which no-one is ever likely to need
-    if (getById("_cbTameElevationMenu").checked) {
+    if (options.tameElevationMenu) {
       if (document.getElementsByName("level").length > 0) {
         if (document.getElementsByName("level")[0].childElementCount > 0) {
           let menuEntries = document
@@ -348,7 +389,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     }
 
     // Remove whitespace from the segment type menu if it's being used
-    if (getById("_cbTameSegmentTypeMenu").checked) {
+    if (options.tameSegmentTypeMenu) {
       // Check the menu is being shown - this won't be the case in compact mode
       if (document.getElementsByName("roadType").length > 0) {
         if (document.getElementsByName("roadType")[0].childElementCount > 0) {
@@ -385,7 +426,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     }
 
     // Remove that slightly annoying "used as" message under the routing option buttons
-    if (getById("_cbRemoveRoutingReminder").checked) {
+    if (options.removeRoutingReminder) {
       SetStyle(
         document.querySelector(".routing-road-type-message")?.parentElement,
         "display",
@@ -394,8 +435,8 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       );
     }
 
-    if (getById("_cbCompressSegmentTab").checked) {
-      if (getById("_inpUICompression").value > 0) {
+    if (options.restyleSidePanel) {
+      if (options.UICompression > 0) {
         // Reduce padding enough so that the compact mode segment type selectors stand a reasonable chance
         // of fitting onto two lines instead of needing to spill over onto a third...
         SetStyle(
@@ -469,7 +510,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
   });
   //Mutation Observer for daterangepicker in Closures
   var ClosureObserver = new MutationObserver(function (mutations) {
-    if (getById("_cbMondayFirst").checked) {
+    if (options.mondayFirst) {
       mutations.forEach(function (mutation) {
         if (mutation.target.className == "closures") {
           if (mutation.addedNodes.length > 0) {
@@ -503,7 +544,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // the entries in the dynamically created drop-down list which
     // is generated whenever you start searching for a GMaps place
     // to link to a native one
-    if (getById("_cbFixExternalProviders").checked) {
+    if (options.fixExternalProviders) {
       // First check that the MO has fired because the user has selected
       // a place for editing...
       let acMenu = document.getElementsByClassName(
@@ -522,9 +563,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         }
       }
     }
-
-    let compress = getById("_inpUICompression").value;
-    if (compress > 0) {
+    if (options.UICompression > 0) {
       // Also check for the existence of the entry point UI element, so
       // we can dive into its shadowroot to deal with its excessive whitespace
       if (
@@ -574,10 +613,10 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         document.querySelector(".toolbar-group").getBoundingClientRect()
           .width !== 0
       ) {
-        if (doCleanUpAfterHNEdit === true) {
+        if (doCleanUpAfterHNEdit) {
           doCleanUpAfterHNEdit = false;
           hideMenuLabels();
-          if (getById("_cbMoveUserInfo").checked === true) {
+          if (options.moveUserInfo) {
             insertNodeBeforeNode(
               document.querySelector(".user-toolbar"),
               getById("left-app-head")
@@ -604,7 +643,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
   function PrepForHNEdit() {
     // Moving the notification icons prevents the HN buttons from being rendered, so if the user has opted to move them, temporarily
     // move them back if the user then goes to edit HN...
-    if (getById("_cbMoveUserInfo").checked === true) {
+    if (options.moveUserInfo) {
       insertNodeAfterNode(
         document.querySelector("wz-user-box"),
         document.querySelector("#save-button").parentElement.parentElement
@@ -756,68 +795,8 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         return;
       }
     }
-    // setup event handlers for my controls:
-    getById("_cbMoveZoomBar").onclick = createZoomBar;
-    getById("_cbMoveChatIcon").onclick = moveChatIcon;
-    getById("_cbHighlightInvisible").onclick = highlightInvisible;
-    getById("_cbDarkenSaveLayer").onclick = darkenSaveLayer;
-    getById("_cbSwapRoadsGPS").onclick = swapRoadsGPS;
-    getById("_cbShowMapBlockers").onclick = showMapBlockers;
-    getById("_cbShrinkTopBars").onclick = shrinkTopBars;
-    getById("_cbCompressSegmentTab").onclick = compressSegmentTab;
-    getById("_cbCompressLayersMenu").onclick = compressLayersMenu;
-    getById("_cbLayersColumns").onclick = compressLayersMenu;
-    getById("_cbRestyleReports").onclick = restyleReports;
-    getById("_cbEnhanceChat").onclick = enhanceChat;
-    getById("_cbNarrowSidePanel").onclick = narrowSidePanel;
-    getById("_inpUICompression").onchange = applyEnhancements;
-    getById("_inpUIContrast").onchange = applyEnhancements;
-    getById("_cbResizeSearchBox").onclick = resizeSearch;
-
-    getById("_inpASX").onchange = shiftAerials;
-    getById("_inpASX").onwheel = shiftAerials;
-    getById("_inpASY").onchange = shiftAerials;
-    getById("_inpASY").onwheel = shiftAerials;
-    getById("_inpASO").onchange = shiftAerials;
-    getById("_inpASO").onwheel = shiftAerials;
-    getById("_inpASXO").onchange = shiftAerials;
-    getById("_inpASXO").onwheel = shiftAerials;
-    getById("_inpASYO").onchange = shiftAerials;
-    getById("_inpASYO").onwheel = shiftAerials;
-    getById("_inpASOO").onchange = shiftAerials;
-    getById("_inpASOO").onwheel = shiftAerials;
-
-    getById("_resetAS").onclick = function () {
-      getById("_inpASX").value = 0;
-      getById("_inpASY").value = 0;
-      getById("_inpASXO").value = 0;
-      getById("_inpASYO").value = 0;
-      shiftAerials();
-    };
-    getById("_inpGSVContrast").onchange = adjustGSV;
-    getById("_inpGSVBrightness").onchange = adjustGSV;
-    getById("_cbGSVInvert").onchange = adjustGSV;
-    getById("_inpGSVWidth").onchange = GSVWidth;
-    getById("_cbDisableBridgeButton").onchange = disableBridgeButton;
-    getById("_cbDisablePathButton").onchange = disablePathButton;
-    getById("_btnKillNode").onclick = killNode;
-    getById("_cbDisableKinetic").onclick = disableKinetic;
-    getById("_cbDisableScrollZoom").onclick = disableScrollZoom;
-    getById("_cbDisableZoomAnimation").onclick = disableAnimatedZoom;
-    getById("_cbDisableUITransitions").onclick = disableUITransitions;
-    getById("_cbDisableSaveBlocker").onclick = disableSaveBlocker;
-    getById("_cbColourBlindTurns").onclick = colourBlindTurns;
-    getById("_cbHideMenuLabels").onclick = hideMenuLabels;
-    getById("_cbUnfloatButtons").onclick = unfloatButtons;
-    getById("_cbMoveUserInfo").onclick = moveUserInfo;
-    getById("_cbHackGSVHandle").onclick = hackGSVHandle;
+    // setup event handlers for controls:
     getById("street-view-drag-handle").ondblclick = GSVWidthReset;
-    getById("_cbEnlargeGeoNodes").onclick = enlargeGeoNodes;
-    getById("_inpEnlargeGeoNodes").onchange = enlargeGeoNodes;
-    getById("_cbEnlargeGeoHandlesFU").onclick = enlargeGeoHandles;
-    getById("_inpEnlargeGeoHandles").onchange = enlargeGeoHandles;
-    getById("_cbEnlargePointMCs").onclick = enlargePointMCs;
-    getById("_inpEnlargePointMCs").onchange = enlargePointMCs;
 
     //REGISTER WAZE EVENT HOOKS
 
@@ -848,6 +827,12 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     //window resize event to resize search box
     window.addEventListener("resize", resizeSearch, true);
 
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        updateTheme();
+      });
+
     //anything we might need to do when the mouse moves...
     W.map.events.register("mousemove", null, mouseMove);
 
@@ -874,7 +859,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         PrepForHNEdit();
       }
 
-      if (getById("_cbUnfloatButtons").checked) {
+      if (options.unfloatButtons) {
         if (W.editingMediator.attributes.editingHouseNumbers) unfloat();
         if (W.editingMediator.attributes.editingEnabled) unfloat();
       }
@@ -890,7 +875,6 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     );
     getById("WazeMap").appendChild(ASwarning);
 
-    loadSettings();
     // Add an extra checkbox so I can test segment panel changes easily
     if (W.loginManager.user.attributes.userName == "Twister-UK") {
       logit("creating segment detail debug checkbox", "info");
@@ -984,18 +968,19 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // overload the window unload function to save my settings
     window.addEventListener("beforeunload", saveSettings, false);
     // Alert to new version
-    if (oldVersion != FUME_VERSION) {
-      let releaseNotes =
-        "Version " +
-        FUME_VERSION +
-        " (" +
-        FUME_DATE +
-        ") release notes<br><br>";
-      releaseNotes += "<ul>";
-      for (let i = 0; i < newVersionNotes.length; ++i) {
-        releaseNotes += "<li>" + newVersionNotes[i];
-      }
-      releaseNotes += "</ul>";
+    if (options.oldVersion != FUME_VERSION) {
+      let releaseNotes = `
+        <div>
+          <div>Version ${FUME_VERSION} (${FUME_DATE}) release notes</div>
+          <ul>
+            ${
+              newVersionNotes.length > 0
+                ? newVersionNotes.map((note) => `<li>${note}`).join("")
+                : "<li>No changes"
+            }
+          </ul>
+        </div>
+        `;
       abShowAlertBox(
         "fa-info-circle",
         "WME Fix UI Memorial Edition",
@@ -1046,185 +1031,419 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     document.querySelector(".overlay.editingDisabled")?.remove();
   }
   function createTabHTML() {
-    let innerHTML = "";
-    innerHTML +=
-      '<b title="Shift aerial images layer to match GPS tracks and reduce image opacity">Aerial Shifter</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-    innerHTML +=
-      '<span class="fa fa-power-off" id="_resetAS" title="Clear X/Y offsets"></span><br>';
-    innerHTML +=
-      "<div>" +
-      I18n.lookup("layer_switcher.togglers.ITEM_SATELLITE_IMAGERY") +
-      "</div>";
-    innerHTML +=
-      '<div style="display:inline-block; padding-left:10px;"><input type="number" id="_inpASX" title="horizontal shift" max=300 min=-300 step=5 style="height:20px; width:50px;text-align:right;"/><b>m</b><span class="fa fa-arrow-right"></span></div>';
-    innerHTML +=
-      '<div id="as2" style="display:inline-block;padding:0 5px;"><input type="number" id="_inpASY" title="vertical shift" max=300 min=-300 step=5 style="height:20px; width:50px;text-align:right;"/><b>m</b><span class="fa fa-arrow-up"></span></div>';
-    innerHTML +=
-      '<div id="as3" style="display:inline-block"><input type="number" id="_inpASO" title="opacity" max=100 min=10 step=10 style="height:20px; width:50px;text-align:right;"/><b>%</b><span class="fa fa-adjust"></span></div>';
-    innerHTML +=
-      "<div>" + I18n.lookup("layer_switcher.togglers.GROUP_IMAGERY") + "</div>";
-    innerHTML +=
-      '<div style="display:inline-block; padding-left:10px;"><input type="number" id="_inpASXO" title="horizontal shift" max=300 min=-300 step=5 style="height:20px; width:50px;text-align:right;"/><b>m</b><span class="fa fa-arrow-right"></span></div>';
-    innerHTML +=
-      '<div id="as4" style="display:inline-block;padding:0 5px;"><input type="number" id="_inpASYO" title="vertical shift" max=300 min=-300 step=5 style="height:20px; width:50px;text-align:right;"/><b>m</b><span class="fa fa-arrow-up"></span></div>';
-    innerHTML +=
-      '<div id="as5" style="display:inline-block"><input type="number" id="_inpASOO" title="opacity" max=100 min=10 step=10 style="height:20px; width:50px;text-align:right;"/><b>%</b><span class="fa fa-adjust"></span></div>';
+    let innerHTML = `
+	<div id="UIFixSettings">
+		<div class="aerial_shifter">
+			<h6 title="Shift aerial images layer to match GPS tracks and reduce image opacity">
+				Aerial Shifter
+				<i class="fa fa-power-off" id="_resetAS" title="Clear X/Y offsets" @click="resetAerials"></i>
+			</h6>
 
-    innerHTML += "<br>";
-    innerHTML += "<br>";
+			<div>
+				${I18n.lookup("layer_switcher.togglers.ITEM_SATELLITE_IMAGERY")}
+			</div>
+			<div class="control_group">
+				<div>
+					<input type="number" v-model="options.arialShiftX" id="_inpASX" title="horizontal shift" max=300
+						min=-300 step=5 @change="shiftAerials" />
+					<label for="_inpASX">m</label>
+					<i class="fa fa-arrow-right">
+					</i>
+				</div>
+				<div>
+					<input type="number" v-model="options.arialShiftY" id="_inpASY" title="vertical shift" max=300
+						min=-300 step=5 @change="shiftAerials" />
+					<label for="_inpASY">m</label>
+					<i class="fa fa-arrow-up"></i>
+				</div>
+				<div>
+					<input type="number" v-model="options.arialOpacity" id="_inpASO" title="opacity" max=100 min=10
+						step=10 @change="shiftAerials" />
+					<label for="_inpASO">%</label>
+					<i class="fa fa-adjust"></i>
+				</div>
+			</div>
+			<div> ${I18n.lookup("layer_switcher.togglers.GROUP_IMAGERY")} </div>
+			<div class="control_group">
+				<div>
+					<input type="number" v-model="options.arialShiftXO" id="_inpASXO" title="horizontal shift" max=300
+						min=-300 step=5 @change="shiftAerials" />
+					<label for="_inpASXO">m</label>
+					<i class="fa fa-arrow-right"></i>
+				</div>
+				<div>
+					<input type="number" v-model="options.arialShiftYO" id="_inpASYO" title="vertical shift" max=300
+						min=-300 step=5 @change="shiftAerials" />
+					<label for="_inpASYO">m</label>
+					<i class="fa fa-arrow-up"></i>
+				</div>
+				<div>
+					<input type="number" v-model="options.arialOpacityO" id="_inpASOO" title="opacity" max=100 min=10
+						step=10 @change="shiftAerials" />
+					<label for="_inpASOO">%</label>
+					<i class="fa fa-adjust"></i>
+				</div>
+			</div>
+			<div title="Adjust contrast, brightness, colours & width for Google Street View images">
+				GSV image adjust
+			</div>
+			<div class="control_group">
+				<div title="Contrast">
+					<input type="number" v-model="options.GSVContrast" id="_inpGSVContrast" max=200 min=25 step=25
+						@change="adjustGSV" />
+					<label for="_inpGSVContrast">%</label>
+					<i class="fa fa-adjust"></i>
+				</div>
+				<div title="Brightness">
+					<input type="number" v-model="options.GSVBrightness" id="_inpGSVBrightness" max=200 min=25
+						@change="adjustGSV" step=25 />
+					<label for="_inpGSVBrightness">%</label>
+					<i class="fa fa-sun-o"></i>
+				</div>
+				<div title="Invert colours">
+					<input type="checkbox" id="_cbGSVInvert" v-model="options.GSVInvert" @change="adjustGSV" />
+					<i class="fa fa-tint">
+					</i>
+				</div>
+				<div title="Default width">
+					<input type="number" v-model="options.GSVWidth" id="_inpGSVWidth" max=90 min=10 step=10
+						@change="GSVWidth" />
+					<label for="_inpGSVWidth">%</label>
+					<i class="fa fa-arrows-h"></i>
+				</div>
+			</div>
 
-    innerHTML +=
-      '<b title="Adjust contrast, brightness, colours & width for Google Street View images">GSV image adjust</b><br>';
-    innerHTML +=
-      '<span title="Contrast"><input type="number" id="_inpGSVContrast" max=200 min=25 step=25 style="height:20px; width:46px;text-align:right;"/><b>%</b><span class="fa fa-adjust"></span></span>&nbsp;&nbsp;';
-    innerHTML +=
-      '<span title="Brightness"><input type="number" id="_inpGSVBrightness" max=200 min=25 step=25 style="height:20px; width:46px;text-align:right;"/><b>%</b><span class="fa fa-sun-o"></span></span>&nbsp;&nbsp;';
-    innerHTML +=
-      '<span title="Invert colours"><input type="checkbox" id="_cbGSVInvert"/><span class="fa fa-tint"></span></span>&nbsp;&nbsp;';
-    innerHTML +=
-      '<span title="Default width"><input type="number" id="_inpGSVWidth" max=90 min=10 step=10 style="height:20px; width:46px;text-align:right;"/><b>%</b><span class="fa fa-arrows-h"></span></span>&nbsp;&nbsp;&nbsp;';
+		</div>
+		<div class="ui_enhancements">
+			<h6>UI Enhancements</h6>
 
-    innerHTML += "<br>";
-    innerHTML += "<br>";
+			<div class="theme-selector">
+				<input type="radio" id="system" value="system" v-model="theme" @change="updateTheme" />
+				<label for="system" class="left">
+					<i class="fa fa-cogs fa-2x"></i>
+				</label>
 
-    innerHTML += "<b>UI Enhancements</b><br>";
-    innerHTML +=
-      '<input type="checkbox" id="_cbShrinkTopBars" /> ' +
-      "<span title=\"Because we can't afford to waste screen space, particularly on\nstuff we didn't ask for and don't want, like the black bar.\nAnd why does the reload button have a re-do icon?!\">Compress/enhance bars above the map</span><br>";
-    innerHTML +=
-      '<input type="checkbox" id="_cbCompressSegmentTab" /> ' +
-      '<span title="Because I\'m sick of having to scroll the side panel because of oversized fonts and wasted space">Compress/enhance side panel contents</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbCompressLayersMenu" /> ' +
-      '<span title="Because it\'s already too big for small screens and Waze only plan to make it bigger">Compress/enhance layers menu</span><br>';
-    innerHTML +=
-      '<span id="layersColControls"><input type="checkbox" id="_cbLayersColumns" /> ' +
-      '<span title="Widen the layers menu to 2 columns - particulary for netbook users\nWon\'t work without some compression turned on">Two-column layers menu</span><br></span>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbRestyleReports" /> ' +
-      '<span title="Another UI element configured for developers with massive screens instead of normal users">Compress/enhance report panels (UR/MP)</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbEnhanceChat" /> ' +
-      '<span title="A perfect example of the new WME UI. Looks very stylish,\nbut destroys usability and utterly ignores small-screen users.">Compress/enhance Chat panel</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbNarrowSidePanel" /> ' +
-      '<span title="If you have a netbook, Waze isn\'t interested in your experience.\nYou need every bit of map space you can get - so have a present from me!">Reduce width of the side panel</span><span title="This will definitely interfere with scripts that rely on a fixed width for their tab contents." style="font-size: 16px; color: red;">&#9888</span><br>';
-    innerHTML += "<br>";
-    innerHTML +=
-      '<b title="Control the amount of compression/enhancment">UI Enhancement controls</b><br>';
-    innerHTML +=
-      '<div style="display:inline-block"><select id="_inpUICompression" title="Compression enhancement" style="height:20px; padding:0px; border-radius=0px;"><option value="2">High</option><option value="1">Low</option><option value="0">None</option></select><span class="fa fa-compress"></span></div>&nbsp;&nbsp;&nbsp;&nbsp;';
-    innerHTML +=
-      '<div style="display:inline-block"><select id="_inpUIContrast" title="Contrast enhancement" style="height:20px; padding:0px; border-radius=0px;"><option value="2">High</option><option value="1">Low</option><option value="0">None</option></select><span class="fa fa-adjust"></span></div>';
-    innerHTML += "<br>";
-    innerHTML +=
-      '<button id="_btnKillNode" style = "height: 18px; margin-top: 5px;" title="Hide the junction nodes layer to allow access to Map Comments hidden under nodes.\nThis stays in effect until the page is zoomed/panned/refreshed.">Hide junction nodes</button>&nbsp;&nbsp;';
+				<input type="radio" id="dark" value="dark" v-model="theme" @change="updateTheme" />
+				<label for="dark">
+					<i class="fa fa-moon-o fa-2x"></i>
+				</label>
 
-    innerHTML += "<br><br>";
+				<input type="radio" id="light" value="light" v-model="theme" @change="updateTheme" />
+				<label for="light" class="right">
+					<i class="fa fa-sun-o fa-2x"></i>
+				</label>
+			</div>
 
-    innerHTML += "<b>UI Fixes/changes</b><br>";
-    innerHTML +=
-      '<input type="checkbox" id="_cbTameLockedSegmentMsg" /> ' +
-      '<span title="Tame the locked segment warning,\nbecause in some localisations it takes up a shit-ton of space.">Tame locked segment warning</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbHideSegmentPanelLabels" /> ' +
-      '<span title="Hide the labels in the segment sidepanel,\nbecause there are more important things to display in that precious space.">Hide segment sidepanel labels</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbTameSegmentTypeMenu" /> ' +
-      '<span title="Do away with all the wasted space in the segment type menu,\nso that we can select types without having to scroll.">Tame segment type menu</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbTameElevationMenu" /> ' +
-      '<span title="Do away with all the wasted space and unlikely to ever be used option in the elevation menu,\nso that we can select the ones we DO use without having to scroll.">Tame elevation menu</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbRemoveRoutingReminder" /> ' +
-      "<span title=\"Remove the 'Segment will be used as' message under the Routing buttons.\">Remove segment routing message</span><br>";
-    innerHTML +=
-      '<input type="checkbox" id="_cbReEnableSidePanel" /> ' +
-      '<span title="Re-enable the side panel at wider zoom levels,\nbecause contrary to what the WME devs seem to think,\nthere is quite a lot you can still do there.">Re-enable side panel at wider zooms</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbResizeSearchBox" /> ' +
-      '<span title="Allows the search box to use all the dead space in the top bar">Expand search box</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbMoveZoomBar" /> ' +
-      '<span title="Because nobody likes a pointless UI change that breaks your workflow,\nimposed by idiots who rarely use the editor and don\'t listen to feedback.\nNO MATTER HOW HARD THEY TRY, I WILL BRING IT BACK!">Re-create zoom bar & move map controls</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbFixExternalProviders" /> ' +
-      '<span title="The External Providers interface has a description box that will only show one line of text.\nThis fixes that.">Expand External Provider details for places</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbMoveChatIcon" /> ' +
-      "<span title=\"Here's a truly outstanding example of making a stupid change to the UI in order to\ndeal with another stupid change to the UI!\nBecause HQ couldn't make the new layers menu auto-hide, they moved the chat icon.\nTick this box to put it back where it belongs.\">Move Chat icon back to right</span><br>";
-    innerHTML +=
-      '<input type="checkbox" id="_cbHighlightInvisible" /> ' +
-      '<span title="Typical WME design - the chat icon changes when you\'re invisible,\nbut the change is practically invisible!\nThis option provides a more obvious highlight.">Highlight invisible mode</span></span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbLayersMenuMoreOptions" /> ' +
-      '<span title="This function shows all options in the Layers menu at all times.\nNote that changing this only updates when the page loads.">Show all options in Layers menu</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDarkenSaveLayer" /> ' +
-      "<span title=\"It's not bad enough they've removed all the contrast to give you eyestrain,\nbut then they blind you every time you save. \">Darken screen overlay when saving</span><br>";
-    innerHTML +=
-      '<input type="checkbox" id="_cbSwapRoadsGPS" /> ' +
-      '<span title="Guess what? Waze thinks the GPS layer should now be over the segments layer.\nWhy should you have any choice about that?">Move GPS layer below segments layer</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbShowMapBlockers" /> ' +
-      '<span title="Some WME elements block access to the map layers. These problems have been reported as bugs.\nUntil they\'re fixed, this functions makes them visible.">Show map-blocking WME bugs</span></span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDisableBridgeButton" /> ' +
-      '<span title="The Bridge button is rarely useful, but often used incorrectly.\nIt\'s best to keep it disabled unless you need it.">Disable Bridge button</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDisablePathButton" /> ' +
-      '<span title="The far turn button seems to be an accidental click-magnet, making it all\ntoo easy to accidentally set a path without noticing until after you save...\nUse this option to disable it and avoid the embarrassment">Disable Far Turn button</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbMondayFirst" /> ' +
-      '<span title="Requests to have calendar items localised with Monday as the first day of the week\ngo back a while. Now you don\'t have to wait for Waze.">Start calendars on Monday</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbISODates" /> ' +
-      '<span title="Dates in the Restrictions dialogues are all in American format - MM/DD/YY\nFine if you\' American, confusing as hell for the rest of us!\nThis changes the dates to ISO format, matching the Closures dialogue">ISO dates in Restrictions</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDisableKinetic" /> ' +
-      '<span title="Kinetic panning is a new WME feature: if you release the mouse whilst dragging the map,\nthe map will keep moving. It can be very useful for panning large distances.\nIt can also be very annoying. Now YOU have control.">Disable Kinetic Panning</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDisableZoomAnimation" /> ' +
-      '<span title="Animated zooming is a new WME feature which some would prefer not to have enabled.  Click here to express that preference...">Disable Animated Zooming</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDisableUITransitions" /> ' +
-      '<span title="Because life is simply too short to waste time waiting for UI elements to oooooooooze into position">Disable UI Transitions</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDisableScrollZoom" /> ' +
-      '<span title="Zooming with the scroll wheel can be problematic when using an Apple Magic Mouse, which\nscrolls on touch. This will disable scroll-to-zoom.">Disable scroll-to-zoom</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbDisableSaveBlocker" /> ' +
-      '<span title="When you hit Save, WME places a blocking element over the map until the save is complete\nThis disables that element, allowing you to pan the map and use GSV whilst a slow save is in progress.">Disable map blocking during save</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbColourBlindTurns" /> ' +
-      '<span title="Change green turn arrows blue in order to make them more visible\nfor users with the most common type of colour blindness.">Change green turn arrows to blue</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbHideMenuLabels" /> ' +
-      '<span title="Hide the text labels on the toolbar menus to save space on small screens">Hide menu labels</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbUnfloatButtons" /> ' +
-      '<span title="Move Layers/Refresh buttons back into the toolbar and Share button into the\nfooter.\nWaze put little enough effort into giving us enough map area to work with,\nand then they drop little button turds all over it!">Remove floating buttons from map area</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbMoveUserInfo" /> ' +
-      "<span title=\"The new user info button is very useful, but it's not a map editing control,\nso it shouldn't be in the toolbar. The same goes for the notification button.\nThis function moves them both to a sensible location.\">Move user info/notification buttons</span><br>";
-    innerHTML +=
-      '<input type="checkbox" id="_cbHackGSVHandle" /> ' +
-      '<span title="Whilst being able to adjust the GSV width is useful, the drag handle\ninvisibly covers 30 pixels of map and is very easy to drag accidentally.\nThis function transforms it to a button drag control that\'s much less\nlikely to be used by accident.">Minimise GSV drag handle</span><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbEnlargeGeoNodes" /> ' +
-      '<span title="If you\'re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo nodes (and junction nodes for segments),\nwhich define the shapes of segments and place boundaries.">Enlarge geo/junction nodes</span><div style="display:inline-block">&nbsp;&nbsp;<input type="number" id="_inpEnlargeGeoNodes" title="radius (default=6)" max=12 min=8 step=2 style="height:16px; padding:0 0 0 2px;; border:1px solid; width:37px;"/></div><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbEnlargeGeoHandlesFU" /> ' +
-      '<span title="If you\'re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo handles, used to add geo nodes to segments and place boundaries.">Enlarge geo handles</span><div style="display:inline-block">&nbsp;&nbsp;<input type="number" id="_inpEnlargeGeoHandles" title="radius (default=4)" max=10 min=6 step=2 style="height:16px; padding:0 0 0 2px;; border:1px solid; width:37px;"/></div><br>';
-    innerHTML +=
-      '<input type="checkbox" id="_cbEnlargePointMCs" /> ' +
-      '<span title="This control lets you enlarge point map comments, because sometimes they can look a little swamped inamongst the rest of the stuff on show">Enlarge point map comments</span><div style="display:inline-block">&nbsp;&nbsp;<input type="number" id="_inpEnlargePointMCs" title="scale (default=1)" max=3 min=1 step=0.1 style="height:16px; padding:0 0 0 2px;; border:1px solid; width:37px;"/></div><br>';
-    innerHTML += "<br>";
-    innerHTML +=
-      '<b><a href="https://www.waze.com/forum/viewtopic.php?t=334618" title="Forum topic" target="_blank"><u>' +
-      "WME Fix UI Memorial Edition</u></a></b> &nbsp; v" +
-      FUME_VERSION;
+			<div>
+				<input type="checkbox" id="_cbShrinkTopBars" v-model="options.shrinkTopBars" @click="shrinkTopBars" />
+				<label for="_cbShrinkTopBars"
+					title="Because we cant afford to waste screen space, particularly on\nstuff we didnt ask for and dont want, like the black bar.\nAnd why does the reload button have a re-do icon?!">Compress/enhance
+					bars above the map</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbCompressSegmentTab" v-model="options.restyleSidePanel"
+					@change="compressSegmentTab" />
+				<label for="_cbCompressSegmentTab"
+					title="Because I\m sick of having to scroll the side panel because of oversized fonts and wasted space">Compress/enhance
+					side panel contents</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbCompressLayersMenu" v-model="options.restyleLayersMenu"
+					@change="compressLayersMenu" />
+				<label for="_cbCompressLayersMenu"
+					title="Because it\s already too big for small screens and Waze only plan to make it bigger">Compress/enhance
+					layers menu</label>
+				<div id="layersColControls">
+					<input type="checkbox" id="_cbLayersColumns" v-model="options.layers2Cols"
+						@change="compressLayersMenu" />
+					<label for="_cbLayersColumns"
+						title="Widen the layers menu to 2 columns - particulary for netbook users\nWon\t work without some compression turned on">Two-column
+						layers menu</label>
+				</div>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbRestyleReports" v-model="options.restyleReports"
+					@change="restyleReports" />
+				<label for="_cbRestyleReports"
+					title="Another UI element configured for developers with massive screens instead of normal users">Compress/enhance
+					report panels (UR/MP)</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbEnhanceChat" v-model="options.enhanceChat" @change="enhanceChat" />
+				<label for="_cbEnhanceChat"
+					title="A perfect example of the new WME UI. Looks very stylish,\nbut destroys usability and utterly ignores small-screen users.">Compress/enhance
+					Chat panel</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbNarrowSidePanel" v-model="options.narrowSidePanel"
+					@change="narrowSidePanel" />
+				<label for="_cbNarrowSidePanel"
+					title="If you have a netbook, Waze isn\t interested in your experience.\nYou need every bit of map space you can get - so have a present from me!">Reduce
+					width of the side panel</label>
+				<span
+					title="This will definitely interfere with scripts that rely on a fixed width for their tab contents."
+					style="font-size: 16px; color: red;" class="fa fa-exclamation-triangle"></span>
+			</div>
+			<div>
+				<div title="Control the amount of compression/enhancment">UI Enhancement controls</div>
+				<div style="display:inline-block">
+					<select id="_inpUICompression" title="Compression enhancement" v-model="options.UICompression"
+						@change="applyEnhancements" style="height:20px; padding:0px; border-radius:0px;">
+						<option value="2">High</option>
+						<option value="1">Low</option>
+						<option value="0">None</option>
+					</select>
+					<i class="fa fa-compress"></i>
+				</div>
+				<div style="display:inline-block">
+					<select id="_inpUIContrast" title="Contrast enhancement" v-model="options.UIContrast"
+						@change="applyEnhancements" style="height:20px; padding:0px; border-radius:0px;">
+						<option value="2">High</option>
+						<option value="1">Low</option>
+						<option value="0">None</option>
+					</select>
+					<i class="fa fa-adjust"></i>
+				</div>
 
+				<button id="_btnKillNode" style="height: 18px; margin-top: 5px;" @click="killNode"
+					title="Hide the junction nodes layer to allow access to Map Comments hidden under nodes.\nThis stays in effect until the page is zoomed/panned/refreshed.">Hide
+					junction nodes</button>
+			</div>
+		</div>
+		<div class="ui_fixes">
+			<h6>UI Fixes/changes</h6>
+			<div>
+				<input type="checkbox" id="_cbTameLockedSegmentMsg" v-model="options.tameLockedSegmentMsg" />
+				<label for="_cbTameLockedSegmentMsg"
+					title="Tame the locked segment warning,\nbecause in some localisations it takes up a shit-ton of space.">Tame
+					locked segment warning</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbHideSegmentPanelLabels" v-model="options.hideSegmentPanelLabels" />
+				<label for="_cbHideSegmentPanelLabels"
+					title="Hide the labels in the segment sidepanel,\nbecause there are more important things to display in that precious space.">Hide
+					segment sidepanel labels</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbTameSegmentTypeMenu" v-model="options.tameSegmentTypeMenu" />
+				<label for="_cbTameSegmentTypeMenu"
+					title="Do away with all the wasted space in the segment type menu,\nso that we can select types without having to scroll.">Tame
+					segment type menu</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbTameElevationMenu" v-model="options.tameElevationMenu" />
+				<label for="_cbTameElevationMenu"
+					title="Do away with all the wasted space and unlikely to ever be used option in the elevation menu,\nso that we can select the ones we DO use without having to scroll.">Tame
+					elevation menu</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbRemoveRoutingReminder" v-model="options.removeRoutingReminder" />
+				<label for="_cbRemoveRoutingReminder"
+					title="Remove the Segment will be used as message under the Routing buttons.">Remove segment routing
+					message</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbReEnableSidePanel" v-model="options.reEnableSidePanel" />
+				<label for="_cbReEnableSidePanel"
+					title="Re-enable the side panel at wider zoom levels,\nbecause contrary to what the WME devs seem to think,\nthere is quite a lot you can still do there.">Re-enable
+					side panel at wider zooms</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbResizeSearchBox" v-model="options.resizeSearch" @change="resizeSearch" />
+				<label for="_cbResizeSearchBox"
+					title="Allows the search box to use all the dead space in the top bar">Expand search box</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbMoveZoomBar" v-model="options.moveZoomBar" @change="createZoomBar" />
+				<label for="_cbMoveZoomBar"
+					title="Because nobody likes a pointless UI change that breaks your workflow,\nimposed by idiots who rarely use the editor and don\t listen to feedback.\nNO MATTER HOW HARD THEY TRY, I WILL BRING IT BACK!">Re-create
+					zoom bar & move map controls</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbFixExternalProviders" v-model="options.fixExternalProviders" />
+				<label for="_cbFixExternalProviders"
+					title="The External Providers interface has a description box that will only show one line of text.\nThis fixes that.">Expand
+					External Provider details for places</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbMoveChatIcon" v-model="options.moveChatIcon" @change="moveChatIcon" />
+				<label for="_cbMoveChatIcon"
+					title="Heres a truly outstanding example of making a stupid change to the UI in order to\ndeal with another stupid change to the UI!\nBecause HQ couldnt make the new layers menu auto-hide, they moved the chat icon.\nTick this box to put it back where it belongs.">Move
+					Chat icon back to right</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbHighlightInvisible" v-model="options.highlightInvisible"
+					@change="highlightInvisible" />
+				<label for="_cbHighlightInvisible"
+					title="Typical WME design - the chat icon changes when you\re invisible,\nbut the change is practically invisible!\nThis option provides a more obvious highlight.">Highlight
+					invisible mode</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbLayersMenuMoreOptions" v-model="options.layersMenuMore" />
+				<label for="_cbLayersMenuMoreOptions"
+					title="This function shows all options in the Layers menu at all times.\nNote that changing this only updates when the page loads.">Show
+					all options in Layers menu</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDarkenSaveLayer" v-model="options.darkenSaveLayer"
+					@change="darkenSaveLayer" />
+				<label for="_cbDarkenSaveLayer"
+					title="Its not bad enough theyve removed all the contrast to give you eyestrain,\nbut then they blind you every time you save. ">Darken
+					screen overlay when saving</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbSwapRoadsGPS" v-model="options.swapRoadsGPS" @change="swapRoadsGPS" />
+				<label for="_cbSwapRoadsGPS"
+					title="Guess what? Waze thinks the GPS layer should now be over the segments layer.\nWhy should you have any choice about that?">Move
+					GPS layer below segments layer</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbShowMapBlockers" v-model="options.showMapBlockers"
+					@change="showMapBlockers" />
+				<label for="_cbShowMapBlockers"
+					title="Some WME elements block access to the map layers. These problems have been reported as bugs.\nUntil they\re fixed, this functions makes them visible.">Show
+					map-blocking WME bugs</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDisableBridgeButton" v-model="options.disableBridgeButton"
+					@change="disableBridgeButton" />
+				<label for="_cbDisableBridgeButton"
+					title="The Bridge button is rarely useful, but often used incorrectly.\nIt\s best to keep it disabled unless you need it.">Disable
+					Bridge button</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDisablePathButton" v-model="options.disablePathButton"
+					@change="disablePathButton" />
+				<label for="_cbDisablePathButton"
+					title="The far turn button seems to be an accidental click-magnet, making it all\ntoo easy to accidentally set a path without noticing until after you save...\nUse this option to disable it and avoid the embarrassment">Disable
+					Far Turn button</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbMondayFirst" v-model="options.mondayFirst" />
+				<label for="_cbMondayFirst"
+					title="Requests to have calendar items localised with Monday as the first day of the week\ngo back a while. Now you don\t have to wait for Waze.">Start
+					calendars on Monday</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbISODates" v-model="options.ISODates" />
+				<label for="_cbISODates"
+					title="Dates in the Restrictions dialogues are all in American format - MM/DD/YY\nFine if you\ American, confusing as hell for the rest of us!\nThis changes the dates to ISO format, matching the Closures dialogue">ISO
+					dates in Restrictions</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDisableKinetic" v-model="options.disableKinetic"
+					@change="disableKinetic" />
+				<label for="_cbDisableKinetic"
+					title="Kinetic panning is a new WME feature: if you release the mouse whilst dragging the map,\nthe map will keep moving. It can be very useful for panning large distances.\nIt can also be very annoying. Now YOU have control.">Disable
+					Kinetic Panning</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDisableZoomAnimation" v-model="options.disableAnimatedZoom"
+					@change="disableAnimatedZoom" />
+				<label for="_cbDisableZoomAnimation"
+					title="Animated zooming is a new WME feature which some would prefer not to have enabled.  Click here to express that preference...">Disable
+					Animated Zooming</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDisableUITransitions" v-model="options.disableUITransitions"
+					@change="disableUITransitions" />
+				<label for="_cbDisableUITransitions"
+					title="Because life is simply too short to waste time waiting for UI elements to oooooooooze into position">Disable
+					UI
+					Transitions</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDisableScrollZoom" v-model="options.disableScrollZoom"
+					@change="disableScrollZoom" />
+				<label for="_cbDisableScrollZoom"
+					title="Zooming with the scroll wheel can be problematic when using an Apple Magic Mouse, which\nscrolls on touch. This will disable scroll-to-zoom.">Disable
+					scroll-to-zoom</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbDisableSaveBlocker" v-model="options.disableSaveBlocker"
+					@change="disableSaveBlocker" />
+				<label for="_cbDisableSaveBlocker"
+					title="When you hit Save, WME places a blocking element over the map until the save is complete\nThis disables that element, allowing you to pan the map and use GSV whilst a slow save is in progress.">Disable
+					map blocking during save</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbColourBlindTurns" v-model="options.colourBlindTurns"
+					@change="colourBlindTurns" />
+				<label for="_cbColourBlindTurns"
+					title="Change green turn arrows blue in order to make them more visible\nfor users with the most common type of colour blindness.">Change
+					green turn arrows to blue</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbHideMenuLabels" v-model="options.hideMenuLabels"
+					@change="hideMenuLabels" />
+				<label for="_cbHideMenuLabels"
+					title="Hide the text labels on the toolbar menus to save space on small screens">Hide menu
+					labels</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbUnfloatButtons" v-model="options.unfloatButtons"
+					@change="unfloatButtons" />
+				<label for="_cbUnfloatButtons"
+					title="Move Layers/Refresh buttons back into the toolbar and Share button into the\nfooter.\nWaze put little enough effort into giving us enough map area to work with,\nand then they drop little button turds all over it!">Remove
+					floating buttons from map area</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbMoveUserInfo" v-model="options.moveUserInfo" @change="moveUserInfo" />
+				<label for="_cbMoveUserInfo"
+					title="The new user info button is very useful, but its not a map editing control,\nso it shouldnt be in the toolbar. The same goes for the notification button.\nThis function moves them both to a sensible location.">Move
+					user info/notification buttons</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbHackGSVHandle" v-model="options.hackGSVHandle" @change="hackGSVHandle" />
+				<label for="_cbHackGSVHandle"
+					title="Whilst being able to adjust the GSV width is useful, the drag handle\ninvisibly covers 30 pixels of map and is very easy to drag accidentally.\nThis function transforms it to a button drag control that\s much less\nlikely to be used by accident.">Minimise
+					GSV drag handle</label>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbEnlargeGeoNodes" v-model="options.enlargeGeoNodes"
+					@change="enlargeGeoNodes" />
+				<label for="_cbEnlargeGeoNodes"
+					title="If you\re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo nodes (and junction nodes for segments),\nwhich define the shapes of segments and place boundaries.">Enlarge
+					geo/junction nodes</label>
+				<div style="display:inline-block">
+					<input type="number" id="_inpEnlargeGeoNodes" title="radius (default=6)" max=12 min=8 step=2
+						@change="enlargeGeoNodes"
+						style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
+				</div>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbEnlargeGeoHandlesFU" v-model="options.enlargeGeoHandles"
+					@change="enlargeGeoHandles" />
+				<label for="_cbEnlargeGeoHandlesFU"
+					title="If you\re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo handles, used to add geo nodes to segments and place boundaries.">
+					Enlarge geo handles
+				</label>
+				<div style="display:inline-block">
+					<input type="number" id="_inpEnlargeGeoHandles" title="radius (default=4)" max=10 min=6 step=2
+						@change="enlargeGeoHandles"
+						style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
+				</div>
+			</div>
+			<div>
+				<input type="checkbox" id="_cbEnlargePointMCs" v-model="options.enlargePointMCs"
+					@change="enlargePointMCs" />
+				<label for="_cbEnlargePointMCs"
+					title="This control lets you enlarge point map comments, because sometimes they can look a little swamped inamongst the rest of the stuff on show">
+					Enlarge point map comments
+				</label>
+				<div style="display:inline-block"><input type="number" id="_inpEnlargePointMCs"
+						title="scale (default=1)" max=3 min=1 step=0.1 @change="enlargePointMCs"
+						style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
+				</div>
+			</div>
+		</div>
+		<div class="about">
+			<b><a href="https://www.waze.com/forum/viewtopic.php?t=334618" title="Forum topic" target="_blank"><u>
+						"WME Fix UI Memorial Edition</u></a></b> v${FUME_VERSION}
+
+		</div>
+	</div>
+`;
     return innerHTML;
   }
   function addMyTab() {
@@ -1237,6 +1456,105 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     tabLabel.innerText = "FUME";
     tabPane.innerHTML = modifyHTML(createTabHTML());
     await W.userscripts.waitForElementConnected(tabPane);
+
+    //check if Vue.js is already loaded
+    while (typeof Vue === "undefined") {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    //initialize Vue.js
+    const { createApp, ref } = Vue;
+    try {
+      loadSettings();
+      logit("Vue.js loaded");
+      createApp({
+        setup() {
+          const theme = ref(options.theme);
+          return { options, theme };
+        },
+        methods: {
+          resetAerials() {
+            options.arialShiftX = 0;
+            options.arialShiftY = 0;
+            options.arialOpacity = 100;
+            options.arialShiftXO = 0;
+            options.arialShiftYO = 0;
+            options.arialOpacityO = 100;
+            shiftAerials();
+          },
+          updateTheme(theme) {
+            options.theme = theme.target.id;
+            logit("Theme changed to " + options.theme);
+            updateTheme();
+            saveSettings();
+          },
+          shiftAerials,
+          shrinkTopBars,
+          createZoomBar,
+          moveChatIcon,
+          highlightInvisible,
+          darkenSaveLayer,
+          killNode,
+          swapRoadsGPS,
+          showMapBlockers,
+          compressSegmentTab,
+          compressLayersMenu,
+          compressLayersMenu,
+          restyleReports,
+          enhanceChat,
+          narrowSidePanel,
+          applyEnhancements,
+          applyEnhancements,
+          resizeSearch,
+          adjustGSV,
+          adjustGSV,
+          adjustGSV,
+          GSVWidth,
+          disableBridgeButton,
+          disablePathButton,
+          killNode,
+          disableKinetic,
+          disableScrollZoom,
+          disableAnimatedZoom,
+          disableUITransitions,
+          disableSaveBlocker,
+          colourBlindTurns,
+          hideMenuLabels,
+          unfloatButtons,
+          moveUserInfo,
+          hackGSVHandle,
+          enlargeGeoNodes,
+          enlargeGeoHandles,
+          enlargePointMCs,
+        },
+      }).mount(tabPane);
+    } catch (error) {
+      logit("Failed to load Vue.js", "error");
+      logit(error, "error");
+      tabPane.innerHTML = `
+					<h3>Failed to load Vue.js</h3>
+					<p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
+					<p>Then reload the page and try again.</p>
+					</br>
+					<p>If still not working, please report the issue to "saicode" on Discord.</p>
+					<div class="vue-fail-logo">
+						<svg width="50%" viewBox="0 0 190 190" version="1.1" id="svg1" xml:space="preserve" sodipodi:docname="Waze.svg"
+							xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+							xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+							xmlns="http://www.w3.org/2000/svg"
+							xmlns:svg="http://www.w3.org/2000/svg">
+							<g inkscape:label="Ebene 1" inkscape:groupmode="layer" id="layer1" transform="translate(-9.5814339,-49.192611)">
+								<path style="display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 94.768176,205.81266 c -4.956323,-18.04127 -29.228187,-22.22111 -40.21299,-6.92505 l -0.68762,0.9575 -1.949667,-1.05347 C 41.636618,193.23636 30.30555,182.07154 25.476341,172.73805 l -1.158192,-2.23845 1.804078,-0.58016 c 5.902939,-1.89828 11.125993,-6.80606 13.409033,-12.59964 1.570221,-3.98469 1.809711,-6.37058 1.819133,-18.12287 0.01032,-12.86688 0.890802,-19.18044 3.858302,-27.66606 11.559981,-33.055968 45.198423,-53.224966 79.748015,-47.815458 42.99363,6.731611 70.26579,49.395208 58.40429,91.365598 -7.04688,24.93451 -27.15942,44.17697 -52.7075,50.42734 -7.00869,1.71469 -9.00866,1.88763 -22.96181,1.98557 l -12.437654,0.0873 z" id="path12" />
+								<g id="g13" inkscape:label="eyes" style="display:inline" transform="translate(0,-6.8791669)">
+									<path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 152.68457,125.57489 c 4.46719,-1.2251 7.26569,-6.44227 5.93273,-11.06024 -2.27064,-7.86647 -13.11583,-8.77094 -16.7462,-1.3966 -1.04701,2.12677 -1.04073,5.61099 0.014,7.75339 1.99992,4.06241 6.30312,5.93656 10.7995,4.70345 z" id="path3" transform="translate(0,6.879167)" />
+									<path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 97.884558,125.67519 c 5.173612,-1.16595 8.168202,-7.30577 5.978092,-12.25689 -3.78459,-8.55568 -16.689521,-6.27155 -17.178278,3.0405 -0.327398,6.23775 4.992512,10.61538 11.200186,9.21639 z" id="path2" transform="translate(0,6.879167)" />
+								</g>
+								<path style="display:inline;fill:#000101" d="m 69.10295,234.4622 c -11.362102,-2.19663 -18.732536,-11.1904 -18.698883,-22.81731 0.0058,-2.01713 -0.05011,-3.66751 -0.12432,-3.66751 -0.297704,0 -7.05075,-3.96175 -9.241109,-5.42141 -11.59278,-7.7254 -22.536346,-20.69856 -26.095182,-30.9348 -0.643908,-1.85206 -1.021769,-5.25276 -0.71809,-6.46271 0.358542,-1.42855 2.037355,-2.54248 4.202581,-2.7885 5.98847,-0.68044 10.245281,-3.28242 12.343397,-7.54493 1.271849,-2.58388 1.270639,-2.5716 1.446375,-14.67005 0.225617,-15.53254 1.089571,-21.58977 4.472356,-31.35596 13.844019,-39.968017 55.883701,-62.938542 96.514735,-52.73575 34.22101,8.59318 58.76079,37.311575 61.68235,72.18558 0.31907,3.80863 0.12411,13.73327 -0.33621,17.11506 -3.209,23.57555 -15.1674,42.98234 -35.10725,56.97408 l -2.14447,1.50477 0.39951,1.16372 c 5.1583,15.02573 -6.49789,30.37002 -22.5632,29.70236 -9.85512,-0.40957 -18.61774,-7.35667 -20.77805,-16.47306 l -0.36527,-1.54142 h -9.49472 -9.494713 l -0.265644,1.22251 c -1.322391,6.08571 -6.725134,12.44939 -12.670969,14.92465 -3.964539,1.65044 -9.335812,2.32197 -12.963224,1.62068 z m 50.49486,-27.1272 c 32.99983,-2.88185 60.11685,-27.53673 65.47061,-59.52608 0.85602,-5.1148 0.96144,-6.47263 0.96564,-12.43765 0.005,-6.7313 -0.38987,-10.83573 -1.5126,-15.7331 C 177.08484,87.199729 149.7261,64.301467 116.67083,62.849696 82.744086,61.35965 51.759275,84.456735 43.483687,117.40577 c -1.835805,7.30921 -2.121272,10.24188 -2.328243,23.91856 l -0.170525,11.2683 -0.561741,2.01979 c -2.066012,7.42853 -7.65947,13.30332 -14.692417,15.4314 -0.701611,0.2123 -1.307911,0.40726 -1.347334,0.43324 -0.03942,0.026 0.31716,0.81838 0.792405,1.76089 5.020878,9.95739 15.818598,20.55978 27.467238,26.97034 l 1.186571,0.65301 0.933126,-1.20405 c 10.608357,-13.6883 30.94861,-11.8197 38.58304,3.5445 0.524246,1.05504 1.168062,2.68977 1.430702,3.63272 l 0.477527,1.71447 10.949384,-2.1e-4 c 6.02216,-1.1e-4 12.04964,-0.0963 13.39439,-0.21373 z" id="path10" inkscape:label="Outline" sodipodi:nodetypes="ssscsssssssssscssscccssscsccssscssssscssscsc" />
+								<path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 116.61105,144.44191 c -11.43486,2.02087 -22.265064,10.37005 -26.452914,20.39298 -1.47598,3.53253 2.00104,7.25575 5.6386,6.03785 1.30627,-0.43735 1.97092,-1.14069 3.12762,-3.30963 6.242714,-11.70577 19.329184,-17.18853 32.028224,-13.41867 6.51797,1.93495 12.56351,6.81658 15.68037,12.66156 2.33428,4.37741 5.34264,5.54661 8.02836,3.12022 2.26407,-2.04546 2.01841,-4.38354 -0.94738,-9.01676 -6.17063,-9.63989 -15.6388,-15.48986 -27.32285,-16.88157 -1.60742,-0.19146 -7.84911,0.0728 -9.78003,0.41402 z" id="path1" inkscape:label="mouth" />
+							</g>
+						</svg>
+					</div>
+					`;
+    }
 
     logit("Tab now available...");
     createDSASection();
@@ -1256,215 +1574,21 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (localStorage.WMEFixUI) {
       localStorage.removeItem("WMEFixUI");
     }
-    var options;
     if (localStorage.WMEFUSettings) {
-      options = JSON.parse(localStorage.WMEFUSettings);
+      const loadedOptions = JSON.parse(localStorage.WMEFUSettings);
+      //merge old settings with new settings, to fix missing settings
+      options = {
+        ...DEFAULT_OPTIONS,
+        ...loadedOptions,
+      };
     } else {
-      options = {};
+      options = DEFAULT_OPTIONS;
     }
-    oldVersion = options.oldVersion !== undefined ? options.oldVersion : "0.0";
-    getById("_cbMoveZoomBar").checked =
-      options.moveZoomBar !== undefined ? options.moveZoomBar : true;
-    getById("_cbShrinkTopBars").checked =
-      options.shrinkTopBars !== undefined ? options.shrinkTopBars : true;
-    getById("_cbCompressSegmentTab").checked =
-      options.restyleSidePanel !== undefined ? options.restyleSidePanel : true;
-    getById("_cbRestyleReports").checked =
-      options.restyleReports !== undefined ? options.restyleReports : true;
-    getById("_cbEnhanceChat").checked =
-      options.enhanceChat !== undefined ? options.enhanceChat : true;
-    getById("_cbNarrowSidePanel").checked =
-      options.narrowSidePanel !== undefined ? options.narrowSidePanel : false;
-    getById("_inpASX").value =
-      options.aerialShiftX !== undefined ? options.aerialShiftX : 0;
-    getById("_inpASY").value =
-      options.aerialShiftY !== undefined ? options.aerialShiftY : 0;
-    getById("_inpASO").value =
-      options.aerialOpacity !== undefined ? options.aerialOpacity : 100;
-    getById("_inpASXO").value =
-      options.aerialShiftXO !== undefined ? options.aerialShiftXO : 0;
-    getById("_inpASYO").value =
-      options.aerialShiftYO !== undefined ? options.aerialShiftYO : 0;
-    getById("_inpASOO").value =
-      options.aerialOpacityO !== undefined ? options.aerialOpacityO : 100;
-    getById("_cbFixExternalProviders").checked =
-      options.fixExternalProviders !== undefined
-        ? options.fixExternalProviders
-        : true;
-    getById("_inpGSVContrast").value =
-      options.GSVContrast !== undefined ? options.GSVContrast : 100;
-    getById("_inpGSVBrightness").value =
-      options.GSVBrightness !== undefined ? options.GSVBrightness : 100;
-    getById("_cbGSVInvert").checked =
-      options.GSVInvert !== undefined ? options.GSVInvert : false;
-    getById("_inpGSVWidth").value =
-      options.GSVWidth !== undefined ? options.GSVWidth : 50;
-    getById("_cbCompressLayersMenu").checked =
-      options.restyleLayersMenu !== undefined
-        ? options.restyleLayersMenu
-        : true;
-    getById("_cbLayersColumns").checked =
-      options.layers2Cols !== undefined ? options.layers2Cols : false;
-    getById("_cbMoveChatIcon").checked =
-      options.moveChatIcon !== undefined ? options.moveChatIcon : true;
-    getById("_cbHighlightInvisible").checked =
-      options.highlightInvisible !== undefined
-        ? options.highlightInvisible
-        : true;
-    getById("_cbDarkenSaveLayer").checked =
-      options.darkenSaveLayer !== undefined ? options.darkenSaveLayer : true;
-    getById("_cbLayersMenuMoreOptions").checked =
-      options.layersMenuMore !== undefined ? options.layersMenuMore : true;
-    getById("_inpUIContrast").value =
-      options.UIContrast !== undefined ? options.UIContrast : 1;
-    getById("_inpUICompression").value =
-      options.UICompression !== undefined ? options.UICompression : 1;
-    getById("_cbSwapRoadsGPS").checked =
-      options.swapRoadsGPS !== undefined ? options.swapRoadsGPS : true;
-    getById("_cbShowMapBlockers").checked =
-      options.showMapBlockers !== undefined ? options.showMapBlockers : true;
-    getById("_cbTameLockedSegmentMsg").checked =
-      options.tameLockedSegmentMsg !== undefined
-        ? options.tameLockedSegmentMsg
-        : false;
-    getById("_cbHideSegmentPanelLabels").checked =
-      options.hideSegmentPanelLabels !== undefined
-        ? options.hideSegmentPanelLabels
-        : false;
-    getById("_cbTameSegmentTypeMenu").checked =
-      options.tameSegmentMenu !== undefined ? options.tameSegmentMenu : false;
-    getById("_cbTameElevationMenu").checked =
-      options.tameElevationMenu !== undefined
-        ? options.tameElevationMenu
-        : false;
-    getById("_cbRemoveRoutingReminder").checked =
-      options.removeRoutingReminder !== undefined
-        ? options.removeRoutingReminder
-        : false;
-    getById("_cbReEnableSidePanel").checked =
-      options.reEnableSidePanel !== undefined
-        ? options.reEnableSidePanel
-        : false;
-    getById("_cbDisableBridgeButton").checked =
-      options.disableBridgeButton !== undefined
-        ? options.disableBridgeButton
-        : true;
-    getById("_cbDisablePathButton").checked =
-      options.disablePathButton !== undefined
-        ? options.disablePathButton
-        : false;
-    getById("_cbISODates").checked =
-      options.ISODates !== undefined ? options.ISODates : true;
-    getById("_cbMondayFirst").checked =
-      options.mondayFirst !== undefined ? options.mondayFirst : false;
-    getById("_cbDisableKinetic").checked =
-      options.disableKinetic !== undefined ? options.disableKinetic : false;
-    getById("_cbDisableScrollZoom").checked =
-      options.disableScrollZoom !== undefined
-        ? options.disableScrollZoom
-        : false;
-    getById("_cbDisableZoomAnimation").checked =
-      options.disableAnimatedZoom !== undefined
-        ? options.disableAnimatedZoom
-        : false;
-    getById("_cbDisableUITransitions").checked =
-      options.disableUITransitions !== undefined
-        ? options.disableUITransitions
-        : false;
-    getById("_cbDisableSaveBlocker").checked =
-      options.disableSaveBlocker !== undefined
-        ? options.disableSaveBlocker
-        : false;
-    getById("_cbColourBlindTurns").checked =
-      options.colourBlindTurns !== undefined ? options.colourBlindTurns : false;
-    getById("_cbHideMenuLabels").checked =
-      options.hideMenuLabels !== undefined ? options.hideMenuLabels : false;
-    getById("_cbUnfloatButtons").checked =
-      options.unfloatButtons !== undefined ? options.unfloatButtons : false;
-    getById("_cbMoveUserInfo").checked =
-      options.moveUserInfo !== undefined ? options.moveUserInfo : false;
-    getById("_cbHackGSVHandle").checked =
-      options.hackGSVHandle !== undefined ? options.hackGSVHandle : false;
-    getById("_cbEnlargeGeoNodes").checked =
-      options.enlargeGeoNodes !== undefined ? options.enlargeGeoNodes : false;
-    getById("_inpEnlargeGeoNodes").value =
-      options.geoNodeSize !== undefined ? options.geoNodeSize : 8;
-    getById("_cbEnlargeGeoHandlesFU").checked =
-      options.enlargeGeoHandles !== undefined
-        ? options.enlargeGeoHandles
-        : false;
-    getById("_inpEnlargeGeoHandles").value =
-      options.geoHandleSize !== undefined ? options.geoHandleSize : 6;
-    getById("_cbEnlargePointMCs").checked =
-      options.enlargePointMCs !== undefined ? options.enlargePointMCs : false;
-    getById("_inpEnlargePointMCs").value =
-      options.pointMCScale !== undefined ? options.pointMCScale : 1;
-    getById("_cbResizeSearchBox").checked =
-      options.resizeSearchBox !== undefined ? options.resizeSearchBox : false;
   }
   function saveSettings() {
     if (localStorage) {
       logit("saving options to local storage");
-      var options = {};
       options.oldVersion = FUME_VERSION;
-      options.moveZoomBar = getById("_cbMoveZoomBar").checked;
-      options.shrinkTopBars = getById("_cbShrinkTopBars").checked;
-      options.restyleSidePanel = getById("_cbCompressSegmentTab").checked;
-      options.restyleReports = getById("_cbRestyleReports").checked;
-      options.enhanceChat = getById("_cbEnhanceChat").checked;
-      options.narrowSidePanel = getById("_cbNarrowSidePanel").checked;
-      options.aerialShiftX = getById("_inpASX").value;
-      options.aerialShiftY = getById("_inpASY").value;
-      options.aerialOpacity = getById("_inpASO").value;
-      options.aerialShiftXO = getById("_inpASXO").value;
-      options.aerialShiftYO = getById("_inpASYO").value;
-      options.aerialOpacityO = getById("_inpASOO").value;
-      options.fixExternalProviders = getById("_cbFixExternalProviders").checked;
-      options.GSVContrast = getById("_inpGSVContrast").value;
-      options.GSVBrightness = getById("_inpGSVBrightness").value;
-      options.GSVInvert = getById("_cbGSVInvert").checked;
-      options.GSVWidth = getById("_inpGSVWidth").value;
-      options.restyleLayersMenu = getById("_cbCompressLayersMenu").checked;
-      options.layers2Cols = getById("_cbLayersColumns").checked;
-      options.moveChatIcon = getById("_cbMoveChatIcon").checked;
-      options.highlightInvisible = getById("_cbHighlightInvisible").checked;
-      options.darkenSaveLayer = getById("_cbDarkenSaveLayer").checked;
-      options.layersMenuMore = getById("_cbLayersMenuMoreOptions").checked;
-      options.UIContrast = getById("_inpUIContrast").value;
-      options.UICompression = getById("_inpUICompression").value;
-      options.swapRoadsGPS = getById("_cbSwapRoadsGPS").checked;
-      options.showMapBlockers = getById("_cbShowMapBlockers").checked;
-      options.tameLockedSegmentMsg = getById("_cbTameLockedSegmentMsg").checked;
-      options.hideSegmentPanelLabels = getById(
-        "_cbHideSegmentPanelLabels"
-      ).checked;
-      options.tameSegmentMenu = getById("_cbTameSegmentTypeMenu").checked;
-      options.tameElevationMenu = getById("_cbTameElevationMenu").checked;
-      options.removeRoutingReminder = getById(
-        "_cbRemoveRoutingReminder"
-      ).checked;
-      options.reEnableSidePanel = getById("_cbReEnableSidePanel").checked;
-      options.disableBridgeButton = getById("_cbDisableBridgeButton").checked;
-      options.disablePathButton = getById("_cbDisablePathButton").checked;
-      options.ISODates = getById("_cbISODates").checked;
-      options.mondayFirst = getById("_cbMondayFirst").checked;
-      options.disableKinetic = getById("_cbDisableKinetic").checked;
-      options.disableScrollZoom = getById("_cbDisableScrollZoom").checked;
-      options.disableAnimatedZoom = getById("_cbDisableZoomAnimation").checked;
-      options.disableUITransitions = getById("_cbDisableUITransitions").checked;
-      options.disableSaveBlocker = getById("_cbDisableSaveBlocker").checked;
-      options.colourBlindTurns = getById("_cbColourBlindTurns").checked;
-      options.hideMenuLabels = getById("_cbHideMenuLabels").checked;
-      options.unfloatButtons = getById("_cbUnfloatButtons").checked;
-      options.moveUserInfo = getById("_cbMoveUserInfo").checked;
-      options.hackGSVHandle = getById("_cbHackGSVHandle").checked;
-      options.enlargeGeoNodes = getById("_cbEnlargeGeoNodes").checked;
-      options.geoNodeSize = getById("_inpEnlargeGeoNodes").value;
-      options.enlargeGeoHandles = getById("_cbEnlargeGeoHandlesFU").checked;
-      options.geoHandleSize = getById("_inpEnlargeGeoHandles").value;
-      options.enlargePointMCs = getById("_cbEnlargePointMCs").checked;
-      options.pointMCScale = getById("_inpEnlargePointMCs").value;
-      options.resizeSearchBox = getById("_cbResizeSearchBox").checked;
       localStorage.WMEFUSettings = JSON.stringify(options);
     }
   }
@@ -1474,6 +1598,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 
     logit("Applying settings...");
 
+    updateTheme();
     unfloatButtons();
     shrinkTopBars();
     compressSegmentTab();
@@ -1712,7 +1837,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           box-sizing: initial;
         }
         .olButton {
-          background-color: white;
+          background-color: var(--color-white);
           border-radius: 30px;
           width: 24px;
           height: 24px;
@@ -1750,7 +1875,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           padding-top: 1px;
           border: 1px solid lightgrey;
           border-radius: 10px;
-          background-color: white;
+          background-color: var(--color-white);
           cursor: ns-resize;
         }
 
@@ -1778,7 +1903,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       var bcHeight = btnBCR.height * 2 + 10;
 
       // Now apply the full set of styling...
-			styles = `
+      styles = `
 				.olControlPanZoomBar {
 				  left: 10px;
 				  top: 35px;
@@ -1790,7 +1915,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 				  box-sizing: initial;
 				}
 				.olButton {
-				  background-color: white;
+				  background-color: var(--color-white);
 				  border-radius: 30px;
 				  width: 24px;
 				  height: 24px;
@@ -1828,7 +1953,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 				  padding-top: 1px;
 				  border: 1px solid lightgrey;
 				  border-radius: 10px;
-				  background-color: white;
+				  background-color: var(--color-white);
 				  cursor: ns-resize;
 				}
 				.zoom-bar-container {
@@ -1855,17 +1980,30 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       removeStyle(PREFIX + fname);
     }
   }
-  function createZoomBar() {
-    if (getById("_cbMoveZoomBar").checked) {
+  async function createZoomBar() {
+    if (options.moveZoomBar) {
       // Create the zoombar element and add it to the map view
-      yslider = new OpenLayers.Control.PanZoomBar({
-        zoomStopHeight: 5,
-        panIcons: false,
-      });
+      yslider = document.createElement("div");
       yslider.position.x = 10;
       yslider.position.y = 35;
       yslider.id = "WMEFUzoom";
       W.map.addControl(yslider);
+
+      while (typeof jQuery.ui === "undefined") {
+        await sleep(1000);
+      }
+
+      // Set up the zoom bar
+      $("#WMEFUzoom").slider({
+        orientation: "vertical",
+        range: "min",
+        min: 4,
+        max: 22,
+        value: W.map.zoom,
+        slide: function (event, ui) {
+          W.map.zoomTo(ui.value);
+        },
+      });
 
       W.map.events.register("zoomend", null, ZLI);
       zliResizeObserver = new ResizeObserver(ZLIDeferred);
@@ -1952,7 +2090,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 
       if (W.map.getZoom() < 12) {
         // Re-enable the sidepanel UI if the user has opted to do so...
-        if (getById("_cbReEnableSidePanel").checked === true) {
+        if (options.reEnableSidePanel) {
           if (
             document.getElementsByClassName("overlay editingDisabled").length >
             0
@@ -1985,7 +2123,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
   }
   function resizeSearch() {
     let sb = document.querySelector("#search");
-    if (getById("_cbResizeSearchBox").checked) {
+    if (options.resizeSearchBox) {
       sb.style.width = "100%";
       let wcs = window.getComputedStyle(
         document.querySelector("#primary-toolbar")
@@ -2109,7 +2247,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       //always do this stuff
       //event mode button
       styles +=
-        "#mode-switcher-region .title-button .icon { font-size: 13px; font-weight: bold; color: black; }";
+        "#mode-switcher-region .title-button .icon { font-size: 13px; font-weight: bold; color: var(--color-black); }";
       //black bar
       styles += "#topbar-container { pointer-events: none; }";
       styles +=
@@ -2395,14 +2533,14 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       }
       if (contrast > 0) {
         //toolbar dropdown menus
-        styles += ".toolbar .group-title { color: black; }";
+        styles += ".toolbar .group-title { color: var(--color-black); }";
         styles +=
           ".toolbar .toolbar-button { border-radius: 8px; " +
           GetBorderContrast(contrast, false) +
-          "color: black; }";
+          "color: var(--color-black); }";
         //layers icon - until Waze fix it
         styles +=
-          ".layer-switcher .waze-icon-layers.toolbar-button{ background-color: white; }";
+          ".layer-switcher .waze-icon-layers.toolbar-button{ background-color: var(--color-white); }";
       }
       addStyle(PREFIX + fname, styles);
     } else {
@@ -2430,8 +2568,10 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 
     // Apply a permanently active styling fix to enable wrapping in the drives tab,
     // to counter the effects of lengthening the datetime string format...
-    let styles = "";
-    styles += ".list-item-card-title { white-space: pre-wrap; }";
+    let styles = `
+      .list-item-card-title { white-space: pre-wrap; }
+    `;
+
     addStyle(PREFIX + fname + "_permanent", styles);
 
     // Now go and do the optional styling stuff
@@ -2439,15 +2579,13 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     if (getById("_cbCompressSegmentTab").checked) {
       var contrast = getById("_inpUIContrast").value;
       var compress = getById("_inpUICompression").value;
-      //Neuter the top gradient
-      styles += "#sidebar .tab-scroll-gradient { pointer-events: none; }";
-      //Nuke the bottom gradient
-      styles += "#sidebar #links:before { display: none; }";
-      // Make map comment text always visible
-      styles +=
-        ".map-comment-name-editor .edit-button { display: block !important; }";
-      // fix the latest layout bug (add closure button at the bottom of the screen) introduced by a WME update...
-      styles += ".closures-list { height: auto; }";
+
+      styles += `
+        #sidebar .tab-content .tab-pane { padding: 0; }
+        #sidebar #links:before { display: none; }
+        .map-comment-name-editor .edit-button { display: block !important; }
+        .closures-list { height: auto; }
+      `;
 
       if (compress > 0) {
         //Lock level
@@ -2542,7 +2680,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         styles +=
           "#sidebar .result-list .session { background-color: lightgrey; }";
         styles +=
-          "#sidebar .result-list .session-available { background-color: white; }";
+          "#sidebar .result-list .session-available { background-color: var(--color-white); }";
         styles +=
           "#sidebar .result-list .result.selected { background-color: lightgreen; }";
         styles += "div#sidepanel-drives { height: auto !important; }";
@@ -2575,7 +2713,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           ["", "4px", "0px"][compress] +
           "; font-size: " +
           ["", "13px", "12px"][compress] +
-          "; color: black; }";
+          "; color: var(--color-black); }";
         //buttons
         styles +=
           "#edit-panel .waze-btn { padding-top: 0px !important; padding-bottom: " +
@@ -3017,11 +3155,11 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           "#sidebar .text { color: " +
           ["", "darkslategrey", "black"][contrast] +
           "; }";
-        styles += "#sidebar {background-color: #d6ebff; }";
-        styles += ":root {--background_variant: #d0ffd0; }";
+        styles += "#sidebar {background-color: var(--color-primary-200); }";
+        styles += ":root {--background_variant: #242628; }";
 
         //text colour
-        styles += "#sidebar { color: black; }";
+        styles += "#sidebar { color: var(--color-black); }";
         //advanced tools section
         styles += "#sidebar waze-staff-tools { background-color: #c7c7c7; }";
         //Tabs
@@ -3061,7 +3199,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         styles +=
           "#edit-panel .segment .direction-message { color: orangered; }";
         styles +=
-          "#edit-panel .address-edit-input { color: black; " +
+          "#edit-panel .address-edit-input { color: var(--color-black); " +
           GetBorderContrast(contrast, false) +
           "}";
         styles +=
@@ -3070,12 +3208,12 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           "}";
         //radio buttons when disabled
         styles +=
-          '.waze-radio-container input[type="radio"]:disabled:checked + label { color: black; opacity: 0.7; font-weight:600; }';
+          '.waze-radio-container input[type="radio"]:disabled:checked + label { color: var(--color-black); opacity: 0.7; font-weight:600; }';
         //override border for lock levels
         styles +=
           "#sidebar .waze-radio-container { border: 0 none !important; }";
         styles +=
-          "#edit-panel .waze-btn { color: black; " +
+          "#edit-panel .waze-btn { color: var(--color-black); " +
           GetBorderContrast(contrast, false) +
           "}";
         styles +=
@@ -3083,8 +3221,10 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           GetBorderContrast(contrast, false) +
           "}";
         //history items
-        styles += ".toggleHistory { color: black; text-align: center; }";
-        styles += ".element-history-item .tx-header { color: black; }";
+        styles +=
+          ".toggleHistory { color: var(--color-black); text-align: center; }";
+        styles +=
+          ".element-history-item .tx-header { color: var(--color-black); }";
         styles +=
           ".element-history-item .tx-header a { color: " +
           ["", "royalblue", "black"][contrast] +
@@ -3100,7 +3240,8 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           ".closures-list .closure-item .details { border-radius: 8px; " +
           GetBorderContrast(contrast, false) +
           "}";
-        styles += ".closures-list .closure-item .dates { color: black; }";
+        styles +=
+          ".closures-list .closure-item .dates { color: var(--color-black); }";
         styles +=
           ".closures-list .closure-item .dates .date-label { opacity: 1; }";
         //Place details
@@ -3108,7 +3249,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         styles += "#edit-panel .alert-danger { color: red; }";
         //address input
         styles +=
-          "#edit-panel .full-address { color: black; " +
+          "#edit-panel .full-address { color: var(--color-black); " +
           GetBorderContrast(contrast, false) +
           "}";
         styles += "#edit-panel a.waze-link { font-weight: bold; }";
@@ -3133,7 +3274,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           "!important; }";
         //type buttons
         styles +=
-          "#sidebar .point-btn { color: black; " +
+          "#sidebar .point-btn { color: var(--color-black); " +
           GetBorderContrast(contrast, true) +
           "}";
         //external providers
@@ -3141,7 +3282,8 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           ".select2-container { color: teal; " +
           GetBorderContrast(contrast, true) +
           "}";
-        styles += ".select2-container .select2-choice { color: black; }";
+        styles +=
+          ".select2-container .select2-choice { color: var(--color-black); }";
         //residential toggle
         styles += "#edit-panel .toggle-residential { font-weight: bold; }";
         //COMMENTS
@@ -3327,7 +3469,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       }
       if (contrast > 0) {
         styles +=
-          ".controls-container.main.toggler { color: white; background: dimgray }";
+          ".controls-container.main.toggler { color: var(--color-white); background: dimgray }";
         styles +=
           ".layer-switcher .toggler.main .label-text { text-transform: inherit }";
         //labels
@@ -3671,7 +3813,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       if (contrast > 0) {
         //header
         styles +=
-          "#chat .header { color: black; background-color: " +
+          "#chat .header { color: var(--color-black); background-color: " +
           ["", "#d9d9d9", "#bfbfbf"][contrast] +
           "; }";
         styles +=
@@ -3679,11 +3821,11 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           ["", "#e8e8e8", "lightgrey"][contrast] +
           "; }";
         styles +=
-          "#chat .messages .message-list .message.normal-message { color: black; float: left; }";
+          "#chat .messages .message-list .message.normal-message { color: var(--color-black); float: left; }";
         styles +=
           "#chat .messages .message-list .message.normal-message .from { color: darkslategrey; font-weight: bold; font-style: italic; }";
         styles +=
-          "#chat .messages .message-list .message.own-message .from { color: black; background-color: #a1dcf5; }";
+          "#chat .messages .message-list .message.own-message .from { color: var(--color-black); background-color: #a1dcf5; }";
         //user message timestamps
         styles +=
           "#chat > div.chat-body > div.messages > div.message-list > div > div.from > span { color: " +
@@ -3770,27 +3912,25 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       metersPerPixel = 0.001;
     }
 
-    let sLeft = Math.round(getById("_inpASX").value / metersPerPixel) + "px";
-    let sTop = Math.round(-getById("_inpASY").value / metersPerPixel) + "px";
+    let sLeft = Math.round(options.arialShiftX / metersPerPixel) + "px";
+    let sTop = Math.round(-options.arialShiftY / metersPerPixel) + "px";
 
-    if (getById("_inpASO").value < 10) getById("_inpASO").value = 10;
-    let sOpa = getById("_inpASO").value / 100;
+    if (options.arialOpacity < 10) options.arialOpacity = 10;
 
-    let sLeftO = Math.round(getById("_inpASXO").value / metersPerPixel) + "px";
-    let sTopO = Math.round(-getById("_inpASYO").value / metersPerPixel) + "px";
+    let sLeftO = Math.round(options.arialShiftXO / metersPerPixel) + "px";
+    let sTopO = Math.round(-options.arialShiftYO / metersPerPixel) + "px";
 
-    if (getById("_inpASOO").value < 10) getById("_inpASOO").value = 10;
-    let sOpaO = getById("_inpASOO").value / 100;
+    if (options.arialOpacityO < 10) options.arialOpacityO = 10;
 
     if (
-      getById("_inpASX").value != 0 ||
-      getById("_inpASY").value != 0 ||
-      getById("_inpASXO").value != 0 ||
-      getById("_inpASYO").value != 0
+      options.arialShiftX != 0 ||
+      options.arialShiftY != 0 ||
+      options.arialShiftXO != 0 ||
+      options.arialShiftYO != 0
     ) {
-      getById("WMEFU_AS").style.display = "block";
+      $("#WMEFU_AS").fadeIn(20);
     } else {
-      getById("WMEFU_AS").style.display = "none";
+      $("#WMEFU_AS").fadeOut(20);
     }
 
     // Apply the shift and opacity to all available imagery layers
@@ -3802,12 +3942,12 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
           // Standard layer
           siDiv.style.left = sLeft;
           siDiv.style.top = sTop;
-          siDiv.style.opacity = sOpa;
+          siDiv.style.opacity = options.arialOpacity / 100;
         } else {
           // Additional layers
           siDiv.style.left = sLeftO;
           siDiv.style.top = sTopO;
-          siDiv.style.opacity = sOpaO;
+          siDiv.style.opacity = options.arialOpacityO / 100;
         }
       }
     }
@@ -4741,6 +4881,27 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       addStyle(PREFIX + fname, styles);
     }
   }
+  function updateTheme() {
+    switch (options.theme) {
+      case "dark":
+        //add class dark-mode to html
+        document.documentElement.classList.add("dark-mode");
+        break;
+      case "light":
+        //remove class dark-mode from html
+        document.documentElement.classList.remove("dark-mode");
+        break;
+      case "system":
+        //check if system prefers dark mode
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          document.documentElement.classList.add("dark-mode");
+        } else {
+          document.documentElement.classList.remove("dark-mode");
+        }
+      default:
+        break;
+    }
+  }
   function addGlobalStyle(css) {
     var head, style;
     head = document.getElementsByTagName("head")[0];
@@ -4824,6 +4985,461 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     }
   }
 
+  async function loadVueJS() {
+    //check if Vue.js is already loaded
+    if (typeof Vue !== "undefined") {
+      return;
+    }
+    logit("Loading Vue.js");
+    var vuejs = document.createElement("script");
+    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js";
+    document.head.appendChild(vuejs);
+  }
+
+  async function loadJqueryUI() {
+    //check if jQuery UI is already loaded
+    if (typeof jQuery.ui !== "undefined") {
+      return;
+    }
+    logit("Loading jQuery UI");
+    var jqueryui = document.createElement("script");
+    jqueryui.src = "https://code.jquery.com/ui/1.13.3/jquery-ui.min.js";
+    document.head.appendChild(jqueryui);
+  }
+
+  loadVueJS();
+  loadJqueryUI();
   // Start it running
   setTimeout(init1, 200);
 })();
+
+GM_addStyle(`
+:host,
+:root {
+  /**
+    Generated White mode
+  */
+  --color-primary-100: #f2faff;
+  --color-primary-200: #ccebff;
+  --color-primary-300: #a6dbff;
+  --color-primary-400: #80ccff;
+  --color-primary-500: #0099ff;
+  --color-primary-600: #007acc;
+  --color-primary-700: #005c99;
+  --color-primary-800: #003d66;
+  --color-primary-900: #001f33;
+  --color-secondary-100: #fafcfd;
+  --color-secondary-200: #eaf4f6;
+  --color-secondary-300: #dbebef;
+  --color-secondary-400: #cbe3e8;
+  --color-secondary-500: #97c6d1;
+  --color-secondary-600: #799ea7;
+  --color-secondary-700: #5b777d;
+  --color-secondary-800: #3c4f54;
+  --color-secondary-900: #1e282a;
+  --color-gray-100: #fcfbfb;
+  --color-gray-200: #f1f1f0;
+  --color-gray-300: #e7e6e4;
+  --color-gray-400: #dddcd9;
+  --color-gray-500: #bbb8b2;
+  --color-gray-600: #96938e;
+  --color-gray-700: #706e6b;
+  --color-gray-800: #4b4a47;
+  --color-gray-900: #252524;
+  --color-success-100: #f6fbf6;
+  --color-success-200: #dbefdc;
+  --color-success-300: #c0e3c2;
+  --color-success-400: #a6d7a8;
+  --color-success-500: #4caf50;
+  --color-success-600: #3d8c40;
+  --color-success-700: #2e6930;
+  --color-success-800: #1e4620;
+  --color-success-900: #0f2310;
+  --color-danger-100: #fdf5f7;
+  --color-danger-200: #f9d8de;
+  --color-danger-300: #f4bbc6;
+  --color-danger-400: #ef9ead;
+  --color-danger-500: #df3d5b;
+  --color-danger-600: #b23149;
+  --color-danger-700: #862537;
+  --color-danger-800: #591824;
+  --color-danger-900: #2d0c12;
+  --color-warning-100: #fff9f2;
+  --color-warning-200: #fee8cc;
+  --color-warning-300: #fed7a6;
+  --color-warning-400: #fdc680;
+  --color-warning-500: #fb8c00;
+  --color-warning-600: #c97000;
+  --color-warning-700: #975400;
+  --color-warning-800: #643800;
+  --color-warning-900: #321c00;
+  --color-info-100: #f4fafe;
+  --color-info-200: #d3eafd;
+  --color-info-300: #b1dafb;
+  --color-info-400: #90cbf9;
+  --color-info-500: #2196f3;
+  --color-info-600: #1a78c2;
+  --color-info-700: #145a92;
+  --color-info-800: #0d3c61;
+  --color-info-900: #071e31;
+  --color-primary-alpha-10: rgba(0, 153, 255, 0.1);
+  --color-primary-alpha-20: rgba(0, 153, 255, 0.2);
+  --color-primary-alpha-30: rgba(0, 153, 255, 0.3);
+  --color-primary-alpha-40: rgba(0, 153, 255, 0.4);
+  --color-primary-alpha-50: rgba(0, 153, 255, 0.5);
+  --color-primary-alpha-60: rgba(0, 153, 255, 0.6);
+  --color-primary-alpha-70: rgba(0, 153, 255, 0.7);
+  --color-primary-alpha-80: rgba(0, 153, 255, 0.8);
+  --color-primary-alpha-90: rgba(0, 153, 255, 0.9);
+  --color-secondary-alpha-10: rgba(151, 198, 209, 0.1);
+  --color-secondary-alpha-20: rgba(151, 198, 209, 0.2);
+  --color-secondary-alpha-30: rgba(151, 198, 209, 0.3);
+  --color-secondary-alpha-40: rgba(151, 198, 209, 0.4);
+  --color-secondary-alpha-50: rgba(151, 198, 209, 0.5);
+  --color-secondary-alpha-60: rgba(151, 198, 209, 0.6);
+  --color-secondary-alpha-70: rgba(151, 198, 209, 0.7);
+  --color-secondary-alpha-80: rgba(151, 198, 209, 0.8);
+  --color-secondary-alpha-90: rgba(151, 198, 209, 0.9);
+  --color-gray-alpha-10: rgba(187, 184, 178, 0.1);
+  --color-gray-alpha-20: rgba(187, 184, 178, 0.2);
+  --color-gray-alpha-30: rgba(187, 184, 178, 0.3);
+  --color-gray-alpha-40: rgba(187, 184, 178, 0.4);
+  --color-gray-alpha-50: rgba(187, 184, 178, 0.5);
+  --color-gray-alpha-60: rgba(187, 184, 178, 0.6);
+  --color-gray-alpha-70: rgba(187, 184, 178, 0.7);
+  --color-gray-alpha-80: rgba(187, 184, 178, 0.8);
+  --color-gray-alpha-90: rgba(187, 184, 178, 0.9);
+  --color-success-alpha-10: rgba(76, 175, 80, 0.1);
+  --color-success-alpha-20: rgba(76, 175, 80, 0.2);
+  --color-success-alpha-30: rgba(76, 175, 80, 0.3);
+  --color-success-alpha-40: rgba(76, 175, 80, 0.4);
+  --color-success-alpha-50: rgba(76, 175, 80, 0.5);
+  --color-success-alpha-60: rgba(76, 175, 80, 0.6);
+  --color-success-alpha-70: rgba(76, 175, 80, 0.7);
+  --color-success-alpha-80: rgba(76, 175, 80, 0.8);
+  --color-success-alpha-90: rgba(76, 175, 80, 0.9);
+  --color-danger-alpha-10: rgba(223, 61, 91, 0.1);
+  --color-danger-alpha-20: rgba(223, 61, 91, 0.2);
+  --color-danger-alpha-30: rgba(223, 61, 91, 0.3);
+  --color-danger-alpha-40: rgba(223, 61, 91, 0.4);
+  --color-danger-alpha-50: rgba(223, 61, 91, 0.5);
+  --color-danger-alpha-60: rgba(223, 61, 91, 0.6);
+  --color-danger-alpha-70: rgba(223, 61, 91, 0.7);
+  --color-danger-alpha-80: rgba(223, 61, 91, 0.8);
+  --color-danger-alpha-90: rgba(223, 61, 91, 0.9);
+  --color-warning-alpha-10: rgba(251, 140, 0, 0.1);
+  --color-warning-alpha-20: rgba(251, 140, 0, 0.2);
+  --color-warning-alpha-30: rgba(251, 140, 0, 0.3);
+  --color-warning-alpha-40: rgba(251, 140, 0, 0.4);
+  --color-warning-alpha-50: rgba(251, 140, 0, 0.5);
+  --color-warning-alpha-60: rgba(251, 140, 0, 0.6);
+  --color-warning-alpha-70: rgba(251, 140, 0, 0.7);
+  --color-warning-alpha-80: rgba(251, 140, 0, 0.8);
+  --color-warning-alpha-90: rgba(251, 140, 0, 0.9);
+  --color-info-alpha-10: rgba(33, 150, 243, 0.1);
+  --color-info-alpha-20: rgba(33, 150, 243, 0.2);
+  --color-info-alpha-30: rgba(33, 150, 243, 0.3);
+  --color-info-alpha-40: rgba(33, 150, 243, 0.4);
+  --color-info-alpha-50: rgba(33, 150, 243, 0.5);
+  --color-info-alpha-60: rgba(33, 150, 243, 0.6);
+  --color-info-alpha-70: rgba(33, 150, 243, 0.7);
+  --color-info-alpha-80: rgba(33, 150, 243, 0.8);
+  --color-info-alpha-90: rgba(33, 150, 243, 0.9);
+  /**
+  	Others
+  	var\(--(?!fs-color|border|size)(.+)
+  */
+  /**
+    Shadow
+    https://shadows.brumm.af/
+  */
+  --wme-shadow: 0px 1.2px 5.3px rgba(0, 0, 0, 0.061),
+    0px 4px 17.9px rgba(0, 0, 0, 0.089), 0px 18px 80px rgba(0, 0, 0, 0.15);
+  --alarming: #df3d5b;
+  --alarming_variant: #e2506b;
+  --always_white: #fff;
+  --always_black: #000;
+  --always_dark: var(--color-secondary-900);
+  --always_dark_background_default: var(--color-gray-900);
+  --always_dark_background_variant: var(--always_black);
+  --always_dark_content_default: var(--color-gray-100);
+  --always_dark_content_p1: var(--color-gray-400);
+  --always_dark_content_p2: var(--color-gray-500);
+  --always_dark_inactive: var(--color-gray-600);
+  --always_dark_surface_default: var(--color-gray-800);
+  --border-default: var(--color-primary-200);
+  --background_default: var(--always_white);
+  --background_modal: rgba(0, 15, 26, 0.6);
+  --background_table_overlay: var(--color-gray-alpha-60);
+  --background_variant: var(--color-primary-200);
+  --brand_carpool: #1ee592;
+  --brand_waze: #33ccff;
+  --cautious: #ffc400;
+  --cautious_variant: #e37400;
+  --content_default: var(--color-primary-900);
+  --content_p1: var(--color-gray-800);
+  --content_p2: var(--color-gray-700);
+  --content_p3: var(--color-gray-600);
+  --disabled_text: #bbb8b2;
+  --hairline: var(--color-gray-300);
+  --hairline_strong: var(--color-gray-600);
+  --handle: var(--color-primary-200);
+  --hint_text: var(--color-gray-800);
+  --ink_elevation: var(--always_white);
+  --ink_on_primary: var(--color-primary-900);
+  --ink_on_primary_focused: rgba(0, 15, 26, 0.15);
+  --ink_on_primary_hovered: rgba(0, 15, 26, 0.05);
+  --ink_on_primary_pressed: rgba(0, 15, 26, 0.1);
+  --leading_icon: #97c6d1;
+  --on_primary: var(--always_white);
+  --primary: #0099ff;
+  --primary_variant: var(--color-primary-700);
+  --promotion_variant: #842feb;
+  --report_chat: #1ee592;
+  --report_closure: #feb87f;
+  --report_crash: #d5d7db;
+  --report_gas: #1bab50;
+  --report_hazard: #ffc400;
+  --report_jam: #ff5252;
+  --report_place: #c088ff;
+  --report_police: #1ab3ff;
+  --safe: #4caf50;
+  --safe_variant: var(--color-success-700);
+  --separator_default: var(--color-secondary-200);
+  --shadow_default: var(--color-gray-800);
+  --surface_alt: var(--color-primary-100);
+  --surface_default: var(--color-gray-100);
+  --surface_variant: var(--color-gray-200);
+  --surface_variant_blue: #e6f5ff;
+  --surface_variant_green: #edf7ee;
+  --surface_variant_yellow: #fff9e6;
+  --surface_variant_orange: #fff4e6;
+  --surface_variant_red: #fcecef;
+  --surface_variant_purple: #f3eafd;
+  color: #000;
+  color-scheme: light;
+}
+
+.dark-mode {
+  /**
+    	Genrated Dark mode
+		*/
+  --color-primary-100: #00080d;
+  --color-primary-200: #001f33;
+  --color-primary-300: #003659;
+  --color-primary-400: #004d80;
+  --color-primary-500: #0099ff;
+  --color-primary-600: #33adff;
+  --color-primary-700: #66c2ff;
+  --color-primary-800: #99d6ff;
+  --color-primary-900: #ccebff;
+  --color-secondary-100: #030404;
+  --color-secondary-200: #0b0e0f;
+  --color-secondary-300: #13191a;
+  --color-secondary-400: #1c2325;
+  --color-secondary-500: #374649;
+  --color-secondary-600: #5f6b6d;
+  --color-secondary-700: #879092;
+  --color-secondary-800: #afb5b6;
+  --color-secondary-900: #d7dadb;
+  --color-gray-100: #070606;
+  --color-gray-200: #1a1a18;
+  --color-gray-300: #2e2d2b;
+  --color-gray-400: #42403d;
+  --color-gray-500: #84807a;
+  --color-gray-600: #9d9995;
+  --color-gray-700: #b5b3af;
+  --color-gray-800: #ceccca;
+  --color-gray-900: #e6e6e4;
+  --color-success-100: #040904;
+  --color-success-200: #0f2310;
+  --color-success-300: #1b3d1c;
+  --color-success-400: #265828;
+  --color-success-500: #4caf50;
+  --color-success-600: #70bf73;
+  --color-success-700: #94cf96;
+  --color-success-800: #b7dfb9;
+  --color-success-900: #dbefdc;
+  --color-danger-100: #0b0305;
+  --color-danger-200: #2d0c12;
+  --color-danger-300: #4e1520;
+  --color-danger-400: #701f2e;
+  --color-danger-500: #df3d5b;
+  --color-danger-600: #e5647c;
+  --color-danger-700: #ec8b9d;
+  --color-danger-800: #f2b1bd;
+  --color-danger-900: #f9d8de;
+  --color-warning-100: #0d0700;
+  --color-warning-200: #321c00;
+  --color-warning-300: #583100;
+  --color-warning-400: #7e4600;
+  --color-warning-500: #fb8c00;
+  --color-warning-600: #fca333;
+  --color-warning-700: #fdba66;
+  --color-warning-800: #fdd199;
+  --color-warning-900: #fee8cc;
+  --color-info-100: #02080c;
+  --color-info-200: #071e31;
+  --color-info-300: #0c3555;
+  --color-info-400: #114b7a;
+  --color-info-500: #2196f3;
+  --color-info-600: #4dabf5;
+  --color-info-700: #7ac0f8;
+  --color-info-800: #a6d5fa;
+  --color-info-900: #d3eafd;
+  --color-secondary-alpha-10: rgba(55, 70, 73, 0.1);
+  --color-secondary-alpha-20: rgba(55, 70, 73, 0.2);
+  --color-secondary-alpha-30: rgba(55, 70, 73, 0.3);
+  --color-secondary-alpha-40: rgba(55, 70, 73, 0.4);
+  --color-secondary-alpha-50: rgba(55, 70, 73, 0.5);
+  --color-secondary-alpha-60: rgba(55, 70, 73, 0.6);
+  --color-secondary-alpha-70: rgba(55, 70, 73, 0.7);
+  --color-secondary-alpha-80: rgba(55, 70, 73, 0.8);
+  --color-secondary-alpha-90: rgba(55, 70, 73, 0.9);
+  --color-gray-alpha-10: rgba(132, 128, 122, 0.1);
+  --color-gray-alpha-20: rgba(132, 128, 122, 0.2);
+  --color-gray-alpha-30: rgba(132, 128, 122, 0.3);
+  --color-gray-alpha-40: rgba(132, 128, 122, 0.4);
+  --color-gray-alpha-50: rgba(132, 128, 122, 0.5);
+  --color-gray-alpha-60: rgba(132, 128, 122, 0.6);
+  --color-gray-alpha-70: rgba(132, 128, 122, 0.7);
+  --color-gray-alpha-80: rgba(132, 128, 122, 0.8);
+  --color-gray-alpha-90: rgba(132, 128, 122, 0.9);
+  --color-background: var(--color-primary-100);
+  --color-white: #000;
+  --color-black: #fff;
+  --always_white: #000;
+  --always_black: #fff;
+  --wme-shadow: 0px 1.2px 5.3px rgba(0, 0, 0, 0.2),
+    0px 4px 17.9px rgba(0, 0, 0, 0.3), 0px 18px 80px rgba(0, 0, 0, 0.4);
+  color: white;
+  color-scheme: dark;
+}
+
+`);
+
+GM_addStyle(`
+  .vue-fail-logo {
+  display: flex;
+  justify-content: center;
+}
+
+.vue-fail-logo svg {
+  width: 50%;
+  filter: drop-shadow(0 0 0.75rem rgba(150, 150, 150, 0.8));
+}
+
+#abAlerts {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 10000;
+  background-color: var(--color-primary-100);
+  border-width: 3px;
+  border-style: solid;
+  border-radius: 10px;
+  box-shadow: var(--wme-shadow);
+  padding: 4px;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+#abAlerts div {
+  padding: 4px;
+}
+
+#abAlerts #header {
+  background-color: var(--color-primary-400);
+  font-weight: bold;
+}
+
+#abAlerts #content {
+  background-color: White;
+  overflow: auto;
+  max-height: 500px;
+}
+
+#abAlerts #abAlertTickBtn,
+#abAlerts #abAlertCloseBtn {
+  cursor: pointer;
+  font-size: 14px;
+  border: 1px solid var(--color-primary-800);
+  border-radius: 4px;
+  padding: 2px 10px 2px 10px;
+}
+
+.aerial_shifter .control_group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+#_inpGSVContrast,
+#_inpGSVBrightness,
+#_inpGSVWidth {
+  height: 20px;
+  width: 46px;
+  text-align: right;
+}
+#_inpASX,
+#_inpASY,
+#_inpASO,
+#_inpASXO,
+#_inpASYO,
+#_inpASOO {
+  height: 20px;
+  width: 50px;
+  text-align: right;
+}
+/* Style radio inputs as button group*/
+.theme-selector {
+  display: flex;
+  justify-content: center;
+}
+.theme-selector input[type="radio"] {
+  display: none;
+}
+.theme-selector label {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-primary-900);
+  cursor: pointer;
+}
+.theme-selector label.left {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+.theme-selector label.right {
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+.theme-selector input[type="radio"]:checked + label {
+  background-color: var(--color-primary-500);
+  color: var(--color-primary-100);
+}
+
+.dark-mode input[type="text"],
+.dark-mode input[type="email"],
+.dark-mode input[type="number"],
+.dark-mode input[type="password"],
+.dark-mode select,
+.dark-mode button,
+.dark-mode textarea,
+.dark-mode .form-control {
+  background-color: var(--color-gray-300);
+  color: var(--color-black);
+}
+
+.layer-switcher .menu {
+  background-color: var(--color-gray-200);
+  color: var(--color-black) !important;
+}
+
+.layer-switcher .layer-switcher-toggler-tree-category > .label-text {
+  color: var(--color-black) !important;
+}
+
+.dark-mode .house-numbers-layer .house-number .content .input-wrapper {
+  background-color: var(--color-gray-300);
+}
+
+`);
