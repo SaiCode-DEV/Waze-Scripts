@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "lint": "eslint --fix \"**/*.user.js\""
+    "lint": "eslint --fix \"**/*.js\""
   },
   "type": "module",
   "devDependencies": {

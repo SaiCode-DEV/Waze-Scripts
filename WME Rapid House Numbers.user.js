@@ -14,15 +14,13 @@
 // @license       MIT
 // @grant         GM_addStyle
 // @require       https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @downloadURL   https://github.com/SaiCode-DEV/Waze-Scripts/raw/main/WME%20Rapid%20House%20Numbers.user.js
-// @updateURL     https://github.com/SaiCode-DEV/Waze-Scripts/raw/main/WME%20Rapid%20House%20Numbers.user.js
 // ==/UserScript==
 
 (function main() {
   "use strict";
 
   const scriptName = GM_info.script.name;
-  const { version, namespace } = GM_info.script;
+  const { version } = GM_info.script;
 
   console.log(`${scriptName}: Loading `);
 
@@ -73,6 +71,11 @@
     if (WazeWrap?.Ready) {
       const versionKey = `${scriptName.replace(/\s/g, "")}Version`;
       const previousVersion = window.localStorage.getItem(versionKey);
+
+      if (previousVersion === version) {
+        return;
+      }
+
       let announcement = "";
       let startIndex = 0;
 
@@ -88,8 +91,7 @@
       announcement += "<ul>";
       // Build the announcement message from the change log
       for (let i = startIndex; i < changeLog.length; i++) {
-        const log = changeLog[i];
-        const msg = `<li> V${log.version}: ${log.message} </li>\n`;
+        const msg = `<li> V${changeLog[i].version}: ${changeLog[i].message} </li>\n`;
         announcement += msg;
       }
       announcement += "</ul>";
@@ -99,11 +101,11 @@
         console.log(`${scriptName} v${version} changelog:`, announcement);
         WazeWrap.Interface.ShowScriptUpdate(
           scriptName,
-          version,
+          `V${changeLog[startIndex - 1].version} -> V${version}`,
           announcement,
-          namespace,
+          "https://greasyfork.org/en/scripts/35931-wme-rapid-house-numbers",
         );
-        // window.localStorage.setItem(versionKey, version);
+        window.localStorage.setItem(versionKey, version);
       }
     } else {
       setTimeout(checkVersion, 200);
