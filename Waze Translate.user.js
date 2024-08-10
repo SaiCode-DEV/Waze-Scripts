@@ -20,6 +20,8 @@
 /* global I18n, $ */
 
 (() => {
+  "use strict";
+
   /**
    * Load the translation library
    */

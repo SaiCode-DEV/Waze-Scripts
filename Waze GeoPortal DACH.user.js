@@ -10,18 +10,15 @@
 // @grant        GM_info
 // @grant        GM_addStyle
 // @license      MIT
-
-// @downloadURL  https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DACH.user.js
-// @updateURL    https://update.greasyfork.org/scripts/460976/Waze%20GeoPortal%20DACH.meta.js
 // ==/UserScript==
 
-/* global I18n, $, W, OpenLayers */
-
+/* global $, W, Vue */
 /* globals OpenLayers: true */
+
 // Versions Format
 // yyyy.mm.dd
 
-DEFAULT_SOURCES = {
+const DEFAULT_SOURCES = {
   de: {
     name: "GeoOverlays DE",
     flag: "🇩🇪",
@@ -177,6 +174,8 @@ DEFAULT_SOURCES = {
   },
 };
 (() => {
+  "use strict";
+
   let uOpenLayers;
   let uWaze;
 
@@ -202,7 +201,7 @@ DEFAULT_SOURCES = {
   /**
    * Define WMTS/WMS Layers. Hide this function for better readability
    */
-  function geoportal_init() {
+  function geoportalInit() {
     const layerControl = $(".layer-switcher").find(".list-unstyled.togglers");
     if (layerControl.length) {
       console.info("Loading Geoportal Layers...");
@@ -225,7 +224,7 @@ DEFAULT_SOURCES = {
         // append the control entry as the second last entry
         layerControl.children().eq(-1).before(controlEntry);
         // make the caret clickable
-        $(`.expand-country-${key}`).on("click", function() {
+        $(`.expand-country-${key}`).on("click", () => {
           $(`.collapsible-GROUP_OVERLAY.${key}`).toggle();
           // rotate the caret transform: rotate(90deg);
           if ($(this).find("i").css("transform") === "none") {
@@ -234,7 +233,7 @@ DEFAULT_SOURCES = {
             $(this).find("i").css("transform", "");
           }
         });
-        country_init(key, country.layers, country.flag);
+        countryInit(key, country.layers, country.flag);
       });
     }
   }
@@ -245,14 +244,18 @@ DEFAULT_SOURCES = {
    * @param {Array} layers
    * @param {string} flag
    */
-  function country_init(country, layers, flag) {
+  function countryInit(country, layers, flag) {
     const overlayGroup = $(`ul.collapsible-GROUP_OVERLAY.${country}`);
+
     $.each(layers, (index, source) => {
       // Make and add layer
       GM.xmlHttpRequest({
         method: "GET",
         url: source.source,
         onload: response => {
+          let format;
+          let doc;
+          let capabilities;
           let { responseXML } = response;
           // Inject responseXML into existing Object (only appropriate for XML content).
           if (!response.responseXML) {
@@ -273,9 +276,9 @@ DEFAULT_SOURCES = {
 
           // chec if WMST or WMTS and load the correct format
           if (source.type === "WMTS") {
-            var format = new OpenLayers.Format.WMTSCapabilities();
-            var doc = responseXML;
-            var capabilities = format.read(doc);
+            format = new OpenLayers.Format.WMTSCapabilities();
+            doc = responseXML;
+            capabilities = format.read(doc);
             layersList[source.unique] = format.createLayer(capabilities, {
               layer: source.layerName,
               matrixSet: source.matrixSet,
@@ -285,9 +288,9 @@ DEFAULT_SOURCES = {
               visibility: source.active,
             });
           } else if (source.type === "WMS") {
-            var format = new OpenLayers.Format.WMSCapabilities();
-            var doc = responseXML;
-            var capabilities = format.read(doc);
+            format = new OpenLayers.Format.WMSCapabilities();
+            doc = responseXML;
+            capabilities = format.read(doc);
 
             // Find the specific layer by its name
             const wmsLayer = capabilities.capability.layers.find(
@@ -309,7 +312,6 @@ DEFAULT_SOURCES = {
                 isBaseLayer: false,
                 visibility: false,
               });
-              JSON.stringify(result, null, 2);
               console.log(wmsLayer.url);
             } else {
               console.error(
@@ -365,14 +367,14 @@ DEFAULT_SOURCES = {
             `${flag} Layer ${index + 1}/${layers.length}: ${source.name} loaded`,
           );
         },
-        onerror: response => {
+        onerror: () => {
           console.error(
             `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
               source.name
             }`,
           );
         },
-        ontimeout: response => {
+        ontimeout: () => {
           console.error(
             `Request to ${flag} Layer ${index + 1}/${layers.length}: ${
               source.name
@@ -387,7 +389,7 @@ DEFAULT_SOURCES = {
    * Initialize the UI
    * @returns {void}
    */
-  function ui_init() {
+  function uiInit() {
     // Add a Opacity control to the map controls
     const controlContainer = $(".overlay-buttons-container.bottom").first();
     // check if the opacity control already exists
@@ -429,13 +431,13 @@ DEFAULT_SOURCES = {
 
     // check if control is pressed an update the value
     $(document).on("keydown", e => {
-      if (e.key == "Shift") {
+      if (e.key === "Shift") {
         shiftPressed = true;
       }
     });
 
     $(document).on("keyup", e => {
-      if (e.key == "Shift") {
+      if (e.key === "Shift") {
         shiftPressed = false;
       }
     });
@@ -449,12 +451,12 @@ DEFAULT_SOURCES = {
       }
       localStorage.setItem("geoportal_opacity", opacity);
 
-      $.each(sources, (index, source) => {
-        source.layers.forEach(source => {
+      $.each(sources, (_, source) => {
+        source.layers.forEach(sourceLayer => {
           try {
-            layersList[source.unique].setOpacity(opacity);
+            layersList[sourceLayer.unique].setOpacity(opacity);
           } catch (e) {
-            console.error(`Failed to set opacity for ${source.name}`);
+            console.error(`Failed to set opacity for ${sourceLayer.name}`);
           }
         });
       });
@@ -467,12 +469,12 @@ DEFAULT_SOURCES = {
         opacity = Math.max(opacity - 0.1, 0);
       }
       localStorage.setItem("geoportal_opacity", opacity);
-      $.each(sources, (index, source) => {
-        source.layers.forEach(source => {
+      $.each(sources, (_, source) => {
+        source.layers.forEach(sourceLayer => {
           try {
-            layersList[source.unique].setOpacity(opacity);
+            layersList[sourceLayer.unique].setOpacity(opacity);
           } catch (e) {
-            console.error(`Failed to set opacity for ${source.name}`);
+            console.error(`Failed to set opacity for ${sourceLayer.name}`);
           }
         });
       });
@@ -514,7 +516,7 @@ DEFAULT_SOURCES = {
   /**
    * Initialize the settings
    */
-  async function settings_init() {
+  async function settingsInit() {
     const { tabLabel, tabPane } = W.userscripts.registerSidebarTab("geoportal-dach");
 
     tabLabel.innerText = "🌍 Geoportal";
@@ -541,6 +543,7 @@ DEFAULT_SOURCES = {
 
     // check if Vue.js is already loaded
     while (typeof Vue === "undefined") {
+      /* eslint-disable-next-line */
       await new Promise(resolve => setTimeout(resolve, 500));
     }
     // initialize Vue.js
@@ -583,6 +586,7 @@ DEFAULT_SOURCES = {
     } catch (error) {
       console.error("Failed to load Vue.js");
       console.error(error);
+      /* eslint-disable max-len */
       tabPane.innerHTML = `
       <h3>Failed to load Vue.js</h3>
       <p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
@@ -607,6 +611,7 @@ DEFAULT_SOURCES = {
         </svg>
       </div>
       `;
+      /* eslint-enable max-len */
     }
 
     // if vue got blocked by the CSP, show a message
@@ -625,9 +630,7 @@ DEFAULT_SOURCES = {
       }
 
       // Check if each key in savedSources matches the keys in DEFAULT_SOURCES
-      for (const key in savedSources) {
-        const savedSource = savedSources[key];
-
+      savedSources.forEach(savedSource => {
         // Check if the structure of savedSource matches the structure of defaultSource
         if (
           typeof savedSource.name !== "string"
@@ -638,7 +641,7 @@ DEFAULT_SOURCES = {
         }
         savedSource.enabled = savedSource.enabled ?? true;
 
-        for (const layer of savedSource.layers) {
+        savedSource.layers.forEach(layer => {
           if (
             typeof layer.name !== "string"
             || typeof layer.unique !== "string"
@@ -651,8 +654,8 @@ DEFAULT_SOURCES = {
           }
           layer.enabled = layer.enabled ?? true;
           layer.active = layer.active ?? false;
-        }
-      }
+        });
+      });
       // If all checks passed, use savedSources
       return savedSources;
     } catch (error) {
@@ -672,7 +675,7 @@ DEFAULT_SOURCES = {
   /**
    * Bootstrap the Geoportal Overlays
    */
-  function geoportal_bootstrap() {
+  function geoportalBootstrap() {
     uWaze = unsafeWindow.W;
     uOpenLayers = unsafeWindow.OpenLayers;
     if (
@@ -681,12 +684,12 @@ DEFAULT_SOURCES = {
       || !uWaze.map
       || !document.querySelector(".list-unstyled.togglers .group")
     ) {
-      setTimeout(geoportal_bootstrap, 500);
+      setTimeout(geoportalBootstrap, 500);
     } else {
       console.log("Loading Geoportal Maps...");
-      settings_init();
-      geoportal_init();
-      ui_init();
+      settingsInit();
+      geoportalInit();
+      uiInit();
     }
   }
 
@@ -751,7 +754,7 @@ DEFAULT_SOURCES = {
 
   loadVueJS();
   patchOpenLayers();
-  geoportal_bootstrap();
+  geoportalBootstrap();
 })();
 
 GM_addStyle(`

@@ -5,7 +5,7 @@
 // @include             /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
 // @supportURL          https://www.waze.com/forum/viewtopic.php?t=334618
 // @version             1.63.257
-// @grant           		GM_addStyle
+// @grant               GM_addStyle
 // ==/UserScript==
 
 /*
@@ -1017,419 +1017,421 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     document.querySelector(".overlay.editingDisabled")?.remove();
   }
   function createTabHTML() {
+    /* eslint-disable max-len */
     const innerHTML = `
-	<div id="UIFixSettings">
-		<div class="aerial_shifter">
-			<h6 title="Shift aerial images layer to match GPS tracks and reduce image opacity">
-				Aerial Shifter
-				<i class="fa fa-power-off" id="_resetAS" title="Clear X/Y offsets" @click="resetAerials"></i>
-			</h6>
+  <div id="UIFixSettings">
+    <div class="aerial_shifter">
+      <h6 title="Shift aerial images layer to match GPS tracks and reduce image opacity">
+        Aerial Shifter
+        <i class="fa fa-power-off" id="_resetAS" title="Clear X/Y offsets" @click="resetAerials"></i>
+      </h6>
 
-			<div>
-				${I18n.lookup("layer_switcher.togglers.ITEM_SATELLITE_IMAGERY")}
-			</div>
-			<div class="control_group">
-				<div>
-					<input type="number" v-model="options.arialShiftX" id="_inpASX" title="horizontal shift" max=300
-						min=-300 step=5 @change="shiftAerials" />
-					<label for="_inpASX">m</label>
-					<i class="fa fa-arrow-right">
-					</i>
-				</div>
-				<div>
-					<input type="number" v-model="options.arialShiftY" id="_inpASY" title="vertical shift" max=300
-						min=-300 step=5 @change="shiftAerials" />
-					<label for="_inpASY">m</label>
-					<i class="fa fa-arrow-up"></i>
-				</div>
-				<div>
-					<input type="number" v-model="options.arialOpacity" id="_inpASO" title="opacity" max=100 min=10
-						step=10 @change="shiftAerials" />
-					<label for="_inpASO">%</label>
-					<i class="fa fa-adjust"></i>
-				</div>
-			</div>
-			<div> ${I18n.lookup("layer_switcher.togglers.GROUP_IMAGERY")} </div>
-			<div class="control_group">
-				<div>
-					<input type="number" v-model="options.arialShiftXO" id="_inpASXO" title="horizontal shift" max=300
-						min=-300 step=5 @change="shiftAerials" />
-					<label for="_inpASXO">m</label>
-					<i class="fa fa-arrow-right"></i>
-				</div>
-				<div>
-					<input type="number" v-model="options.arialShiftYO" id="_inpASYO" title="vertical shift" max=300
-						min=-300 step=5 @change="shiftAerials" />
-					<label for="_inpASYO">m</label>
-					<i class="fa fa-arrow-up"></i>
-				</div>
-				<div>
-					<input type="number" v-model="options.arialOpacityO" id="_inpASOO" title="opacity" max=100 min=10
-						step=10 @change="shiftAerials" />
-					<label for="_inpASOO">%</label>
-					<i class="fa fa-adjust"></i>
-				</div>
-			</div>
-			<div title="Adjust contrast, brightness, colours & width for Google Street View images">
-				GSV image adjust
-			</div>
-			<div class="control_group">
-				<div title="Contrast">
-					<input type="number" v-model="options.GSVContrast" id="_inpGSVContrast" max=200 min=25 step=25
-						@change="adjustGSV" />
-					<label for="_inpGSVContrast">%</label>
-					<i class="fa fa-adjust"></i>
-				</div>
-				<div title="Brightness">
-					<input type="number" v-model="options.GSVBrightness" id="_inpGSVBrightness" max=200 min=25
-						@change="adjustGSV" step=25 />
-					<label for="_inpGSVBrightness">%</label>
-					<i class="fa fa-sun-o"></i>
-				</div>
-				<div title="Invert colours">
-					<input type="checkbox" id="_cbGSVInvert" v-model="options.GSVInvert" @change="adjustGSV" />
-					<i class="fa fa-tint">
-					</i>
-				</div>
-				<div title="Default width">
-					<input type="number" v-model="options.GSVWidth" id="_inpGSVWidth" max=90 min=10 step=10
-						@change="GSVWidth" />
-					<label for="_inpGSVWidth">%</label>
-					<i class="fa fa-arrows-h"></i>
-				</div>
-			</div>
+      <div>
+        ${I18n.lookup("layer_switcher.togglers.ITEM_SATELLITE_IMAGERY")}
+      </div>
+      <div class="control_group">
+        <div>
+          <input type="number" v-model="options.arialShiftX" id="_inpASX" title="horizontal shift" max=300
+            min=-300 step=5 @change="shiftAerials" />
+          <label for="_inpASX">m</label>
+          <i class="fa fa-arrow-right">
+          </i>
+        </div>
+        <div>
+          <input type="number" v-model="options.arialShiftY" id="_inpASY" title="vertical shift" max=300
+            min=-300 step=5 @change="shiftAerials" />
+          <label for="_inpASY">m</label>
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div>
+          <input type="number" v-model="options.arialOpacity" id="_inpASO" title="opacity" max=100 min=10
+            step=10 @change="shiftAerials" />
+          <label for="_inpASO">%</label>
+          <i class="fa fa-adjust"></i>
+        </div>
+      </div>
+      <div> ${I18n.lookup("layer_switcher.togglers.GROUP_IMAGERY")} </div>
+      <div class="control_group">
+        <div>
+          <input type="number" v-model="options.arialShiftXO" id="_inpASXO" title="horizontal shift" max=300
+            min=-300 step=5 @change="shiftAerials" />
+          <label for="_inpASXO">m</label>
+          <i class="fa fa-arrow-right"></i>
+        </div>
+        <div>
+          <input type="number" v-model="options.arialShiftYO" id="_inpASYO" title="vertical shift" max=300
+            min=-300 step=5 @change="shiftAerials" />
+          <label for="_inpASYO">m</label>
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div>
+          <input type="number" v-model="options.arialOpacityO" id="_inpASOO" title="opacity" max=100 min=10
+            step=10 @change="shiftAerials" />
+          <label for="_inpASOO">%</label>
+          <i class="fa fa-adjust"></i>
+        </div>
+      </div>
+      <div title="Adjust contrast, brightness, colours & width for Google Street View images">
+        GSV image adjust
+      </div>
+      <div class="control_group">
+        <div title="Contrast">
+          <input type="number" v-model="options.GSVContrast" id="_inpGSVContrast" max=200 min=25 step=25
+            @change="adjustGSV" />
+          <label for="_inpGSVContrast">%</label>
+          <i class="fa fa-adjust"></i>
+        </div>
+        <div title="Brightness">
+          <input type="number" v-model="options.GSVBrightness" id="_inpGSVBrightness" max=200 min=25
+            @change="adjustGSV" step=25 />
+          <label for="_inpGSVBrightness">%</label>
+          <i class="fa fa-sun-o"></i>
+        </div>
+        <div title="Invert colours">
+          <input type="checkbox" id="_cbGSVInvert" v-model="options.GSVInvert" @change="adjustGSV" />
+          <i class="fa fa-tint">
+          </i>
+        </div>
+        <div title="Default width">
+          <input type="number" v-model="options.GSVWidth" id="_inpGSVWidth" max=90 min=10 step=10
+            @change="GSVWidth" />
+          <label for="_inpGSVWidth">%</label>
+          <i class="fa fa-arrows-h"></i>
+        </div>
+      </div>
 
-		</div>
-		<div class="ui_enhancements">
-			<h6>UI Enhancements</h6>
+    </div>
+    <div class="ui_enhancements">
+      <h6>UI Enhancements</h6>
 
-			<div class="theme-selector">
-				<input type="radio" id="system" value="system" v-model="theme" @change="updateTheme" />
-				<label for="system" class="left">
-					<i class="fa fa-cogs fa-2x"></i>
-				</label>
+      <div class="theme-selector">
+        <input type="radio" id="system" value="system" v-model="theme" @change="updateTheme" />
+        <label for="system" class="left">
+          <i class="fa fa-cogs fa-2x"></i>
+        </label>
 
-				<input type="radio" id="dark" value="dark" v-model="theme" @change="updateTheme" />
-				<label for="dark">
-					<i class="fa fa-moon-o fa-2x"></i>
-				</label>
+        <input type="radio" id="dark" value="dark" v-model="theme" @change="updateTheme" />
+        <label for="dark">
+          <i class="fa fa-moon-o fa-2x"></i>
+        </label>
 
-				<input type="radio" id="light" value="light" v-model="theme" @change="updateTheme" />
-				<label for="light" class="right">
-					<i class="fa fa-sun-o fa-2x"></i>
-				</label>
-			</div>
+        <input type="radio" id="light" value="light" v-model="theme" @change="updateTheme" />
+        <label for="light" class="right">
+          <i class="fa fa-sun-o fa-2x"></i>
+        </label>
+      </div>
 
-			<div>
-				<input type="checkbox" id="_cbShrinkTopBars" v-model="options.shrinkTopBars" @click="shrinkTopBars" />
-				<label for="_cbShrinkTopBars"
-					title="Because we cant afford to waste screen space, particularly on\nstuff we didnt ask for and dont want, like the black bar.\nAnd why does the reload button have a re-do icon?!">Compress/enhance
-					bars above the map</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbCompressSegmentTab" v-model="options.restyleSidePanel"
-					@change="compressSegmentTab" />
-				<label for="_cbCompressSegmentTab"
-					title="Because I\m sick of having to scroll the side panel because of oversized fonts and wasted space">Compress/enhance
-					side panel contents</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbCompressLayersMenu" v-model="options.restyleLayersMenu"
-					@change="compressLayersMenu" />
-				<label for="_cbCompressLayersMenu"
-					title="Because it\s already too big for small screens and Waze only plan to make it bigger">Compress/enhance
-					layers menu</label>
-				<div id="layersColControls">
-					<input type="checkbox" id="_cbLayersColumns" v-model="options.layers2Cols"
-						@change="compressLayersMenu" />
-					<label for="_cbLayersColumns"
-						title="Widen the layers menu to 2 columns - particulary for netbook users\nWon\t work without some compression turned on">Two-column
-						layers menu</label>
-				</div>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbRestyleReports" v-model="options.restyleReports"
-					@change="restyleReports" />
-				<label for="_cbRestyleReports"
-					title="Another UI element configured for developers with massive screens instead of normal users">Compress/enhance
-					report panels (UR/MP)</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbEnhanceChat" v-model="options.enhanceChat" @change="enhanceChat" />
-				<label for="_cbEnhanceChat"
-					title="A perfect example of the new WME UI. Looks very stylish,\nbut destroys usability and utterly ignores small-screen users.">Compress/enhance
-					Chat panel</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbNarrowSidePanel" v-model="options.narrowSidePanel"
-					@change="narrowSidePanel" />
-				<label for="_cbNarrowSidePanel"
-					title="If you have a netbook, Waze isn\t interested in your experience.\nYou need every bit of map space you can get - so have a present from me!">Reduce
-					width of the side panel</label>
-				<span
-					title="This will definitely interfere with scripts that rely on a fixed width for their tab contents."
-					style="font-size: 16px; color: red;" class="fa fa-exclamation-triangle"></span>
-			</div>
-			<div>
-				<div title="Control the amount of compression/enhancment">UI Enhancement controls</div>
-				<div style="display:inline-block">
-					<select id="_inpUICompression" title="Compression enhancement" v-model="options.UICompression"
-						@change="applyEnhancements" style="height:20px; padding:0px; border-radius:0px;">
-						<option value="2">High</option>
-						<option value="1">Low</option>
-						<option value="0">None</option>
-					</select>
-					<i class="fa fa-compress"></i>
-				</div>
-				<div style="display:inline-block">
-					<select id="_inpUIContrast" title="Contrast enhancement" v-model="options.UIContrast"
-						@change="applyEnhancements" style="height:20px; padding:0px; border-radius:0px;">
-						<option value="2">High</option>
-						<option value="1">Low</option>
-						<option value="0">None</option>
-					</select>
-					<i class="fa fa-adjust"></i>
-				</div>
+      <div>
+        <input type="checkbox" id="_cbShrinkTopBars" v-model="options.shrinkTopBars" @click="shrinkTopBars" />
+        <label for="_cbShrinkTopBars"
+          title="Because we cant afford to waste screen space, particularly on\nstuff we didnt ask for and dont want, like the black bar.\nAnd why does the reload button have a re-do icon?!">Compress/enhance
+          bars above the map</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbCompressSegmentTab" v-model="options.restyleSidePanel"
+          @change="compressSegmentTab" />
+        <label for="_cbCompressSegmentTab"
+          title="Because I\m sick of having to scroll the side panel because of oversized fonts and wasted space">Compress/enhance
+          side panel contents</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbCompressLayersMenu" v-model="options.restyleLayersMenu"
+          @change="compressLayersMenu" />
+        <label for="_cbCompressLayersMenu"
+          title="Because it's already too big for small screens and Waze only plan to make it bigger">Compress/enhance
+          layers menu</label>
+        <div id="layersColControls">
+          <input type="checkbox" id="_cbLayersColumns" v-model="options.layers2Cols"
+            @change="compressLayersMenu" />
+          <label for="_cbLayersColumns"
+            title="Widen the layers menu to 2 columns - particulary for netbook users\nWon\t work without some compression turned on">Two-column
+            layers menu</label>
+        </div>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbRestyleReports" v-model="options.restyleReports"
+          @change="restyleReports" />
+        <label for="_cbRestyleReports"
+          title="Another UI element configured for developers with massive screens instead of normal users">Compress/enhance
+          report panels (UR/MP)</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbEnhanceChat" v-model="options.enhanceChat" @change="enhanceChat" />
+        <label for="_cbEnhanceChat"
+          title="A perfect example of the new WME UI. Looks very stylish,\nbut destroys usability and utterly ignores small-screen users.">Compress/enhance
+          Chat panel</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbNarrowSidePanel" v-model="options.narrowSidePanel"
+          @change="narrowSidePanel" />
+        <label for="_cbNarrowSidePanel"
+          title="If you have a netbook, Waze isn\t interested in your experience.\nYou need every bit of map space you can get - so have a present from me!">Reduce
+          width of the side panel</label>
+        <span
+          title="This will definitely interfere with scripts that rely on a fixed width for their tab contents."
+          style="font-size: 16px; color: red;" class="fa fa-exclamation-triangle"></span>
+      </div>
+      <div>
+        <div title="Control the amount of compression/enhancment">UI Enhancement controls</div>
+        <div style="display:inline-block">
+          <select id="_inpUICompression" title="Compression enhancement" v-model="options.UICompression"
+            @change="applyEnhancements" style="height:20px; padding:0px; border-radius:0px;">
+            <option value="2">High</option>
+            <option value="1">Low</option>
+            <option value="0">None</option>
+          </select>
+          <i class="fa fa-compress"></i>
+        </div>
+        <div style="display:inline-block">
+          <select id="_inpUIContrast" title="Contrast enhancement" v-model="options.UIContrast"
+            @change="applyEnhancements" style="height:20px; padding:0px; border-radius:0px;">
+            <option value="2">High</option>
+            <option value="1">Low</option>
+            <option value="0">None</option>
+          </select>
+          <i class="fa fa-adjust"></i>
+        </div>
 
-				<button id="_btnKillNode" style="height: 18px; margin-top: 5px;" @click="killNode"
-					title="Hide the junction nodes layer to allow access to Map Comments hidden under nodes.\nThis stays in effect until the page is zoomed/panned/refreshed.">Hide
-					junction nodes</button>
-			</div>
-		</div>
-		<div class="ui_fixes">
-			<h6>UI Fixes/changes</h6>
-			<div>
-				<input type="checkbox" id="_cbTameLockedSegmentMsg" v-model="options.tameLockedSegmentMsg" />
-				<label for="_cbTameLockedSegmentMsg"
-					title="Tame the locked segment warning,\nbecause in some localisations it takes up a shit-ton of space.">Tame
-					locked segment warning</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbHideSegmentPanelLabels" v-model="options.hideSegmentPanelLabels" />
-				<label for="_cbHideSegmentPanelLabels"
-					title="Hide the labels in the segment sidepanel,\nbecause there are more important things to display in that precious space.">Hide
-					segment sidepanel labels</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbTameSegmentTypeMenu" v-model="options.tameSegmentTypeMenu" />
-				<label for="_cbTameSegmentTypeMenu"
-					title="Do away with all the wasted space in the segment type menu,\nso that we can select types without having to scroll.">Tame
-					segment type menu</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbTameElevationMenu" v-model="options.tameElevationMenu" />
-				<label for="_cbTameElevationMenu"
-					title="Do away with all the wasted space and unlikely to ever be used option in the elevation menu,\nso that we can select the ones we DO use without having to scroll.">Tame
-					elevation menu</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbRemoveRoutingReminder" v-model="options.removeRoutingReminder" />
-				<label for="_cbRemoveRoutingReminder"
-					title="Remove the Segment will be used as message under the Routing buttons.">Remove segment routing
-					message</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbReEnableSidePanel" v-model="options.reEnableSidePanel" />
-				<label for="_cbReEnableSidePanel"
-					title="Re-enable the side panel at wider zoom levels,\nbecause contrary to what the WME devs seem to think,\nthere is quite a lot you can still do there.">Re-enable
-					side panel at wider zooms</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbResizeSearchBox" v-model="options.resizeSearch" @change="resizeSearch" />
-				<label for="_cbResizeSearchBox"
-					title="Allows the search box to use all the dead space in the top bar">Expand search box</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbMoveZoomBar" v-model="options.moveZoomBar" @change="createZoomBar" />
-				<label for="_cbMoveZoomBar"
-					title="Because nobody likes a pointless UI change that breaks your workflow,\nimposed by idiots who rarely use the editor and don\t listen to feedback.\nNO MATTER HOW HARD THEY TRY, I WILL BRING IT BACK!">Re-create
-					zoom bar & move map controls</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbFixExternalProviders" v-model="options.fixExternalProviders" />
-				<label for="_cbFixExternalProviders"
-					title="The External Providers interface has a description box that will only show one line of text.\nThis fixes that.">Expand
-					External Provider details for places</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbMoveChatIcon" v-model="options.moveChatIcon" @change="moveChatIcon" />
-				<label for="_cbMoveChatIcon"
-					title="Heres a truly outstanding example of making a stupid change to the UI in order to\ndeal with another stupid change to the UI!\nBecause HQ couldnt make the new layers menu auto-hide, they moved the chat icon.\nTick this box to put it back where it belongs.">Move
-					Chat icon back to right</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbHighlightInvisible" v-model="options.highlightInvisible"
-					@change="highlightInvisible" />
-				<label for="_cbHighlightInvisible"
-					title="Typical WME design - the chat icon changes when you\re invisible,\nbut the change is practically invisible!\nThis option provides a more obvious highlight.">Highlight
-					invisible mode</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbLayersMenuMoreOptions" v-model="options.layersMenuMore" />
-				<label for="_cbLayersMenuMoreOptions"
-					title="This function shows all options in the Layers menu at all times.\nNote that changing this only updates when the page loads.">Show
-					all options in Layers menu</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDarkenSaveLayer" v-model="options.darkenSaveLayer"
-					@change="darkenSaveLayer" />
-				<label for="_cbDarkenSaveLayer"
-					title="Its not bad enough theyve removed all the contrast to give you eyestrain,\nbut then they blind you every time you save. ">Darken
-					screen overlay when saving</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbSwapRoadsGPS" v-model="options.swapRoadsGPS" @change="swapRoadsGPS" />
-				<label for="_cbSwapRoadsGPS"
-					title="Guess what? Waze thinks the GPS layer should now be over the segments layer.\nWhy should you have any choice about that?">Move
-					GPS layer below segments layer</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbShowMapBlockers" v-model="options.showMapBlockers"
-					@change="showMapBlockers" />
-				<label for="_cbShowMapBlockers"
-					title="Some WME elements block access to the map layers. These problems have been reported as bugs.\nUntil they\re fixed, this functions makes them visible.">Show
-					map-blocking WME bugs</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDisableBridgeButton" v-model="options.disableBridgeButton"
-					@change="disableBridgeButton" />
-				<label for="_cbDisableBridgeButton"
-					title="The Bridge button is rarely useful, but often used incorrectly.\nIt\s best to keep it disabled unless you need it.">Disable
-					Bridge button</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDisablePathButton" v-model="options.disablePathButton"
-					@change="disablePathButton" />
-				<label for="_cbDisablePathButton"
-					title="The far turn button seems to be an accidental click-magnet, making it all\ntoo easy to accidentally set a path without noticing until after you save...\nUse this option to disable it and avoid the embarrassment">Disable
-					Far Turn button</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbMondayFirst" v-model="options.mondayFirst" />
-				<label for="_cbMondayFirst"
-					title="Requests to have calendar items localised with Monday as the first day of the week\ngo back a while. Now you don\t have to wait for Waze.">Start
-					calendars on Monday</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbISODates" v-model="options.ISODates" />
-				<label for="_cbISODates"
-					title="Dates in the Restrictions dialogues are all in American format - MM/DD/YY\nFine if you\ American, confusing as hell for the rest of us!\nThis changes the dates to ISO format, matching the Closures dialogue">ISO
-					dates in Restrictions</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDisableKinetic" v-model="options.disableKinetic"
-					@change="disableKinetic" />
-				<label for="_cbDisableKinetic"
-					title="Kinetic panning is a new WME feature: if you release the mouse whilst dragging the map,\nthe map will keep moving. It can be very useful for panning large distances.\nIt can also be very annoying. Now YOU have control.">Disable
-					Kinetic Panning</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDisableZoomAnimation" v-model="options.disableAnimatedZoom"
-					@change="disableAnimatedZoom" />
-				<label for="_cbDisableZoomAnimation"
-					title="Animated zooming is a new WME feature which some would prefer not to have enabled.  Click here to express that preference...">Disable
-					Animated Zooming</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDisableUITransitions" v-model="options.disableUITransitions"
-					@change="disableUITransitions" />
-				<label for="_cbDisableUITransitions"
-					title="Because life is simply too short to waste time waiting for UI elements to oooooooooze into position">Disable
-					UI
-					Transitions</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDisableScrollZoom" v-model="options.disableScrollZoom"
-					@change="disableScrollZoom" />
-				<label for="_cbDisableScrollZoom"
-					title="Zooming with the scroll wheel can be problematic when using an Apple Magic Mouse, which\nscrolls on touch. This will disable scroll-to-zoom.">Disable
-					scroll-to-zoom</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbDisableSaveBlocker" v-model="options.disableSaveBlocker"
-					@change="disableSaveBlocker" />
-				<label for="_cbDisableSaveBlocker"
-					title="When you hit Save, WME places a blocking element over the map until the save is complete\nThis disables that element, allowing you to pan the map and use GSV whilst a slow save is in progress.">Disable
-					map blocking during save</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbColourBlindTurns" v-model="options.colourBlindTurns"
-					@change="colourBlindTurns" />
-				<label for="_cbColourBlindTurns"
-					title="Change green turn arrows blue in order to make them more visible\nfor users with the most common type of colour blindness.">Change
-					green turn arrows to blue</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbHideMenuLabels" v-model="options.hideMenuLabels"
-					@change="hideMenuLabels" />
-				<label for="_cbHideMenuLabels"
-					title="Hide the text labels on the toolbar menus to save space on small screens">Hide menu
-					labels</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbUnfloatButtons" v-model="options.unfloatButtons"
-					@change="unfloatButtons" />
-				<label for="_cbUnfloatButtons"
-					title="Move Layers/Refresh buttons back into the toolbar and Share button into the\nfooter.\nWaze put little enough effort into giving us enough map area to work with,\nand then they drop little button turds all over it!">Remove
-					floating buttons from map area</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbMoveUserInfo" v-model="options.moveUserInfo" @change="moveUserInfo" />
-				<label for="_cbMoveUserInfo"
-					title="The new user info button is very useful, but its not a map editing control,\nso it shouldnt be in the toolbar. The same goes for the notification button.\nThis function moves them both to a sensible location.">Move
-					user info/notification buttons</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbHackGSVHandle" v-model="options.hackGSVHandle" @change="hackGSVHandle" />
-				<label for="_cbHackGSVHandle"
-					title="Whilst being able to adjust the GSV width is useful, the drag handle\ninvisibly covers 30 pixels of map and is very easy to drag accidentally.\nThis function transforms it to a button drag control that\s much less\nlikely to be used by accident.">Minimise
-					GSV drag handle</label>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbEnlargeGeoNodes" v-model="options.enlargeGeoNodes"
-					@change="enlargeGeoNodes" />
-				<label for="_cbEnlargeGeoNodes"
-					title="If you\re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo nodes (and junction nodes for segments),\nwhich define the shapes of segments and place boundaries.">Enlarge
-					geo/junction nodes</label>
-				<div style="display:inline-block">
-					<input type="number" id="_inpEnlargeGeoNodes" title="radius (default=6)" max=12 min=8 step=2
-						@change="enlargeGeoNodes"
-						style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
-				</div>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbEnlargeGeoHandlesFU" v-model="options.enlargeGeoHandles"
-					@change="enlargeGeoHandles" />
-				<label for="_cbEnlargeGeoHandlesFU"
-					title="If you\re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo handles, used to add geo nodes to segments and place boundaries.">
-					Enlarge geo handles
-				</label>
-				<div style="display:inline-block">
-					<input type="number" id="_inpEnlargeGeoHandles" title="radius (default=4)" max=10 min=6 step=2
-						@change="enlargeGeoHandles"
-						style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
-				</div>
-			</div>
-			<div>
-				<input type="checkbox" id="_cbEnlargePointMCs" v-model="options.enlargePointMCs"
-					@change="enlargePointMCs" />
-				<label for="_cbEnlargePointMCs"
-					title="This control lets you enlarge point map comments, because sometimes they can look a little swamped inamongst the rest of the stuff on show">
-					Enlarge point map comments
-				</label>
-				<div style="display:inline-block"><input type="number" id="_inpEnlargePointMCs"
-						title="scale (default=1)" max=3 min=1 step=0.1 @change="enlargePointMCs"
-						style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
-				</div>
-			</div>
-		</div>
-		<div class="about">
-			<b><a href="https://www.waze.com/forum/viewtopic.php?t=334618" title="Forum topic" target="_blank"><u>
-						"WME Fix UI Memorial Edition</u></a></b> v${FUME_VERSION}
+        <button id="_btnKillNode" style="height: 18px; margin-top: 5px;" @click="killNode"
+          title="Hide the junction nodes layer to allow access to Map Comments hidden under nodes.\nThis stays in effect until the page is zoomed/panned/refreshed.">Hide
+          junction nodes</button>
+      </div>
+    </div>
+    <div class="ui_fixes">
+      <h6>UI Fixes/changes</h6>
+      <div>
+        <input type="checkbox" id="_cbTameLockedSegmentMsg" v-model="options.tameLockedSegmentMsg" />
+        <label for="_cbTameLockedSegmentMsg"
+          title="Tame the locked segment warning,\nbecause in some localisations it takes up a shit-ton of space.">Tame
+          locked segment warning</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbHideSegmentPanelLabels" v-model="options.hideSegmentPanelLabels" />
+        <label for="_cbHideSegmentPanelLabels"
+          title="Hide the labels in the segment sidepanel,\nbecause there are more important things to display in that precious space.">Hide
+          segment sidepanel labels</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbTameSegmentTypeMenu" v-model="options.tameSegmentTypeMenu" />
+        <label for="_cbTameSegmentTypeMenu"
+          title="Do away with all the wasted space in the segment type menu,\nso that we can select types without having to scroll.">Tame
+          segment type menu</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbTameElevationMenu" v-model="options.tameElevationMenu" />
+        <label for="_cbTameElevationMenu"
+          title="Do away with all the wasted space and unlikely to ever be used option in the elevation menu,\nso that we can select the ones we DO use without having to scroll.">Tame
+          elevation menu</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbRemoveRoutingReminder" v-model="options.removeRoutingReminder" />
+        <label for="_cbRemoveRoutingReminder"
+          title="Remove the Segment will be used as message under the Routing buttons.">Remove segment routing
+          message</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbReEnableSidePanel" v-model="options.reEnableSidePanel" />
+        <label for="_cbReEnableSidePanel"
+          title="Re-enable the side panel at wider zoom levels,\nbecause contrary to what the WME devs seem to think,\nthere is quite a lot you can still do there.">Re-enable
+          side panel at wider zooms</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbResizeSearchBox" v-model="options.resizeSearch" @change="resizeSearch" />
+        <label for="_cbResizeSearchBox"
+          title="Allows the search box to use all the dead space in the top bar">Expand search box</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbMoveZoomBar" v-model="options.moveZoomBar" @change="createZoomBar" />
+        <label for="_cbMoveZoomBar"
+          title="Because nobody likes a pointless UI change that breaks your workflow,\nimposed by idiots who rarely use the editor and don\t listen to feedback.\nNO MATTER HOW HARD THEY TRY, I WILL BRING IT BACK!">Re-create
+          zoom bar & move map controls</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbFixExternalProviders" v-model="options.fixExternalProviders" />
+        <label for="_cbFixExternalProviders"
+          title="The External Providers interface has a description box that will only show one line of text.\nThis fixes that.">Expand
+          External Provider details for places</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbMoveChatIcon" v-model="options.moveChatIcon" @change="moveChatIcon" />
+        <label for="_cbMoveChatIcon"
+          title="Heres a truly outstanding example of making a stupid change to the UI in order to\ndeal with another stupid change to the UI!\nBecause HQ couldnt make the new layers menu auto-hide, they moved the chat icon.\nTick this box to put it back where it belongs.">Move
+          Chat icon back to right</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbHighlightInvisible" v-model="options.highlightInvisible"
+          @change="highlightInvisible" />
+        <label for="_cbHighlightInvisible"
+          title="Typical WME design - the chat icon changes when you\re invisible,\nbut the change is practically invisible!\nThis option provides a more obvious highlight.">Highlight
+          invisible mode</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbLayersMenuMoreOptions" v-model="options.layersMenuMore" />
+        <label for="_cbLayersMenuMoreOptions"
+          title="This function shows all options in the Layers menu at all times.\nNote that changing this only updates when the page loads.">Show
+          all options in Layers menu</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDarkenSaveLayer" v-model="options.darkenSaveLayer"
+          @change="darkenSaveLayer" />
+        <label for="_cbDarkenSaveLayer"
+          title="Its not bad enough theyve removed all the contrast to give you eyestrain,\nbut then they blind you every time you save. ">Darken
+          screen overlay when saving</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbSwapRoadsGPS" v-model="options.swapRoadsGPS" @change="swapRoadsGPS" />
+        <label for="_cbSwapRoadsGPS"
+          title="Guess what? Waze thinks the GPS layer should now be over the segments layer.\nWhy should you have any choice about that?">Move
+          GPS layer below segments layer</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbShowMapBlockers" v-model="options.showMapBlockers"
+          @change="showMapBlockers" />
+        <label for="_cbShowMapBlockers"
+          title="Some WME elements block access to the map layers. These problems have been reported as bugs.\nUntil they\re fixed, this functions makes them visible.">Show
+          map-blocking WME bugs</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDisableBridgeButton" v-model="options.disableBridgeButton"
+          @change="disableBridgeButton" />
+        <label for="_cbDisableBridgeButton"
+          title="The Bridge button is rarely useful, but often used incorrectly.\nIt's best to keep it disabled unless you need it.">Disable
+          Bridge button</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDisablePathButton" v-model="options.disablePathButton"
+          @change="disablePathButton" />
+        <label for="_cbDisablePathButton"
+          title="The far turn button seems to be an accidental click-magnet, making it all\ntoo easy to accidentally set a path without noticing until after you save...\nUse this option to disable it and avoid the embarrassment">Disable
+          Far Turn button</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbMondayFirst" v-model="options.mondayFirst" />
+        <label for="_cbMondayFirst"
+          title="Requests to have calendar items localised with Monday as the first day of the week\ngo back a while. Now you don\t have to wait for Waze.">Start
+          calendars on Monday</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbISODates" v-model="options.ISODates" />
+        <label for="_cbISODates"
+          title="Dates in the Restrictions dialogues are all in American format - MM/DD/YY\nFine if you\ American, confusing as hell for the rest of us!\nThis changes the dates to ISO format, matching the Closures dialogue">ISO
+          dates in Restrictions</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDisableKinetic" v-model="options.disableKinetic"
+          @change="disableKinetic" />
+        <label for="_cbDisableKinetic"
+          title="Kinetic panning is a new WME feature: if you release the mouse whilst dragging the map,\nthe map will keep moving. It can be very useful for panning large distances.\nIt can also be very annoying. Now YOU have control.">Disable
+          Kinetic Panning</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDisableZoomAnimation" v-model="options.disableAnimatedZoom"
+          @change="disableAnimatedZoom" />
+        <label for="_cbDisableZoomAnimation"
+          title="Animated zooming is a new WME feature which some would prefer not to have enabled.  Click here to express that preference...">Disable
+          Animated Zooming</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDisableUITransitions" v-model="options.disableUITransitions"
+          @change="disableUITransitions" />
+        <label for="_cbDisableUITransitions"
+          title="Because life is simply too short to waste time waiting for UI elements to oooooooooze into position">Disable
+          UI
+          Transitions</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDisableScrollZoom" v-model="options.disableScrollZoom"
+          @change="disableScrollZoom" />
+        <label for="_cbDisableScrollZoom"
+          title="Zooming with the scroll wheel can be problematic when using an Apple Magic Mouse, which\nscrolls on touch. This will disable scroll-to-zoom.">Disable
+          scroll-to-zoom</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbDisableSaveBlocker" v-model="options.disableSaveBlocker"
+          @change="disableSaveBlocker" />
+        <label for="_cbDisableSaveBlocker"
+          title="When you hit Save, WME places a blocking element over the map until the save is complete\nThis disables that element, allowing you to pan the map and use GSV whilst a slow save is in progress.">Disable
+          map blocking during save</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbColourBlindTurns" v-model="options.colourBlindTurns"
+          @change="colourBlindTurns" />
+        <label for="_cbColourBlindTurns"
+          title="Change green turn arrows blue in order to make them more visible\nfor users with the most common type of colour blindness.">Change
+          green turn arrows to blue</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbHideMenuLabels" v-model="options.hideMenuLabels"
+          @change="hideMenuLabels" />
+        <label for="_cbHideMenuLabels"
+          title="Hide the text labels on the toolbar menus to save space on small screens">Hide menu
+          labels</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbUnfloatButtons" v-model="options.unfloatButtons"
+          @change="unfloatButtons" />
+        <label for="_cbUnfloatButtons"
+          title="Move Layers/Refresh buttons back into the toolbar and Share button into the\nfooter.\nWaze put little enough effort into giving us enough map area to work with,\nand then they drop little button turds all over it!">Remove
+          floating buttons from map area</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbMoveUserInfo" v-model="options.moveUserInfo" @change="moveUserInfo" />
+        <label for="_cbMoveUserInfo"
+          title="The new user info button is very useful, but its not a map editing control,\nso it shouldnt be in the toolbar. The same goes for the notification button.\nThis function moves them both to a sensible location.">Move
+          user info/notification buttons</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbHackGSVHandle" v-model="options.hackGSVHandle" @change="hackGSVHandle" />
+        <label for="_cbHackGSVHandle"
+          title="Whilst being able to adjust the GSV width is useful, the drag handle\ninvisibly covers 30 pixels of map and is very easy to drag accidentally.\nThis function transforms it to a button drag control that's much less\nlikely to be used by accident.">Minimise
+          GSV drag handle</label>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbEnlargeGeoNodes" v-model="options.enlargeGeoNodes"
+          @change="enlargeGeoNodes" />
+        <label for="_cbEnlargeGeoNodes"
+          title="If you\re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo nodes (and junction nodes for segments),\nwhich define the shapes of segments and place boundaries.">Enlarge
+          geo/junction nodes</label>
+        <div style="display:inline-block">
+          <input type="number" id="_inpEnlargeGeoNodes" title="radius (default=6)" max=12 min=8 step=2
+            @change="enlargeGeoNodes"
+            style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
+        </div>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbEnlargeGeoHandlesFU" v-model="options.enlargeGeoHandles"
+          @change="enlargeGeoHandles" />
+        <label for="_cbEnlargeGeoHandlesFU"
+          title="If you\re getting old, like me, grabbing those little circles is a pain!\nThis control lets you enlarge the geo handles, used to add geo nodes to segments and place boundaries.">
+          Enlarge geo handles
+        </label>
+        <div style="display:inline-block">
+          <input type="number" id="_inpEnlargeGeoHandles" title="radius (default=4)" max=10 min=6 step=2
+            @change="enlargeGeoHandles"
+            style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
+        </div>
+      </div>
+      <div>
+        <input type="checkbox" id="_cbEnlargePointMCs" v-model="options.enlargePointMCs"
+          @change="enlargePointMCs" />
+        <label for="_cbEnlargePointMCs"
+          title="This control lets you enlarge point map comments, because sometimes they can look a little swamped inamongst the rest of the stuff on show">
+          Enlarge point map comments
+        </label>
+        <div style="display:inline-block"><input type="number" id="_inpEnlargePointMCs"
+            title="scale (default=1)" max=3 min=1 step=0.1 @change="enlargePointMCs"
+            style="height:16px; padding:0 0 0 2px; border:1px solid; width:37px;" />
+        </div>
+      </div>
+    </div>
+    <div class="about">
+      <b><a href="https://www.waze.com/forum/viewtopic.php?t=334618" title="Forum topic" target="_blank"><u>
+            "WME Fix UI Memorial Edition</u></a></b> v${FUME_VERSION}
 
-		</div>
-	</div>
+    </div>
+  </div>
 `;
+    /* eslint-enable max-len */
     return innerHTML;
   }
   function addMyTab() {
@@ -1516,29 +1518,29 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       logit("Failed to load Vue.js", "error");
       logit(error, "error");
       tabPane.innerHTML = `
-					<h3>Failed to load Vue.js</h3>
-					<p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
-					<p>Then reload the page and try again.</p>
-					</br>
-					<p>If still not working, please report the issue to "saicode" on Discord.</p>
-					<div class="vue-fail-logo">
-						<svg width="50%" viewBox="0 0 190 190" version="1.1" id="svg1" xml:space="preserve" sodipodi:docname="Waze.svg"
-							xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-							xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-							xmlns="http://www.w3.org/2000/svg"
-							xmlns:svg="http://www.w3.org/2000/svg">
-							<g inkscape:label="Ebene 1" inkscape:groupmode="layer" id="layer1" transform="translate(-9.5814339,-49.192611)">
-								<path style="display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 94.768176,205.81266 c -4.956323,-18.04127 -29.228187,-22.22111 -40.21299,-6.92505 l -0.68762,0.9575 -1.949667,-1.05347 C 41.636618,193.23636 30.30555,182.07154 25.476341,172.73805 l -1.158192,-2.23845 1.804078,-0.58016 c 5.902939,-1.89828 11.125993,-6.80606 13.409033,-12.59964 1.570221,-3.98469 1.809711,-6.37058 1.819133,-18.12287 0.01032,-12.86688 0.890802,-19.18044 3.858302,-27.66606 11.559981,-33.055968 45.198423,-53.224966 79.748015,-47.815458 42.99363,6.731611 70.26579,49.395208 58.40429,91.365598 -7.04688,24.93451 -27.15942,44.17697 -52.7075,50.42734 -7.00869,1.71469 -9.00866,1.88763 -22.96181,1.98557 l -12.437654,0.0873 z" id="path12" />
-								<g id="g13" inkscape:label="eyes" style="display:inline" transform="translate(0,-6.8791669)">
-									<path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 152.68457,125.57489 c 4.46719,-1.2251 7.26569,-6.44227 5.93273,-11.06024 -2.27064,-7.86647 -13.11583,-8.77094 -16.7462,-1.3966 -1.04701,2.12677 -1.04073,5.61099 0.014,7.75339 1.99992,4.06241 6.30312,5.93656 10.7995,4.70345 z" id="path3" transform="translate(0,6.879167)" />
-									<path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 97.884558,125.67519 c 5.173612,-1.16595 8.168202,-7.30577 5.978092,-12.25689 -3.78459,-8.55568 -16.689521,-6.27155 -17.178278,3.0405 -0.327398,6.23775 4.992512,10.61538 11.200186,9.21639 z" id="path2" transform="translate(0,6.879167)" />
-								</g>
-								<path style="display:inline;fill:#000101" d="m 69.10295,234.4622 c -11.362102,-2.19663 -18.732536,-11.1904 -18.698883,-22.81731 0.0058,-2.01713 -0.05011,-3.66751 -0.12432,-3.66751 -0.297704,0 -7.05075,-3.96175 -9.241109,-5.42141 -11.59278,-7.7254 -22.536346,-20.69856 -26.095182,-30.9348 -0.643908,-1.85206 -1.021769,-5.25276 -0.71809,-6.46271 0.358542,-1.42855 2.037355,-2.54248 4.202581,-2.7885 5.98847,-0.68044 10.245281,-3.28242 12.343397,-7.54493 1.271849,-2.58388 1.270639,-2.5716 1.446375,-14.67005 0.225617,-15.53254 1.089571,-21.58977 4.472356,-31.35596 13.844019,-39.968017 55.883701,-62.938542 96.514735,-52.73575 34.22101,8.59318 58.76079,37.311575 61.68235,72.18558 0.31907,3.80863 0.12411,13.73327 -0.33621,17.11506 -3.209,23.57555 -15.1674,42.98234 -35.10725,56.97408 l -2.14447,1.50477 0.39951,1.16372 c 5.1583,15.02573 -6.49789,30.37002 -22.5632,29.70236 -9.85512,-0.40957 -18.61774,-7.35667 -20.77805,-16.47306 l -0.36527,-1.54142 h -9.49472 -9.494713 l -0.265644,1.22251 c -1.322391,6.08571 -6.725134,12.44939 -12.670969,14.92465 -3.964539,1.65044 -9.335812,2.32197 -12.963224,1.62068 z m 50.49486,-27.1272 c 32.99983,-2.88185 60.11685,-27.53673 65.47061,-59.52608 0.85602,-5.1148 0.96144,-6.47263 0.96564,-12.43765 0.005,-6.7313 -0.38987,-10.83573 -1.5126,-15.7331 C 177.08484,87.199729 149.7261,64.301467 116.67083,62.849696 82.744086,61.35965 51.759275,84.456735 43.483687,117.40577 c -1.835805,7.30921 -2.121272,10.24188 -2.328243,23.91856 l -0.170525,11.2683 -0.561741,2.01979 c -2.066012,7.42853 -7.65947,13.30332 -14.692417,15.4314 -0.701611,0.2123 -1.307911,0.40726 -1.347334,0.43324 -0.03942,0.026 0.31716,0.81838 0.792405,1.76089 5.020878,9.95739 15.818598,20.55978 27.467238,26.97034 l 1.186571,0.65301 0.933126,-1.20405 c 10.608357,-13.6883 30.94861,-11.8197 38.58304,3.5445 0.524246,1.05504 1.168062,2.68977 1.430702,3.63272 l 0.477527,1.71447 10.949384,-2.1e-4 c 6.02216,-1.1e-4 12.04964,-0.0963 13.39439,-0.21373 z" id="path10" inkscape:label="Outline" sodipodi:nodetypes="ssscsssssssssscssscccssscsccssscssssscssscsc" />
-								<path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 116.61105,144.44191 c -11.43486,2.02087 -22.265064,10.37005 -26.452914,20.39298 -1.47598,3.53253 2.00104,7.25575 5.6386,6.03785 1.30627,-0.43735 1.97092,-1.14069 3.12762,-3.30963 6.242714,-11.70577 19.329184,-17.18853 32.028224,-13.41867 6.51797,1.93495 12.56351,6.81658 15.68037,12.66156 2.33428,4.37741 5.34264,5.54661 8.02836,3.12022 2.26407,-2.04546 2.01841,-4.38354 -0.94738,-9.01676 -6.17063,-9.63989 -15.6388,-15.48986 -27.32285,-16.88157 -1.60742,-0.19146 -7.84911,0.0728 -9.78003,0.41402 z" id="path1" inkscape:label="mouth" />
-							</g>
-						</svg>
-					</div>
-					`;
+          <h3>Failed to load Vue.js</h3>
+          <p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
+          <p>Then reload the page and try again.</p>
+          </br>
+          <p>If still not working, please report the issue to "saicode" on Discord.</p>
+          <div class="vue-fail-logo">
+            <svg width="50%" viewBox="0 0 190 190" version="1.1" id="svg1" xml:space="preserve" sodipodi:docname="Waze.svg"
+              xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+              xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:svg="http://www.w3.org/2000/svg">
+              <g inkscape:label="Ebene 1" inkscape:groupmode="layer" id="layer1" transform="translate(-9.5814339,-49.192611)">
+                <path style="display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 94.768176,205.81266 c -4.956323,-18.04127 -29.228187,-22.22111 -40.21299,-6.92505 l -0.68762,0.9575 -1.949667,-1.05347 C 41.636618,193.23636 30.30555,182.07154 25.476341,172.73805 l -1.158192,-2.23845 1.804078,-0.58016 c 5.902939,-1.89828 11.125993,-6.80606 13.409033,-12.59964 1.570221,-3.98469 1.809711,-6.37058 1.819133,-18.12287 0.01032,-12.86688 0.890802,-19.18044 3.858302,-27.66606 11.559981,-33.055968 45.198423,-53.224966 79.748015,-47.815458 42.99363,6.731611 70.26579,49.395208 58.40429,91.365598 -7.04688,24.93451 -27.15942,44.17697 -52.7075,50.42734 -7.00869,1.71469 -9.00866,1.88763 -22.96181,1.98557 l -12.437654,0.0873 z" id="path12" />
+                <g id="g13" inkscape:label="eyes" style="display:inline" transform="translate(0,-6.8791669)">
+                  <path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 152.68457,125.57489 c 4.46719,-1.2251 7.26569,-6.44227 5.93273,-11.06024 -2.27064,-7.86647 -13.11583,-8.77094 -16.7462,-1.3966 -1.04701,2.12677 -1.04073,5.61099 0.014,7.75339 1.99992,4.06241 6.30312,5.93656 10.7995,4.70345 z" id="path3" transform="translate(0,6.879167)" />
+                  <path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 97.884558,125.67519 c 5.173612,-1.16595 8.168202,-7.30577 5.978092,-12.25689 -3.78459,-8.55568 -16.689521,-6.27155 -17.178278,3.0405 -0.327398,6.23775 4.992512,10.61538 11.200186,9.21639 z" id="path2" transform="translate(0,6.879167)" />
+                </g>
+                <path style="display:inline;fill:#000101" d="m 69.10295,234.4622 c -11.362102,-2.19663 -18.732536,-11.1904 -18.698883,-22.81731 0.0058,-2.01713 -0.05011,-3.66751 -0.12432,-3.66751 -0.297704,0 -7.05075,-3.96175 -9.241109,-5.42141 -11.59278,-7.7254 -22.536346,-20.69856 -26.095182,-30.9348 -0.643908,-1.85206 -1.021769,-5.25276 -0.71809,-6.46271 0.358542,-1.42855 2.037355,-2.54248 4.202581,-2.7885 5.98847,-0.68044 10.245281,-3.28242 12.343397,-7.54493 1.271849,-2.58388 1.270639,-2.5716 1.446375,-14.67005 0.225617,-15.53254 1.089571,-21.58977 4.472356,-31.35596 13.844019,-39.968017 55.883701,-62.938542 96.514735,-52.73575 34.22101,8.59318 58.76079,37.311575 61.68235,72.18558 0.31907,3.80863 0.12411,13.73327 -0.33621,17.11506 -3.209,23.57555 -15.1674,42.98234 -35.10725,56.97408 l -2.14447,1.50477 0.39951,1.16372 c 5.1583,15.02573 -6.49789,30.37002 -22.5632,29.70236 -9.85512,-0.40957 -18.61774,-7.35667 -20.77805,-16.47306 l -0.36527,-1.54142 h -9.49472 -9.494713 l -0.265644,1.22251 c -1.322391,6.08571 -6.725134,12.44939 -12.670969,14.92465 -3.964539,1.65044 -9.335812,2.32197 -12.963224,1.62068 z m 50.49486,-27.1272 c 32.99983,-2.88185 60.11685,-27.53673 65.47061,-59.52608 0.85602,-5.1148 0.96144,-6.47263 0.96564,-12.43765 0.005,-6.7313 -0.38987,-10.83573 -1.5126,-15.7331 C 177.08484,87.199729 149.7261,64.301467 116.67083,62.849696 82.744086,61.35965 51.759275,84.456735 43.483687,117.40577 c -1.835805,7.30921 -2.121272,10.24188 -2.328243,23.91856 l -0.170525,11.2683 -0.561741,2.01979 c -2.066012,7.42853 -7.65947,13.30332 -14.692417,15.4314 -0.701611,0.2123 -1.307911,0.40726 -1.347334,0.43324 -0.03942,0.026 0.31716,0.81838 0.792405,1.76089 5.020878,9.95739 15.818598,20.55978 27.467238,26.97034 l 1.186571,0.65301 0.933126,-1.20405 c 10.608357,-13.6883 30.94861,-11.8197 38.58304,3.5445 0.524246,1.05504 1.168062,2.68977 1.430702,3.63272 l 0.477527,1.71447 10.949384,-2.1e-4 c 6.02216,-1.1e-4 12.04964,-0.0963 13.39439,-0.21373 z" id="path10" inkscape:label="Outline" sodipodi:nodetypes="ssscsssssssssscssscccssscsccssscssssscssscsc" />
+                <path style="display:inline;fill:#000000;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="m 116.61105,144.44191 c -11.43486,2.02087 -22.265064,10.37005 -26.452914,20.39298 -1.47598,3.53253 2.00104,7.25575 5.6386,6.03785 1.30627,-0.43735 1.97092,-1.14069 3.12762,-3.30963 6.242714,-11.70577 19.329184,-17.18853 32.028224,-13.41867 6.51797,1.93495 12.56351,6.81658 15.68037,12.66156 2.33428,4.37741 5.34264,5.54661 8.02836,3.12022 2.26407,-2.04546 2.01841,-4.38354 -0.94738,-9.01676 -6.17063,-9.63989 -15.6388,-15.48986 -27.32285,-16.88157 -1.60742,-0.19146 -7.84911,0.0728 -9.78003,0.41402 z" id="path1" inkscape:label="mouth" />
+              </g>
+            </svg>
+          </div>
+          `;
     }
 
     logit("Tab now available...");
@@ -1891,74 +1893,74 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
 
       // Now apply the full set of styling...
       styles = `
-				.olControlPanZoomBar {
-				  left: 10px;
-				  top: 35px;
-				  height: 158px;
-				  border: 1px solid #f0f2f2;
-				  background-color: #f0f2f2;
-				  border-radius: 30px;
-				  width: 24px;
-				  box-sizing: initial;
-				}
-				.olButton {
-				  background-color: var(--color-white);
-				  border-radius: 30px;
-				  width: 24px;
-				  height: 24px;
-				  cursor: pointer;
-				}
-				.olControlZoomButton {
-				  padding: 3px 5px;
-				  font-size: 18px;
-				}
-				.yslider-stops {
-				  width: 24px;
-				  height: 110px;
-				  background-color: #f3f3f3;
-				  background-image: linear-gradient(
-				      90deg,
-				      transparent 45%,
-				      #dedede 45%,
-				      #dedede 55%,
-				      transparent 55%
-				    ),
-				    linear-gradient(#dedede 1px, transparent 1px);
-				  background-size: 50% 8px;
-				  background-repeat: repeat-y;
-				  background-position: 6px;
-				}
-				.slider {
-				  position: absolute;
-				  font-size: 15px;
-				  font-weight: 900;
-				  line-height: 1;
-				  text-align: center;
-				  width: 24px;
-				  height: 18px;
-				  margin-top: -29px;
-				  padding-top: 1px;
-				  border: 1px solid lightgrey;
-				  border-radius: 10px;
-				  background-color: var(--color-white);
-				  cursor: ns-resize;
-				}
-				.zoom-bar-container {
-				  display: none;
-				}
-				.panel.show {
-				  margin-left: 55px;
-				}
-				.bottom.overlay-buttons-container {
-				  position: absolute;
-				  left: ${bcPosX}px;
-				  top: ${bcPosY}px;
-				  height: ${bcHeight}px;
-				}
-				.street-view-region {
-				  margin-bottom: 8px;
-				}
-			`;
+        .olControlPanZoomBar {
+          left: 10px;
+          top: 35px;
+          height: 158px;
+          border: 1px solid #f0f2f2;
+          background-color: #f0f2f2;
+          border-radius: 30px;
+          width: 24px;
+          box-sizing: initial;
+        }
+        .olButton {
+          background-color: var(--color-white);
+          border-radius: 30px;
+          width: 24px;
+          height: 24px;
+          cursor: pointer;
+        }
+        .olControlZoomButton {
+          padding: 3px 5px;
+          font-size: 18px;
+        }
+        .yslider-stops {
+          width: 24px;
+          height: 110px;
+          background-color: #f3f3f3;
+          background-image: linear-gradient(
+              90deg,
+              transparent 45%,
+              #dedede 45%,
+              #dedede 55%,
+              transparent 55%
+            ),
+            linear-gradient(#dedede 1px, transparent 1px);
+          background-size: 50% 8px;
+          background-repeat: repeat-y;
+          background-position: 6px;
+        }
+        .slider {
+          position: absolute;
+          font-size: 15px;
+          font-weight: 900;
+          line-height: 1;
+          text-align: center;
+          width: 24px;
+          height: 18px;
+          margin-top: -29px;
+          padding-top: 1px;
+          border: 1px solid lightgrey;
+          border-radius: 10px;
+          background-color: var(--color-white);
+          cursor: ns-resize;
+        }
+        .zoom-bar-container {
+          display: none;
+        }
+        .panel.show {
+          margin-left: 55px;
+        }
+        .bottom.overlay-buttons-container {
+          position: absolute;
+          left: ${bcPosX}px;
+          top: ${bcPosY}px;
+          height: ${bcHeight}px;
+        }
+        .street-view-region {
+          margin-bottom: 8px;
+        }
+      `;
 
       addStyle(PREFIX + fname, styles);
 
@@ -2605,7 +2607,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
         }; height: ${["", "20px", "18px"][compress]} !important; line-height: ${
           ["", "20px", "18px"][compress]
         } !important; font-size: ${["", "13px", "12px"][compress]}; }`;
-        //			styles += '#edit-panel .waze-btn { padding-top: ' + ['','3px','0px'][compress] + ' !important; padding-bottom: ' + ['','3px','1px'][compress] + '; height: ' + ['','20px','18px'][compress] + ' !important; line-height: ' + ['','20px','18px'][compress] + ' !important; font-size: ' + ['','13px','12px'][compress] + '; }';
+        //      styles += '#edit-panel .waze-btn { padding-top: ' + ['','3px','0px'][compress] + ' !important; padding-bottom: ' + ['','3px','1px'][compress] + '; height: ' + ['','20px','18px'][compress] + ' !important; line-height: ' + ['','20px','18px'][compress] + ' !important; font-size: ' + ['','13px','12px'][compress] + '; }';
         // radio button controls
         styles += `.waze-radio-container label { height: ${
           ["", "19px", "16px"][compress]
@@ -3422,7 +3424,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
       styles += `#chat .messages .message-list { min-height: ${chatMessagesY}px; }`;
       styles += `#chat .users { max-height: ${chatUsersY}px; }`;
 
-      //		#chat .messages .unread-messages-notification width=70%, bottom64px>
+      //    #chat .messages .unread-messages-notification width=70%, bottom64px>
       if (compress > 0) {
         // do compression
         // header
@@ -4571,7 +4573,7 @@ Bug fixes - MUST BE CLEARED BEFORE RELEASE
     // var re = new RegExp('\\b' + classname + '\\b');
     // var els = node.getElementsByTagName("*");
     // for (var i=0,j=els.length; i<j; i++) {
-    // 	if (re.test(els[i].className)) { a.push(els[i]); }
+    //   if (re.test(els[i].className)) { a.push(els[i]); }
     // }
     // return a;
   }
@@ -4776,8 +4778,8 @@ GM_addStyle(`
   --color-info-alpha-80: rgba(33, 150, 243, 0.8);
   --color-info-alpha-90: rgba(33, 150, 243, 0.9);
   /**
-  	Others
-  	var\(--(?!fs-color|border|size)(.+)
+    Others
+    var\(--(?!fs-color|border|size)(.+)
   */
   /**
     Shadow
@@ -4852,8 +4854,8 @@ GM_addStyle(`
 
 .dark-mode {
   /**
-    	Genrated Dark mode
-		*/
+      Genrated Dark mode
+    */
   --color-primary-100: #00080d;
   --color-primary-200: #001f33;
   --color-primary-300: #003659;
