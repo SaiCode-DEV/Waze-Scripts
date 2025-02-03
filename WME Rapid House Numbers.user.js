@@ -55,18 +55,21 @@
     { version: "3.0", message: "Support any house number format." },
   ];
 
-  const ONE = 49;
-  const NINE = 57;
-  const NUMPAD1 = 97;
-  const NUMPAD9 = 105;
-  const LETTER_H = "H".charCodeAt(0);
+  const KEYBOARD = {
+    ONE: "1".charCodeAt(0),
+    NINE: "9".charCodeAt(0),
+    H: "H".charCodeAt(0),
+    NUMPAD1: 97,
+    NUMPAD9: 105,
+  };
 
   let wmeSDK = null;
 
   let rapidHNtoolbarButton = null;
   let oneTimeIncrement;
   let houseNumbersObserver;
-  let rapidHnNext;
+
+  const config = loadConfig();
 
   async function checkVersion() {
     if (!WazeWrap?.Ready && !WazeWrap?.Interface?.ShowScriptUpdate) {
@@ -114,6 +117,19 @@
   }
   checkVersion();
 
+  function loadConfig() {
+    const loaded = JSON.parse(window.localStorage.getItem("rapidHN"));
+    const defaultConfig = {
+      increment: 2,
+      value: "",
+    };
+    return { ...defaultConfig, ...loaded };
+  }
+
+  function saveConfig() {
+    window.localStorage.setItem("rapidHN", JSON.stringify(config));
+  }
+
   function wmeReady() {
     wmeSDK = getWmeSdk({
       scriptId: "RHN_Script",
@@ -136,16 +152,30 @@
   function initialize() {
     console.log(`${scriptName} initializing.`);
 
-    wmeSDK.Events.on({
-      eventName: "wme-editing-house-numbers",
-      eventHandler: event => {
-        console.log("Editing house numbers", event);
-      },
+    // Register keyboard shortcuts
+    wmeSDK.Shortcuts.createShortcut({
+      callback: () => handleQuickShortcut(1),
+      description: "New HN (+1)",
+      shortcutId: "WME_RHN_plus1",
+      shortcutKeys: null,
+    });
+    wmeSDK.Shortcuts.createShortcut({
+      callback: () => handleQuickShortcut(2),
+      description: "New HN (+2)",
+      shortcutId: "WME_RHN_plus2",
+      shortcutKeys: null,
+    });
+    wmeSDK.Shortcuts.createShortcut({
+      callback: handleCustomShortcut,
+      description: "New HN (+CUSTOM_VALUE)",
+      shortcutId: "WME_RHN_plusCustom",
+      shortcutKeys: null,
     });
 
-    setInterval(() => {
-      console.log("isEditingHouseNumbers", wmeSDK.Editing.isEditingHouseNumbers());
-    }, 1000);
+    wmeSDK.Events.on({
+      eventName: "wme-selection-changed",
+      eventHandler: handleSelectionChanges,
+    });
 
     wmeSDK.Events.on({
       eventName: "wme-map-zoom-changed",
@@ -154,18 +184,11 @@
       },
     });
 
-    // Quick hack to make sure RHN controls are removed whenever HN editing mode is toggled on/off.
-    W.editingMediator.on("change:editingHouseNumbers", () => $(".rapidHN-control").remove());
-
     console.log(`${scriptName} initialized.`);
   }
 
   function createRHNcontrols(addHouseNumberNode) {
-    const initialIncrement = (
-      window.localStorage.getItem("rapidHNincrement") || 2
-    ).toString();
-
-    $(addHouseNumberNode).after(`
+    $(addHouseNumberNode).append(/* html */ `
             <div class="rapidHN-control">
                 <div class="toolbar-button rapidHN-input">
                     <span class="menu-title rapidHN-text">Next #</span>
@@ -176,7 +199,7 @@
                 <div class="toolbar-button rapidHN-input">
                     <span class="menu-title rapidHN-text">Increment</span>
                     <div class="rapidHN-text-input sm">
-                        <input type="number" name="incrementHN" class="rapidHN increment" value="${initialIncrement}" min="1" step="1">
+                        <input type="number" name="incrementHN" class="rapidHN increment" value="${config.increment}" min="1" step="1">
                     </div>
                 </div>
             </div>
@@ -192,27 +215,28 @@
       }
     });
 
+    $("input.rapidHN.next").change(() => {
+      config.value = $("input.rapidHN.next").val();
+      saveConfig();
+    });
+
     $("input.rapidHN.increment").change(() => {
-      window.localStorage.setItem("rapidHNincrement", $("input.rapidHN.increment").val());
+      config.increment = Number($("input.rapidHN.increment").val());
+      saveConfig();
     });
 
     $("div.rapidHN-control input").on("change", () => {
-      const controls = $("div.rapidHN-control");
-      const rapidHNenabled = $("input.rapidHN.next", controls).filter(":visible").val()
-        && Number($("input.rapidHN.increment", controls).val()) > 0;
+      const rapidHNenabled = config.increment !== 0 && (config.value !== "" || config.val !== 0);
 
       if (rapidHNenabled) {
         if (houseNumbersObserver === undefined) {
-          const ahn = $("div.toolbar-button.add-house-number");
-          ahn.css("font-weight", "bold");
-          ahn.css("color", "#2196f3");
+          console.log("registering house number observer");
 
           // Listen for WME displaying a new HN input field
           houseNumbersObserver = new MutationObserver(mutations => {
+            console.log("mutation triggered", mutations);
             mutations.forEach(() => {
-              const input = $(
-                "div.olLayerDiv.house-numbers-layer div.house-number div.content.active:not(\".new\") input.number",
-              );
+              const input = $(".house-numbers-layer .house-number .content.active:not(\".new\") input.number");
               if (input.val() === "") {
                 injectHouseNumber(input);
                 // Move focus from input field to WazeMap to prevent accidental additions to the injected HN.
@@ -220,6 +244,7 @@
               }
             });
           });
+
           houseNumbersObserver.observe(
             $("div.olLayerDiv.house-numbers-layer")[0],
             { childList: false, subtree: true, attributes: true },
@@ -235,11 +260,11 @@
       }
     });
 
-    if (rapidHnNext) {
+    if (config.value) {
       $("input.rapidHN.next")
         .filter(":visible")
         .focus()
-        .val(rapidHnNext)
+        .val(config.value)
         .blur()
         .trigger("change");
     }
@@ -274,28 +299,11 @@
     }
   }
 
-  function handlePrimaryToolbarMutations(mutations) {
-    for (let i = 0; i < mutations.length; i++) {
-      const mutation = mutations[i];
-      if (mutation.type === "childList") {
-        let addHouseNumber = recursiveSearchFor(mutation.addedNodes, [
-          "add-house-number",
-        ]);
-        if (addHouseNumber && !$(".rapidHN-control").length) {
-          createRHNcontrols(addHouseNumber);
-        }
-
-        const rapidHNNextInput = recursiveSearchFor(mutation.removedNodes, [
-          "rapidHN",
-          "next",
-        ]);
-        if (rapidHNNextInput) {
-          rapidHNtoolbarButton = undefined;
-          rapidHnNext = rapidHNNextInput.value;
-          disconnectHouseNumbersObserver();
-        }
-      }
-    }
+  async function handleSelectionChanges() {
+    const selection = wmeSDK.Editing.getSelection();
+    if (!selection || selection?.objectType !== "segment") return;
+    await new Promise(resolve => { setTimeout(resolve, 100); });
+    createRHNcontrols(document.querySelectorAll("div#segment-edit-general > div")[1]);
   }
 
   function setNativeValue(element, value) {
@@ -313,7 +321,8 @@
   }
 
   function injectHouseNumber(newHouseNumber) {
-    let increment = oneTimeIncrement ?? Number($("input.rapidHN.increment").val());
+    console.log("injecting house number");
+    let increment = oneTimeIncrement ?? config.increment;
     oneTimeIncrement = undefined;
 
     const nextElement = $("input.rapidHN.next").filter(":visible");
@@ -362,19 +371,19 @@
 
       if (
         event.target.localName !== "input"
-        && ONE <= event.which
-        && event.which <= NINE
+        && KEYBOARD.ONE <= event.which
+        && event.which <= KEYBOARD.NINE
       ) {
-        oneTimeIncrement = event.which - ONE + 1;
+        oneTimeIncrement = event.which - KEYBOARD.ONE + 1;
         acceleratorSelected = true;
       } else if (
         event.target.localName !== "input"
-        && NUMPAD1 <= event.which
-        && event.which <= NUMPAD9
+        && KEYBOARD.NUMPAD1 <= event.which
+        && event.which <= KEYBOARD.NUMPAD9
       ) {
-        oneTimeIncrement = event.which - NUMPAD1 + 1;
+        oneTimeIncrement = event.which - KEYBOARD.NUMPAD1 + 1;
         acceleratorSelected = true;
-      } else if (event.which === LETTER_H) {
+      } else if (event.which === KEYBOARD.H) {
         oneTimeIncrement = undefined;
         acceleratorSelected = true;
       }
@@ -390,36 +399,20 @@
     }
   }
 
-  // Recursively search within the nodeList, and its member's child lists, for a node that has the specified classname.
-  // When multiple matching sibling are found returns the first visible match.  Otherwise, returns null.
-  function recursiveSearchFor(nodeList, classNames) {
-    let secondary = null;
-    // eslint-disable-next-line no-restricted-syntax
-    for (const node of nodeList) {
-      if (
-        node.classList
-        && classNames.findIndex(
-          className => !node.classList.contains(className),
-        ) === -1
-      ) {
-        const visible = node.style.display !== "none";
+  function handleQuickShortcut(value) {
+    if ($(".toolbar wz-button.add-house-number").length === 0) return;
 
-        if (visible) {
-          return node;
-        }
+    const incrementInput = $("input.rapidHN.increment");
+    const originalValue = incrementInput.val();
 
-        secondary = node;
-      }
+    incrementInput.val(value);
+    $(".toolbar wz-button.add-house-number").click();
+    incrementInput.val(originalValue);
+  }
 
-      if (secondary === null) {
-        const primary = recursiveSearchFor(node.childNodes, classNames);
-        if (primary != null) {
-          return primary;
-        }
-      }
-    }
-
-    return secondary;
+  function handleCustomShortcut() {
+    if ($(".toolbar wz-button.add-house-number").length === 0) return;
+    $(".toolbar wz-button.add-house-number").click();
   }
 
   rapidHNBootstrap();
@@ -428,12 +421,8 @@
 GM_addStyle(`
 
 .rapidHN-control {
-    padding-right: 3px;
-    float: right;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    height: var(--wz-button-height, 40px);
+    flex-direction: column;
 }
 
 .rapidHN-input {
