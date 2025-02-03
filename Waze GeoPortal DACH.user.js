@@ -12,7 +12,7 @@
 // @license      MIT
 // ==/UserScript==
 
-/* global $, W, Vue */
+/* global $, W, Vue, getWmeSdk, SDK_INITIALIZED */
 /* globals OpenLayers: true */
 
 // Versions Format
@@ -173,10 +173,11 @@ const DEFAULT_SOURCES = {
     ],
   },
 };
+
 (() => {
   "use strict";
 
-  let uOpenLayers;
+  let wmeSDK = null;
   let uWaze;
 
   let shiftPressed = false;
@@ -207,9 +208,7 @@ const DEFAULT_SOURCES = {
       console.info("Loading Geoportal Layers...");
       $.each(sources, (key, country) => {
         const controlEntry = `
-        <li class="group layer-toggle-${country.flag}" style="${
-    country.enabled ? "" : "display: none;"
-  }">
+        <li class="group layer-toggle-${country.flag}" style="${country.enabled ? "" : "display: none;"}">
           <div class="layer-switcher-toggler-tree-category">
             <wz-button class="expand-country-${key}" color="clear-icon" size="xs">
               <i class="toggle-category w-icon w-icon-caret-down"></i>
@@ -267,8 +266,7 @@ const DEFAULT_SOURCES = {
           // if responseXML is not a XML document, cancel the loading
           if (!responseXML || responseXML instanceof XMLDocument === false) {
             console.error(
-              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
-                source.name
+              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${source.name
               }`,
             );
             return;
@@ -327,16 +325,14 @@ const DEFAULT_SOURCES = {
           // check for errors
           if (!layersList[source.unique]) {
             console.error(
-              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
-                source.name
+              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${source.name
               }`,
             );
             return;
           }
           if (!layersList[source.unique].url.length) {
             console.error(
-              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
-                source.name
+              `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${source.name
               }. No URL found in capabilities.`,
             );
             console.log(layersList[source.unique]);
@@ -369,15 +365,13 @@ const DEFAULT_SOURCES = {
         },
         onerror: () => {
           console.error(
-            `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${
-              source.name
+            `Failed to load ${flag} Layer ${index + 1}/${layers.length}: ${source.name
             }`,
           );
         },
         ontimeout: () => {
           console.error(
-            `Request to ${flag} Layer ${index + 1}/${layers.length}: ${
-              source.name
+            `Request to ${flag} Layer ${index + 1}/${layers.length}: ${source.name
             } timed out`,
           );
         },
@@ -397,7 +391,7 @@ const DEFAULT_SOURCES = {
       return;
     }
 
-    const opacityControl = $(`
+    const opacityControl = $(/* html */`
     <div class="opacity-control-container">
     <wz-basic-tooltip class="sc-wz-basic-tooltip-h sc-wz-basic-tooltip-s">
         <wz-tooltip class="sc-wz-basic-tooltip sc-wz-basic-tooltip-s">
@@ -463,6 +457,11 @@ const DEFAULT_SOURCES = {
     });
 
     $(".opacity-minus").on("click", () => {
+      if (!opacity || isNaN(opacity)) {
+        console.log("Opacity not a number, resetting to 0.5", opacity);
+        opacity = 0.5;
+      }
+
       if (shiftPressed) {
         opacity = 0;
       } else {
@@ -522,7 +521,7 @@ const DEFAULT_SOURCES = {
     tabLabel.innerText = "🌍 Geoportal";
     tabLabel.title = "Geoportal DACH";
 
-    tabPane.innerHTML = `
+    tabPane.innerHTML = /* html */`
   <div class="geoportal-settings">
     <h1>Settings</h1>
     <div class="geoportal-countrys">
@@ -587,7 +586,7 @@ const DEFAULT_SOURCES = {
       console.error("Failed to load Vue.js");
       console.error(error);
       /* eslint-disable max-len */
-      tabPane.innerHTML = `
+      tabPane.innerHTML = /* html */`
       <h3>Failed to load Vue.js</h3>
       <p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
       <p>Then reload the page and try again.</p>s
@@ -675,7 +674,20 @@ const DEFAULT_SOURCES = {
   /**
    * Bootstrap the Geoportal Overlays
    */
-  function geoportalBootstrap() {
+  async function geoportalBootstrap() {
+    await SDK_INITIALIZED;
+    wmeSDK = getWmeSdk({
+      scriptId: "GeoPortal_DACH",
+      scriptName: GM_info.script.name,
+    });
+
+    // Wait for SDK to be ready
+    if (!wmeSDK.State.isReady()) {
+      await new Promise(resolve => {
+        wmeSDK.Events.once({ eventName: "wme-ready" }).then(resolve);
+      });
+    }
+
     uWaze = unsafeWindow.W;
     uOpenLayers = unsafeWindow.OpenLayers;
     if (
