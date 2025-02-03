@@ -1,7 +1,7 @@
 /* global W */
-/* global I18n */
 /* global $ */
 /* global WazeWrap */
+/* global getWmeSdk, SDK_INITIALIZED */
 
 // ==UserScript==
 // @name          WME Rapid House Numbers
@@ -61,6 +61,8 @@
   const NUMPAD9 = 105;
   const LETTER_H = "H".charCodeAt(0);
 
+  let wmeSDK = null;
+
   let rapidHNtoolbarButton = null;
   let oneTimeIncrement;
   let houseNumbersObserver;
@@ -112,54 +114,49 @@
   }
   checkVersion();
 
-  // Delay until Waze has been loaded.
-  function rapidHNBootstrap() {
-    if (
-      typeof W === "undefined"
-      || typeof W.map === "undefined"
-      || typeof W.selectionManager === "undefined"
-      || typeof I18n === "undefined"
-      || typeof I18n.translations === "undefined"
-      || $("#toolbar [class^='primaryToolbar']").length === 0
-    ) {
-      console.log(`${scriptName} dependencies not ready. Waiting...`);
-      setTimeout(rapidHNBootstrap, 500);
-      return;
-    }
+  function wmeReady() {
+    wmeSDK = getWmeSdk({
+      scriptId: "RHN_Script",
+      scriptName,
+    });
+    return new Promise(resolve => {
+      if (wmeSDK.State.isReady()) { resolve(); }
+      wmeSDK.Events.once({ eventName: "wme-ready" }).then(resolve);
+    });
+  }
 
-    setTimeout(initialize, 999);
+  // Delay until Waze has been loaded.
+  async function rapidHNBootstrap() {
+    await SDK_INITIALIZED;
+    await wmeReady();
+    initialize();
   }
 
   // Initialize RHN once Waze has been loaded.
   function initialize() {
     console.log(`${scriptName} initializing.`);
 
+    wmeSDK.Events.on({
+      eventName: "wme-editing-house-numbers",
+      eventHandler: event => {
+        console.log("Editing house numbers", event);
+      },
+    });
+
+    setInterval(() => {
+      console.log("isEditingHouseNumbers", wmeSDK.Editing.isEditingHouseNumbers());
+    }, 1000);
+
+    wmeSDK.Events.on({
+      eventName: "wme-map-zoom-changed",
+      eventHandler: () => {
+        enableDisableControls(rapidHNtoolbarButton, wmeSDK.Map.getZoomLevel() < 18);
+      },
+    });
+
     // Quick hack to make sure RHN controls are removed whenever HN editing mode is toggled on/off.
     W.editingMediator.on("change:editingHouseNumbers", () => $(".rapidHN-control").remove());
 
-    // Listen for changes in the edit mode
-    // The contents of .primaryToolbar is updated when switching into, and out of, house number mode.
-
-    const primaryToolbar = $("#toolbar [class^='primaryToolbar']");
-    const primaryToolbarObserver = new MutationObserver(
-      handlePrimaryToolbarMutations,
-    );
-    if (primaryToolbar.length) {
-      primaryToolbarObserver.observe(primaryToolbar[0], {
-        childList: true,
-        subtree: true,
-      });
-    } else {
-      console.log("ERROR: Failed to find the primary toolbar");
-    }
-
-    W.map.registerMapEvent(
-      "zoomend",
-      event => {
-        enableDisableControls(rapidHNtoolbarButton, event.object.zoom < 18);
-      },
-      this,
-    );
     console.log(`${scriptName} initialized.`);
   }
 
