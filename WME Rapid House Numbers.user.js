@@ -232,23 +232,37 @@
         if (houseNumbersObserver === undefined) {
           console.log("registering house number observer");
 
-          // Listen for WME displaying a new HN input field
+          // Find OpenLayers container
+          const container = document.querySelector('[id$="_OpenLayers_Container"]');
+          if (!container) {
+            console.warn("OpenLayers container not found");
+            return;
+          }
+
+          // Listen for changes in the OpenLayers container
           houseNumbersObserver = new MutationObserver(mutations => {
-            console.log("mutation triggered", mutations);
-            mutations.forEach(() => {
+            mutations.forEach(mutation => {
+              // Look for house numbers layer
+              const hnLayers = document.querySelectorAll('.olLayerDiv.house-numbers-layer');
+              if (!hnLayers.length) return;
+              console.log("Rapid House mutation", mutation);
+
+              // Find active house number input
               const input = $(".house-numbers-layer .house-number .content.active:not(\".new\") input.number");
-              if (input.val() === "") {
+              if (input.length && input.val() === "") {
                 injectHouseNumber(input);
-                // Move focus from input field to WazeMap to prevent accidental additions to the injected HN.
+                // Move focus from input field to WazeMap
                 $("div#WazeMap").focus();
               }
             });
           });
 
-          houseNumbersObserver.observe(
-            $("div.olLayerDiv.house-numbers-layer")[0],
-            { childList: false, subtree: true, attributes: true },
-          );
+          // Observe the OpenLayers container for all changes
+          houseNumbersObserver.observe(container, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+          });
 
           // Register rapidAccelerator on keydown event in map.  Use rapidHN namespace to selectively remove later.
           $(W.map.olMap.div).on("keydown.rapidHN", rapidAccelerator);
@@ -321,7 +335,6 @@
   }
 
   function injectHouseNumber(newHouseNumber) {
-    console.log("injecting house number");
     let increment = oneTimeIncrement ?? config.increment;
     oneTimeIncrement = undefined;
 
@@ -356,7 +369,8 @@
       }
     }
 
-    nextElement.val(nextParts.reverse().join(''));
+    config.value = nextParts.reverse().join('');
+    nextElement.val(config.value);
   }
 
   // Type 1-9 instead of 'h' to specify a one-time increment that be applied after the current "next" value is added to the map
