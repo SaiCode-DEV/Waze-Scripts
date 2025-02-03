@@ -5,9 +5,9 @@
 
 // ==UserScript==
 // @name          WME Rapid House Numbers
-// @description   A House Number script with its controls in the House Number mini-editor.  It injects the next value in a sequence into each new HN. To support different regions, house numbers may be [0-9]+, [0-9]+[a-z]+, or [0-9]+-[0-9]+.
+// @description   A House Number script with its controls in the House Number mini-editor.  It injects the next value in a sequence into each new HN. All house number formats are supported.
 // @namespace     https://github.com/WazeDev
-// @version       2.8
+// @version       3.0
 // @include       /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
 // @copyright     2017-2024, kjg53
 // @author        kjg53, WazeDev (2023-?), SaiCode (2024-?)
@@ -31,9 +31,9 @@
     { version: "1.2", message: "Now does full reset when exiting House Number Editor." },
     { version: "1.3", message: "Fixed typo in change log." },
     { version: "1.4", message: "The accelerator key bindings are removed upon exiting the House Number editor." },
-    { version: "1.5", message: "The primary accelerator has been changed from 'a' to 'h'.  The keys '1' .. '9' are now accelerators that create the next house number then increment next by the value of the key." },
+    { version: "1.5", message: "The primary accelerator has been changed from 'a' to 'h'. The keys '1' .. '9' are now accelerators that create the next house number then increment next by the value of the key." },
     { version: "1.6", message: "Disabled numeric accelerators in text fields." },
-    { version: "1.7", message: "Added support for numpads.  Event handler now removed when the House Number editor is exited." },
+    { version: "1.7", message: "Added support for numpads. Event handler now removed when the House Number editor is exited." },
     { version: "1.8", message: "Removed info dialog." },
     { version: "1.9", message: "Increased width of increment field." },
     { version: "1.10", message: "The increment is now persisted between sessions." },
@@ -50,12 +50,10 @@
     { version: "2.5", message: "Firefox compatibility and Style update." },
     { version: "2.6", message: "Fixed bug when re entering HN editor." },
     { version: "2.7", message: "Minor version check fix." },
-    { version: "2.8", message: "Changelog UI enhancements" },
+    { version: "2.8", message: "Changelog UI enhancements." },
+    { version: "2.9", message: "Bug fixing." },
+    { version: "3.0", message: "Support any house number format." },
   ];
-
-  const ALL_DIGITS = /^[0-9]+$/;
-  const DIG_ALPHA = /^([0-9]+)([A-Z]$)/i;
-  const DIG_DASH_DIG = /^([0-9]+-)([0-9]+)$/;
 
   const ONE = 49;
   const NINE = 57;
@@ -122,7 +120,7 @@
       || typeof W.selectionManager === "undefined"
       || typeof I18n === "undefined"
       || typeof I18n.translations === "undefined"
-      || $("div#primary-toolbar>div").length === 0
+      || $("#toolbar [class^='primaryToolbar']").length === 0
     ) {
       console.log(`${scriptName} dependencies not ready. Waiting...`);
       setTimeout(rapidHNBootstrap, 500);
@@ -140,9 +138,9 @@
     W.editingMediator.on("change:editingHouseNumbers", () => $(".rapidHN-control").remove());
 
     // Listen for changes in the edit mode
-    // The contents of div.primary-toolbar is entirely replaced when switching into, and out of, house number mode.
+    // The contents of .primaryToolbar is updated when switching into, and out of, house number mode.
 
-    const primaryToolbar = $("div#primary-toolbar");
+    const primaryToolbar = $("#toolbar [class^='primaryToolbar']");
     const primaryToolbarObserver = new MutationObserver(
       handlePrimaryToolbarMutations,
     );
@@ -152,7 +150,7 @@
         subtree: true,
       });
     } else {
-      console.log("ERROR: Failed to find div#primary-toolbar");
+      console.log("ERROR: Failed to find the primary toolbar");
     }
 
     W.map.registerMapEvent(
@@ -170,59 +168,41 @@
       window.localStorage.getItem("rapidHNincrement") || 2
     ).toString();
 
-    // NOTE: We have two input.rapidHN.next fields because the type property cannot be modified.  We, instead, create two fields
-    // then use a function, updateRapidHNnextVisibility, to determine which one is currently visible.
     $(addHouseNumberNode).after(`
             <div class="rapidHN-control">
                 <div class="toolbar-button rapidHN-input">
                     <span class="menu-title rapidHN-text">Next #</span>
                     <div class="rapidHN-text-input sm">
                         <input type="text" class="rapidHN next">
-                        <input type="number" class="rapidHN next">
-                    </div>
-                    <div id="rapidHN-input-type" class="rapidHN-switch-mode">
-                        <button id="current-input-type">1</button>
-                        <span class="tooltiptext" id="rapidHN-input-is-number">1,2,3</span>
-                        <span class="tooltiptext" id="rapidHN-input-is-text" style="display:none">1a,2b,3c & 12-3</span>
                     </div>
                 </div>
                 <div class="toolbar-button rapidHN-input">
                     <span class="menu-title rapidHN-text">Increment</span>
                     <div class="rapidHN-text-input sm">
-                        <input type="number" name="incrementHN" class="rapidHN increment" value="${initialIncrement}" step="1">
+                        <input type="number" name="incrementHN" class="rapidHN increment" value="${initialIncrement}" min="1" step="1">
                     </div>
                 </div>
             </div>
         `);
     rapidHNtoolbarButton = addHouseNumberNode.nextSibling;
-    updateRapidHNnextVisibility(false);
 
     enableDisableControls(rapidHNtoolbarButton, W.map.getZoom() < 18);
-
-    $("button#current-input-type").click(() => {
-      let nextInputType = window.localStorage.getItem("rapidHNnextInputType") || "number";
-
-      nextInputType = { number: "text", text: "number" }[nextInputType];
-
-      window.localStorage.setItem("rapidHNnextInputType", nextInputType);
-      updateRapidHNnextVisibility(true);
-    });
 
     // if the <return> key is released blur so that you can type <h> to add a house number rather than see it appended to the next value.
     $("input.rapidHN.next").keyup(evt => {
       if (evt.which === 13) {
-        this.blur();
+        evt.target.blur();
       }
     });
 
     $("input.rapidHN.increment").change(() => {
-      window.localStorage.setItem("rapidHNincrement", $(this).val());
+      window.localStorage.setItem("rapidHNincrement", $("input.rapidHN.increment").val());
     });
 
     $("div.rapidHN-control input").on("change", () => {
       const controls = $("div.rapidHN-control");
       const rapidHNenabled = $("input.rapidHN.next", controls).filter(":visible").val()
-        && nonZero($("input.rapidHN.increment", controls));
+        && Number($("input.rapidHN.increment", controls).val()) > 0;
 
       if (rapidHNenabled) {
         if (houseNumbersObserver === undefined) {
@@ -256,15 +236,6 @@
       } else {
         disconnectHouseNumbersObserver();
       }
-    });
-
-    $("div.toolbar-button.waze-icon-exit").click(() => {
-      // Add ItemDisabled to add-house-number to prevent handlePrimaryToolbarMutations from saving a value
-      // in rapidHnNext when exiting the house number editor mode.  This is, currently, only
-      // an issue in beta as it's firing this event handler BEFORE WME's own event handler
-      // deletes the input fields.
-      $("div.toolbar-button.add-house-number").addClass("ItemDisabled");
-      rapidHnNext = undefined;
     });
 
     if (rapidHnNext) {
@@ -317,21 +288,13 @@
           createRHNcontrols(addHouseNumber);
         }
 
-        const rapidHNNext = recursiveSearchFor(mutation.removedNodes, [
+        const rapidHNNextInput = recursiveSearchFor(mutation.removedNodes, [
           "rapidHN",
           "next",
         ]);
-        if (rapidHNNext) {
+        if (rapidHNNextInput) {
           rapidHNtoolbarButton = undefined;
-
-          addHouseNumber = rapidHNNext.previousSibling; // recursiveSearchFor(mutation.addedNodes, ['add-house-number']);
-          if (
-            addHouseNumber
-            && !addHouseNumber.classList.contains("ItemDisabled")
-          ) {
-            rapidHnNext = rapidHNNext.value;
-          }
-
+          rapidHnNext = rapidHNNextInput.value;
           disconnectHouseNumbersObserver();
         }
       }
@@ -353,76 +316,41 @@
   }
 
   function injectHouseNumber(newHouseNumber) {
-    const incElm = $("input.rapidHN.increment");
-
-    let inc;
-    if (oneTimeIncrement) {
-      inc = oneTimeIncrement;
-      oneTimeIncrement = undefined;
-    } else {
-      inc = parseInt(incElm.val(), 10);
-    }
+    let increment = oneTimeIncrement ?? Number($("input.rapidHN.increment").val());
+    oneTimeIncrement = undefined;
 
     const nextElement = $("input.rapidHN.next").filter(":visible");
     const next = nextElement.val();
 
-    if (ALL_DIGITS.test(next)) {
-      // Inject next HN into WME
-      // newHouseNumber.val(next).change();
-      setNativeValue(newHouseNumber[0], next);
+    // Inject next HN into WME
+    setNativeValue(newHouseNumber[0], next);
 
-      const n = parseInt(next, 10);
+    const nextParts = next.match(/[0-9]+|[a-z]|[A-Z]|\S/g);
 
-      nextElement.val(n + inc);
-    } else if (DIG_ALPHA.test(next)) {
-      // Inject next HN into WME
-      // newHouseNumber.val(next).change();
-      setNativeValue(newHouseNumber[0], next);
-
-      const digAlpha = next.match(DIG_ALPHA);
-      const curLet = digAlpha[2];
-      let min;
-      let max;
-      if (curLet >= "a" && curLet <= "z") {
-        min = "a".codePointAt(0);
-        max = "z".codePointAt(0);
-      } else if (curLet >= "A" && curLet <= "Z") {
-        min = "A".codePointAt(0);
-        max = "Z".codePointAt(0);
-      } else {
-        return;
+    for (const [index, part] of nextParts.reverse().entries()) {
+      if (!Number.isNaN(Number(part))) {
+        nextParts[index] = (Number(part) + increment).toString().padStart(part.length, '0');
+        break;
       }
 
-      let nxtLet = curLet.codePointAt(0) + inc;
-      // if we need to wrap the letter
-      if (nxtLet > max) {
-        // Increment the numeric portion
-        digAlpha[1] = `${parseInt(digAlpha[1], 10) + 1}`;
+      if (/[a-z]/i.test(part)) {
+        let nextLetter = part.codePointAt(0) + (increment % 26);
 
-        // wrap the letter
-        nxtLet -= max;
-        nxtLet += min - 1;
+        increment = Math.floor(increment / 26);
+
+        if ((/[a-z]/.test(part) && nextLetter > 'z'.codePointAt(0)) ||
+          (/[A-Z]/.test(part) && nextLetter > 'Z'.codePointAt(0))) {
+          nextLetter -= 26;
+          increment++;
+        }
+
+        nextParts[index] = String.fromCodePoint(nextLetter);
+
+        if (!increment) break;
       }
-      digAlpha[2] = String.fromCodePoint(nxtLet);
-
-      nextElement.val(digAlpha[1] + digAlpha[2]);
-    } else if (DIG_DASH_DIG.test(next)) {
-      // Inject next HN into WME
-      // newHouseNumber.val(next).change();
-      setNativeValue(newHouseNumber[0], next);
-
-      const digDig = next.match(DIG_DASH_DIG);
-
-      // Increment the numeric portion
-      digDig[2] = `${parseInt(digDig[2], 10) + inc}`;
-
-      nextElement.val(digDig[1] + digDig[2]);
     }
-  }
 
-  function nonZero(input) {
-    const i = parseInt(input.val(), 10);
-    return !isNaN(i) && i !== 0;
+    nextElement.val(nextParts.reverse().join(''));
   }
 
   // Type 1-9 instead of 'h' to specify a one-time increment that be applied after the current "next" value is added to the map
@@ -477,8 +405,7 @@
           className => !node.classList.contains(className),
         ) === -1
       ) {
-        const { display } = window.getComputedStyle(node);
-        const visible = display !== "none";
+        const visible = node.style.display !== "none";
 
         if (visible) {
           return node;
@@ -496,30 +423,6 @@
     }
 
     return secondary;
-  }
-
-  function updateRapidHNnextVisibility(showTooltip) {
-    const nextInputType = window.localStorage.getItem("rapidHNnextInputType") || "number";
-    const inputs = $("input.rapidHN.next");
-
-    inputs.hide();
-    const nextInput = inputs.filter(`[type='${nextInputType}']`);
-    nextInput.show();
-
-    $("button#current-input-type").text(
-      { number: "1", text: "A" }[nextInputType],
-    );
-
-    if (showTooltip) {
-      // hide both tooltips
-      ["number", "text"].forEach(type => {
-        const tooltip = $(`span#rapidHN-input-is-${type}`);
-        tooltip.hide();
-      });
-
-      const tooltip = $(`span#rapidHN-input-is-${nextInputType}`);
-      tooltip.show();
-    }
   }
 
   rapidHNBootstrap();
