@@ -243,9 +243,8 @@
           houseNumbersObserver = new MutationObserver(mutations => {
             mutations.forEach(mutation => {
               // Look for house numbers layer
-              const hnLayers = document.querySelectorAll('.olLayerDiv.house-numbers-layer');
+              const hnLayers = document.querySelectorAll('.olLayerDiv.house-numbers-layer .house-number');
               if (!hnLayers.length) return;
-              console.log("Rapid House mutation", mutation);
 
               // Find active house number input
               const input = $(".house-numbers-layer .house-number .content.active:not(\".new\") input.number");
