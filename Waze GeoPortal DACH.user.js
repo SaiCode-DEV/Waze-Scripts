@@ -277,15 +277,50 @@ const DEFAULT_SOURCES = {
             format = new OpenLayers.Format.WMTSCapabilities();
             doc = responseXML;
             capabilities = format.read(doc);
-            layersList[source.unique] = format.createLayer(capabilities, {
+            console.log("WMTS", format, doc, capabilities, source);
+
+            const tileMatrixSet = capabilities.contents.tileMatrixSets[source.matrixSet];
+            const layer = capabilities.contents.layers.find(
+              l => l.identifier === source.layerName,
+            );
+
+            if (!layer || !layer.resourceURL) {
+              console.error(`Layer ${source.layerName} not found in capabilities`);
+              return;
+            }
+
+            // Extract template URL and convert it to SDK format
+            const template = layer.resourceURL.template || layer.resourceURL;
+            const serverUrl = new URL(template);
+
+            layersList[source.unique] = {
+              layerName: source.layerName,
+              layerOptions: {
+                tileHeight: tileMatrixSet.matrixIds[0].tileHeight,
+                tileWidth: tileMatrixSet.matrixIds[0].tileWidth,
+                url: {
+                  // Convert template URL like "https://server/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png"
+                  // to SDK format "tiles/${z}/${x}/${y}.png"
+                  fileName: template
+                    .replace(/{TileMatrixSet}/g, source.matrixSet)
+                    .replace(/{TileMatrix}/g, '${z}')
+                    .replace(/{TileRow}/g, '${y}')
+                    .replace(/{TileCol}/g, '${x}')
+                    .replace(/.*\/([^?]+)/, '$1'), // Extract filename pattern
+                  params: Object.fromEntries(
+                    new URLSearchParams(serverUrl.search).entries(),
+                  ),
+                  servers: [serverUrl.origin],
+                },
+              },
               layer: source.layerName,
               matrixSet: source.matrixSet,
               opacity: source.opacity ?? opacity,
               isBaseLayer: false,
               requestEncoding: source.requestEncoding ?? "REST",
               visibility: source.active,
-            });
-          } else if (source.type === "WMS") {
+            };
+          } /* else if (source.type === "WMS") {
             format = new OpenLayers.Format.WMSCapabilities();
             doc = responseXML;
             capabilities = format.read(doc);
@@ -317,8 +352,9 @@ const DEFAULT_SOURCES = {
               );
               return;
             }
-          }
+          } */
 
+          wmeSDK.Map.addTileLayer(layersList[source.unique]);
           uWaze.map.addLayer(layersList[source.unique]);
           uWaze.map.setLayerIndex(layersList[source.unique], 3);
 
@@ -346,7 +382,9 @@ const DEFAULT_SOURCES = {
           const checkbox = $("<wz-checkbox></wz-checkbox>", {
             id: source.unique,
             class: "hydrated",
-            checked: layersList[source.unique].getVisibility(),
+            checked: wmeSDK.Map.isLayerVisible({
+              layerName: source.unique,
+            }),
             text: source.name,
           });
 
@@ -354,7 +392,10 @@ const DEFAULT_SOURCES = {
           overlayGroup.append(toggleEntry);
 
           checkbox.on("click", e => {
-            layersList[source.unique].setVisibility(e.target.checked);
+            wmeSDK.Map.setLayerVisibility({
+              layerName: source.unique,
+              visibility: e.target.checked,
+            });
             sources[country].layers[index].active = e.target.checked;
             saveSettings();
           });
@@ -470,11 +511,10 @@ const DEFAULT_SOURCES = {
       localStorage.setItem("geoportal_opacity", opacity);
       $.each(sources, (_, source) => {
         source.layers.forEach(sourceLayer => {
-          try {
-            layersList[sourceLayer.unique].setOpacity(opacity);
-          } catch (e) {
-            console.error(`Failed to set opacity for ${sourceLayer.name}`);
-          }
+          wmeSDK.Map.setLayerOpacity({
+            layerName: sourceLayer.unique,
+            opacity,
+          });
         });
       });
     });
@@ -561,11 +601,17 @@ const DEFAULT_SOURCES = {
             // hide the layers if the country is disabled
             if (!event.target.checked) {
               sources[event.target.id].layers.forEach(layer => {
-                layersList[layer.unique].setVisibility(false);
+                wmeSDK.Map.setLayerVisibility({
+                  layerName: layer.unique,
+                  visibility: false,
+                });
               });
             } else {
               sources[event.target.id].layers.forEach(layer => {
-                layersList[layer.unique].setVisibility(layer.active);
+                wmeSDK.Map.setLayerVisibility({
+                  layerName: layer.unique,
+                  visibility: layer.active,
+                });
               });
             }
             $(`.layer-toggle-${this.layers[event.target.id].flag}`).toggle(
@@ -574,7 +620,10 @@ const DEFAULT_SOURCES = {
             saveSettings();
           },
           updateLayer(event) {
-            layersList[event.target.id].setVisibility(event.target.checked);
+            wmeSDK.Map.setLayerVisibility({
+              layerName: event.target.id,
+              visibility: event.target.checked,
+            });
             $(`li wz-checkbox#${event.target.id}`)
               .toggle(event.target.checked)
               .prop("checked", event.target.checked);
@@ -689,20 +738,16 @@ const DEFAULT_SOURCES = {
     }
 
     uWaze = unsafeWindow.W;
-    uOpenLayers = unsafeWindow.OpenLayers;
-    if (
-      !uOpenLayers
-      || !uWaze
-      || !uWaze.map
-      || !document.querySelector(".list-unstyled.togglers .group")
-    ) {
+
+    if (!document.querySelector(".list-unstyled.togglers .group")) {
       setTimeout(geoportalBootstrap, 500);
-    } else {
-      console.log("Loading Geoportal Maps...");
-      settingsInit();
-      geoportalInit();
-      uiInit();
+      return;
     }
+
+    console.log("Loading Geoportal Maps...");
+    settingsInit();
+    geoportalInit();
+    uiInit();
   }
 
   /**
@@ -713,8 +758,7 @@ const DEFAULT_SOURCES = {
     console.groupCollapsed("Patching missing features...");
     if (!OpenLayers.VERSION_NUMBER.match(/^Release [0-9.]*$/)) {
       console.error(
-        `OpenLayers version mismatch (${
-          OpenLayers.VERSION_NUMBER
+        `OpenLayers version mismatch (${OpenLayers.VERSION_NUMBER
         }) - cannot apply patch`,
       );
       return;
@@ -745,9 +789,7 @@ const DEFAULT_SOURCES = {
     console.info(`Loading openlayers/${version}/${filename}.js`);
 
     const openlayers = document.createElement("script");
-    openlayers.src = `https://cdnjs.cloudflare.com/ajax/libs/openlayers/${
-      version
-    }/${filename}.js`;
+    openlayers.src = `https://cdnjs.cloudflare.com/ajax/libs/openlayers/${version}/${filename}.js`;
     openlayers.type = "text/javascript";
     openlayers.async = false;
     document.head.appendChild(openlayers);
