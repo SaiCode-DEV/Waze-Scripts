@@ -556,7 +556,7 @@ const DEFAULT_SOURCES = {
    * Initialize the settings
    */
   async function settingsInit() {
-    const { tabLabel, tabPane } = W.userscripts.registerSidebarTab("geoportal-dach");
+    const { tabLabel, tabPane } = wmeSDK.Sidebar.registerScriptTab();
 
     tabLabel.innerText = "🌍 Geoportal";
     tabLabel.title = "Geoportal DACH";
@@ -574,6 +574,7 @@ const DEFAULT_SOURCES = {
             <label :for="layer.unique">{{ layer.name }}</label>
           </li>
         </ul>
+      </div>
     </div>
   </div>
   `;
