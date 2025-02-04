@@ -8,7 +8,7 @@
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
-/* global Vue */
+/* global $ */
 /* jshint esversion:6 */
 
 (function main() {
@@ -27,25 +27,23 @@
     }
 
     console.log("Loading Vue.js...");
-    await loadScript(VUE_URL);
+    await new Promise((resolve, reject) => {
+      $.getScript(VUE_URL)
+        .done(() => {
+          console.log("Vue.js has been successfully loaded.");
+          resolve();
+        })
+        .fail((jqxhr, settings, exception) => {
+          console.error("Failed to load Vue.js:", exception);
+          reject(exception);
+        });
+    });
 
     if (typeof pageWindow.Vue !== "undefined") {
       console.log("Vue.js has been loaded successfully.");
     } else {
       console.error("Error loading Vue.js.");
     }
-  }
-
-  // Function to load an external script
-  function loadScript(url) {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = url;
-      script.async = true;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
   }
 
   function bootstrap(tries = 1) {
