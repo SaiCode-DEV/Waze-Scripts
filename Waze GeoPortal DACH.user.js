@@ -586,7 +586,7 @@ const DEFAULT_SOURCES = {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
     // initialize Vue.js
-    const { createApp, ref } = Vue;
+    const { createApp, ref } = await import("https://unpkg.com/vue@3/dist/vue.esm-browser");
     try {
       console.log("Vue.js loaded");
       createApp({
@@ -637,8 +637,8 @@ const DEFAULT_SOURCES = {
       /* eslint-disable max-len */
       tabPane.innerHTML = /* html */`
       <h3>Failed to load Vue.js</h3>
-      <p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Removed entirely (possibly unsecure).</p>
-      <p>Then reload the page and try again.</p>s
+      <p>Change in your Tampermonkey settings the Content-Security-Policy-Header (CSP) mode to Yes</p>
+      <p>Then reload the page and try again.</p>
       </br>
       <p>If still not working, please report the issue to "saicode" on Discord.</p>
       <div class="vue-fail-logo">
@@ -794,19 +794,6 @@ const DEFAULT_SOURCES = {
     openlayers.async = false;
     document.head.appendChild(openlayers);
   }
-
-  function loadVueJS() {
-    // check if Vue.js is already loaded
-    if (typeof Vue !== "undefined") {
-      return;
-    }
-    console.log("Loading Vue.js");
-    const vuejs = document.createElement("script");
-    vuejs.src = "https://unpkg.com/vue@3/dist/vue.global.js";
-    document.head.appendChild(vuejs);
-  }
-
-  loadVueJS();
   patchOpenLayers();
   geoportalBootstrap();
 })();
