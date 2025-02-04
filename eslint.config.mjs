@@ -27,6 +27,13 @@ export default [
 
     rules: {
       "linebreak-style": "off",
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "VariableDeclarator[id.name='DEBUG'][init.value=true]",
+          message: "'DEBUG' should be set to 'false' in production.",
+        },
+      ],
 
       indent: [
         "error",

@@ -16,13 +16,19 @@
 // @require       https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
 // ==/UserScript==
 
+const DEBUG = true;
+
 (function main() {
   "use strict";
 
   const scriptName = GM_info.script.name;
   const { version } = GM_info.script;
 
-  console.log(`${scriptName}: Loading `);
+  const log = (message, ...args) => {
+    if (DEBUG) {
+      console.log(`${scriptName}: ${message}`, ...args);
+    }
+  };
 
   // Display change log immediately as it has no dependencies on waze itself.
   const changeLog = [
@@ -66,11 +72,61 @@
 
   let wmeSDK = null;
 
-  let rapidHNtoolbarButton = null;
   let oneTimeIncrement;
   let houseNumbersObserver;
 
   const config = loadConfig();
+
+  const shortcuts = [
+    {
+      callback: () => handleQuickShortcut(1),
+      description: "New HN (+1)",
+      shortcutId: "WME_RHN_plus1",
+      shortcutKeys: null,
+    },
+    {
+      callback: () => handleQuickShortcut(2),
+      description: "New HN (+2)",
+      shortcutId: "WME_RHN_plus2",
+      shortcutKeys: null,
+    },
+    {
+      callback: handleCustomShortcut,
+      description: "New HN (+CUSTOM_VALUE)",
+      shortcutId: "WME_RHN_plusCustom",
+      shortcutKeys: null,
+    },
+    {
+      callback: () => {
+        config.increment = -config.increment;
+        $("input.rapidHN.increment").val(config.increment);
+        saveConfig();
+      },
+      description: "Invert Increment",
+      shortcutId: "WME_RHN_invert",
+      shortcutKeys: "106",
+    },
+    {
+      callback: () => {
+        config.value = calculateHouseNumber(config.value, -1);
+        $("input.rapidHN.next").val(config.value);
+        saveConfig();
+      },
+      description: "Decrement HN",
+      shortcutId: "WME_RHN_decrement",
+      shortcutKeys: "109",
+    },
+    {
+      callback: () => {
+        config.value = calculateHouseNumber(config.value, 1);
+        $("input.rapidHN.next").val(config.value);
+        saveConfig();
+      },
+      description: "Increment HN",
+      shortcutId: "WME_RHN_increment",
+      shortcutKeys: "107",
+    },
+  ];
 
   function loadConfig() {
     const loaded = JSON.parse(window.localStorage.getItem("rapidHN"));
@@ -79,7 +135,15 @@
       value: "",
       version: 0,
     };
-    return { ...defaultConfig, ...loaded };
+
+    // If no config exists yet, return default
+    if (!loaded) return defaultConfig;
+
+    // Deep merge the keys object
+    return {
+      ...defaultConfig,
+      ...loaded,
+    };
   }
 
   function saveConfig() {
@@ -103,7 +167,7 @@
 
     // Find the index of the previous version in the change log
     if (previousVersion) {
-      startIndex = changeLog.findIndex(log => log.version === previousVersion);
+      startIndex = changeLog.findIndex(change => change.version === previousVersion);
       if (startIndex === -1) {
         startIndex = 0; // If not found, start from the beginning
       }
@@ -116,11 +180,14 @@
     }
     announcement += "</ul>";
 
-    console.group(`${scriptName} v${version} changelog:`);
-    changeLog.slice(startIndex + 1).forEach(log => console.log(`V${log.version}: ${log.message}`));
-    console.groupEnd();
+    if (DEBUG) {
+      console.group(`${scriptName} v${version} changelog:`);
+      changeLog.slice(startIndex + 1).forEach(change => log(`V${change.version}: ${change.message}`));
+      console.groupEnd();
+    }
+
     const title = startIndex > 0 ? `V${changeLog[startIndex].version} -> V${version}` : `Welcome to RHN V${version}`;
-    console.log("ShwowScriptUpdate", scriptName, title, announcement);
+    log("ShwowScriptUpdate", scriptName, title, announcement);
     WazeWrap.Interface.ShowScriptUpdate(
       scriptName,
       title,
@@ -152,34 +219,55 @@
 
   // Initialize RHN once Waze has been loaded.
   function initialize() {
-    console.log(`${scriptName} initializing.`);
+    log("initializing");
 
     // Register keyboard shortcuts
-    wmeSDK.Shortcuts.createShortcut({
-      callback: () => handleQuickShortcut(1),
-      description: "New HN (+1)",
-      shortcutId: "WME_RHN_plus1",
-      shortcutKeys: null,
+    W.accelerators.SpecialKeys[96] = "[NumPad] 0";
+    W.accelerators.SpecialKeys[97] = "[NumPad] 1";
+    W.accelerators.SpecialKeys[98] = "[NumPad] 2";
+    W.accelerators.SpecialKeys[99] = "[NumPad] 3";
+    W.accelerators.SpecialKeys[100] = "[NumPad] 4";
+    W.accelerators.SpecialKeys[101] = "[NumPad] 5";
+    W.accelerators.SpecialKeys[102] = "[NumPad] 6";
+    W.accelerators.SpecialKeys[103] = "[NumPad] 7";
+    W.accelerators.SpecialKeys[104] = "[NumPad] 8";
+    W.accelerators.SpecialKeys[105] = "[NumPad] 9";
+    W.accelerators.SpecialKeys[106] = "[NumPad] *";
+    W.accelerators.SpecialKeys[107] = "[NumPad] +";
+    W.accelerators.SpecialKeys[108] = "[NumPad] Enter";
+    W.accelerators.SpecialKeys[109] = "[NumPad] -";
+    W.accelerators.SpecialKeys[110] = "[NumPad] .";
+    W.accelerators.SpecialKeys[111] = "[NumPad] /";
+
+    for (let keyID = 112; keyID < 112 + 24; keyID++) { W.accelerators.SpecialKeys[keyID] = `F${keyID - 111}`; } // F1 - F24
+
+    W.accelerators.SpecialKeys[45] = "Insert";
+    W.accelerators.SpecialKeys[36] = "Home";
+    W.accelerators.SpecialKeys[33] = "Page Up";
+    W.accelerators.SpecialKeys[35] = "End";
+    W.accelerators.SpecialKeys[34] = "Page Down";
+
+    shortcuts.forEach(shortcut => {
+      try {
+        wmeSDK.Shortcuts.createShortcut(shortcut);
+      } catch (error) {
+        if (error.message === "Missing key in shortcut") {
+          console.warn(`Shortcut already exists: ${shortcut.description}`);
+          shortcut.shortcutKeys = null;
+          wmeSDK.Shortcuts.createShortcut(shortcut);
+          return;
+        }
+        console.error(`Failed to create shortcut: ${shortcut.description}`, error, error.message);
+      }
     });
-    wmeSDK.Shortcuts.createShortcut({
-      callback: () => handleQuickShortcut(2),
-      description: "New HN (+2)",
-      shortcutId: "WME_RHN_plus2",
-      shortcutKeys: null,
-    });
-    wmeSDK.Shortcuts.createShortcut({
-      callback: handleCustomShortcut,
-      description: "New HN (+CUSTOM_VALUE)",
-      shortcutId: "WME_RHN_plusCustom",
-      shortcutKeys: null,
-    });
+    log(`${wmeSDK.Shortcuts.getAllShortcuts().length} shortcuts registered.`);
 
     wmeSDK.Events.on({
       eventName: "wme-selection-changed",
       eventHandler: handleSelectionChanges,
     });
 
-    console.log(`${scriptName} initialized.`);
+    log("initialized.");
   }
 
   function createRHNcontrols(addHouseNumberNode) {
@@ -200,12 +288,11 @@
                 <div class="toolbar-button rapidHN-input">
                     <span class="menu-title rapidHN-text">Increment</span>
                     <div class="rapidHN-text-input sm">
-                        <input type="number" name="incrementHN" class="rapidHN increment" value="${config.increment}" min="1" step="1">
+                        <input type="number" name="incrementHN" class="rapidHN increment" value="${config.increment}" min="-10" max="10" step="1">
                     </div>
                 </div>
             </div>
     `);
-    rapidHNtoolbarButton = addHouseNumberNode.nextElementSibling;
 
     // if the <return> key is released blur so that you can type <h> to add a house number rather than see it appended to the next value.
     $("input.rapidHN.next").keyup(evt => {
@@ -235,7 +322,7 @@
       }
 
       // Find OpenLayers container
-      const container = document.querySelector('[id$="_OpenLayers_Container"]');
+      const container = document.querySelector("[id$='_OpenLayers_Container']");
       if (!container) {
         console.warn("OpenLayers container not found");
         return;
@@ -243,9 +330,9 @@
 
       // Listen for changes in the OpenLayers container
       houseNumbersObserver = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
+        mutations.forEach(() => {
           // Look for house numbers layer
-          const hnLayers = document.querySelectorAll('.olLayerDiv.house-numbers-layer .house-number');
+          const hnLayers = document.querySelectorAll(".olLayerDiv.house-numbers-layer .house-number");
           if (!hnLayers.length) return;
 
           // Find active house number input
@@ -283,10 +370,6 @@
 
   function disconnectHouseNumbersObserver() {
     if (houseNumbersObserver !== undefined) {
-      const ahn1 = $("div.toolbar-button.add-house-number");
-      ahn1.css("font-weight", "normal");
-      ahn1.css("color", "inherit");
-
       houseNumbersObserver.disconnect();
       houseNumbersObserver = undefined;
 
@@ -343,21 +426,21 @@
       // Handle numeric parts
       const result = Number(lastPart) + amount;
       if (result >= 0) {
-        parts[lastIndex] = result.toString().padStart(lastPart.length, '0');
+        parts[lastIndex] = result.toString().padStart(lastPart.length, "0");
       } else {
-        // return null (cancel) if the result is negative
-        return null;
+        // cancel if the result is negative
+        return houseNumber;
       }
     } else if (/[a-z]/i.test(lastPart)) {
       // Handle alphabetic parts
       const isUpperCase = /[A-Z]/.test(lastPart);
-      const baseCode = isUpperCase ? 'A'.codePointAt(0) : 'a'.codePointAt(0);
+      const baseCode = isUpperCase ? "A".codePointAt(0) : "a".codePointAt(0);
       const currentValue = lastPart.codePointAt(0) - baseCode;
       const newValue = currentValue + amount;
 
       if (newValue < 0 || newValue >= 26) {
-        // return null (cancel) if the result is out of bounds
-        return null;
+        // cancel if the result is out of bounds
+        return houseNumber;
       }
 
       parts[lastIndex] = String.fromCodePoint(baseCode + newValue);
