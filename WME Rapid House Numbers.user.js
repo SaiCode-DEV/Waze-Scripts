@@ -336,43 +336,53 @@
   }
 
   function injectHouseNumber(newHouseNumber) {
-    let increment = oneTimeIncrement ?? config.increment;
+    const increment = oneTimeIncrement ?? config.increment;
     oneTimeIncrement = undefined;
 
     const nextElement = $("input.rapidHN.next").filter(":visible");
     const next = nextElement.val();
 
-    // Inject next HN into WME
+    // Inject HN into WME
     setNativeValue(newHouseNumber[0], next);
-
-    const nextParts = next.match(/[0-9]+|[a-z]|[A-Z]|\S/g);
-
-    // Process parts from right to left
-    nextParts.reduceRight((remainingIncrement, part, index, arr) => {
-      if (!Number.isNaN(Number(part))) {
-        arr[index] = (Number(part) + remainingIncrement).toString().padStart(part.length, '0');
-        return 0;
-      }
-
-      if (/[a-z]/i.test(part)) {
-        let nextLetter = part.codePointAt(0) + (remainingIncrement % 26);
-        const nextIncrement = Math.floor(remainingIncrement / 26);
-
-        if ((/[a-z]/.test(part) && nextLetter > 'z'.codePointAt(0)) ||
-          (/[A-Z]/.test(part) && nextLetter > 'Z'.codePointAt(0))) {
-          nextLetter -= 26;
-          return nextIncrement + 1;
-        }
-
-        arr[index] = String.fromCodePoint(nextLetter);
-        return nextIncrement;
-      }
-
-      return remainingIncrement;
-    }, increment);
-
-    config.value = nextParts.join('');
+    const nextValue = incrementHouseNumber(next, increment);
+    if (nextValue === null) return; // TODO: Show error message
+    config.value = nextValue;
     nextElement.val(config.value);
+  }
+
+  function incrementHouseNumber(houseNumber, amount) {
+    const parts = houseNumber.match(/[0-9]+|[a-z]|[A-Z]|\S/g);
+    if (!parts || parts.length === 0) return houseNumber;
+
+    // Only process the rightmost part
+    const lastIndex = parts.length - 1;
+    const lastPart = parts[lastIndex];
+
+    if (!Number.isNaN(Number(lastPart))) {
+      // Handle numeric parts
+      const result = Number(lastPart) + amount;
+      if (result >= 0) {
+        parts[lastIndex] = result.toString().padStart(lastPart.length, '0');
+      } else {
+        // return null (cancel) if the result is negative
+        return null;
+      }
+    } else if (/[a-z]/i.test(lastPart)) {
+      // Handle alphabetic parts
+      const isUpperCase = /[A-Z]/.test(lastPart);
+      const baseCode = isUpperCase ? 'A'.codePointAt(0) : 'a'.codePointAt(0);
+      const currentValue = lastPart.codePointAt(0) - baseCode;
+      const newValue = currentValue + amount;
+
+      if (newValue < 0 || newValue >= 26) {
+        // return null (cancel) if the result is out of bounds
+        return null;
+      }
+
+      parts[lastIndex] = String.fromCodePoint(baseCode + newValue);
+    }
+
+    return parts.join("");
   }
 
   // Type 1-9 instead of 'h' to specify a one-time increment that be applied after the current "next" value is added to the map
