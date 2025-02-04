@@ -1,7 +1,4 @@
-/* global W */
-/* global $ */
-/* global WazeWrap */
-/* global getWmeSdk, SDK_INITIALIZED */
+/* global W, $, WazeWrap, getWmeSdk, SDK_INITIALIZED */
 
 // ==UserScript==
 // @name          WME Rapid House Numbers
