@@ -12,7 +12,7 @@
 // @license      MIT
 // ==/UserScript==
 
-/* global $, W, Vue, getWmeSdk, SDK_INITIALIZED */
+/* global $, W, getWmeSdk, SDK_INITIALIZED */
 /* globals OpenLayers: true */
 
 // Versions Format
@@ -29,13 +29,16 @@ const DEFAULT_SOURCES = {
         enabled: true,
         active: false,
         unique: "__DrawBasemapDE",
-        type: "WMTS",
-        source:
-          "https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml",
-        layerName: "de_basemapde_web_raster_farbe",
-        matrixSet: "GLOBAL_WEBMERCATOR",
+        type: "SDK",
+        filename: "/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_farbe/{Style}/{TileMatrixSet}/${z}/${y}/${x}.png",
+        servers: ["sgx.geodatenzentrum.de"],
+        size: 256,
+        params: {
+          Style: "default",
+          TileMatrixSet: "GLOBAL_WEBMERCATOR",
+        },
       },
-      {
+      /* {
         name: "Basemap Vektor DE",
         enabled: true,
         active: false,
@@ -101,77 +104,77 @@ const DEFAULT_SOURCES = {
           "https://geoservices.bayern.de/od/wmts/geobasis/v1/1.0.0/WMTSCapabilities.xml",
         layerName: "by_webkarte",
         matrixSet: "smerc",
-      },
+      }, */
     ],
   },
-  at: {
-    name: "GeoOverlays AT",
-    flag: "🇦🇹",
-    enabled: true,
-    layers: [
-      {
-        name: "Basemap AT",
-        enabled: true,
-        active: false,
-        unique: "__DrawBasemapAT",
-        type: "WMTS",
-        source:
-          "https://mapsneu.wien.gv.at/basemapneu/1.0.0/WMTSCapabilities.xml",
-        layerName: "geolandbasemap",
-        matrixSet: "google3857",
-      },
-      {
-        name: "Overlay AT",
-        enabled: true,
-        active: false,
-        unique: "__DrawOverlayAT",
-        type: "WMTS",
-        source: "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
-        layerName: "bmapoverlay",
-        matrixSet: "google3857",
-      },
-    ],
-  },
-  ch: {
-    name: "GeoOverlays CH",
-    flag: "🇨🇭",
-    enabled: true,
-    layers: [
-      {
-        name: "Strassenkarte",
-        enabled: true,
-        active: false,
-        unique: "__DrawSwissTopoStrassenkarte",
-        type: "WMTS",
-        source:
-          "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        layerName: "ch.swisstopo.swisstne-base",
-        matrixSet: "3857_18",
-      },
-      {
-        name: "Basisnetz",
-        enabled: true,
-        active: false,
-        unique: "__DrawSwissBasisnetz",
-        type: "WMTS",
-        source:
-          "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        layerName: "ch.swisstopo.swisstlm3d-strassen",
-        matrixSet: "3857_18",
-      },
-      {
-        name: "Luftbild",
-        enabled: true,
-        active: false,
-        unique: "__DrawSwissTopoLuftbild",
-        type: "WMTS",
-        source:
-          "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        layerName: "ch.swisstopo.swissimage-product",
-        matrixSet: "3857_20",
-      },
-    ],
-  },
+  /*   at: {
+      name: "GeoOverlays AT",
+      flag: "🇦🇹",
+      enabled: true,
+      layers: [
+        {
+          name: "Basemap AT",
+          enabled: true,
+          active: false,
+          unique: "__DrawBasemapAT",
+          type: "WMTS",
+          source:
+            "https://mapsneu.wien.gv.at/basemapneu/1.0.0/WMTSCapabilities.xml",
+          layerName: "geolandbasemap",
+          matrixSet: "google3857",
+        },
+        {
+          name: "Overlay AT",
+          enabled: true,
+          active: false,
+          unique: "__DrawOverlayAT",
+          type: "WMTS",
+          source: "https://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml",
+          layerName: "bmapoverlay",
+          matrixSet: "google3857",
+        },
+      ],
+    },
+    ch: {
+      name: "GeoOverlays CH",
+      flag: "🇨🇭",
+      enabled: true,
+      layers: [
+        {
+          name: "Strassenkarte",
+          enabled: true,
+          active: false,
+          unique: "__DrawSwissTopoStrassenkarte",
+          type: "WMTS",
+          source:
+            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+          layerName: "ch.swisstopo.swisstne-base",
+          matrixSet: "3857_18",
+        },
+        {
+          name: "Basisnetz",
+          enabled: true,
+          active: false,
+          unique: "__DrawSwissBasisnetz",
+          type: "WMTS",
+          source:
+            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+          layerName: "ch.swisstopo.swisstlm3d-strassen",
+          matrixSet: "3857_18",
+        },
+        {
+          name: "Luftbild",
+          enabled: true,
+          active: false,
+          unique: "__DrawSwissTopoLuftbild",
+          type: "WMTS",
+          source:
+            "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+          layerName: "ch.swisstopo.swissimage-product",
+          matrixSet: "3857_20",
+        },
+      ],
+    }, */
 };
 
 (() => {
@@ -248,6 +251,27 @@ const DEFAULT_SOURCES = {
 
     $.each(layers, (index, source) => {
       // Make and add layer
+      if (source.type === "SDK") {
+        console.log("DACH: Adding SDK Layer", source);
+        wmeSDK.Map.addTileLayer({
+          layerName: source.unique,
+          layerOptions: {
+            tileHeight: source.size,
+            tileWidth: source.size,
+            url: {
+              fileName: source.filename,
+              servers: source.servers,
+              params: source.params,
+            },
+          },
+        });
+
+        wmeSDK.LayerSwitcher.addLayerCheckbox({
+          name: source.name,
+        });
+        return;
+      }
+
       GM.xmlHttpRequest({
         method: "GET",
         url: source.source,
@@ -277,84 +301,16 @@ const DEFAULT_SOURCES = {
             format = new OpenLayers.Format.WMTSCapabilities();
             doc = responseXML;
             capabilities = format.read(doc);
-            console.log("WMTS", format, doc, capabilities, source);
-
-            const tileMatrixSet = capabilities.contents.tileMatrixSets[source.matrixSet];
-            const layer = capabilities.contents.layers.find(
-              l => l.identifier === source.layerName,
-            );
-
-            if (!layer || !layer.resourceURL) {
-              console.error(`Layer ${source.layerName} not found in capabilities`);
-              return;
-            }
-
-            // Extract template URL and convert it to SDK format
-            const template = layer.resourceURL.template || layer.resourceURL;
-            const serverUrl = new URL(template);
-
-            layersList[source.unique] = {
-              layerName: source.layerName,
-              layerOptions: {
-                tileHeight: tileMatrixSet.matrixIds[0].tileHeight,
-                tileWidth: tileMatrixSet.matrixIds[0].tileWidth,
-                url: {
-                  // Convert template URL like "https://server/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png"
-                  // to SDK format "tiles/${z}/${x}/${y}.png"
-                  fileName: template
-                    .replace(/{TileMatrixSet}/g, source.matrixSet)
-                    .replace(/{TileMatrix}/g, '${z}')
-                    .replace(/{TileRow}/g, '${y}')
-                    .replace(/{TileCol}/g, '${x}')
-                    .replace(/.*\/([^?]+)/, '$1'), // Extract filename pattern
-                  params: Object.fromEntries(
-                    new URLSearchParams(serverUrl.search).entries(),
-                  ),
-                  servers: [serverUrl.origin],
-                },
-              },
+            layersList[source.unique] = format.createLayer(capabilities, {
               layer: source.layerName,
               matrixSet: source.matrixSet,
               opacity: source.opacity ?? opacity,
               isBaseLayer: false,
               requestEncoding: source.requestEncoding ?? "REST",
               visibility: source.active,
-            };
-          } /* else if (source.type === "WMS") {
-            format = new OpenLayers.Format.WMSCapabilities();
-            doc = responseXML;
-            capabilities = format.read(doc);
+            });
+          }
 
-            // Find the specific layer by its name
-            const wmsLayer = capabilities.capability.layers.find(
-              layer => layer.name === source.layerName,
-            );
-
-            if (wmsLayer) {
-              console.log(wmsLayer);
-              layersList[source.unique] = new OpenLayers.Layer.Tile({
-                source: new OpenLayers.Source.TileWMS({
-                  url: wmsLayer.url,
-                  params: {
-                    LAYERS: wmsLayer.name,
-                    FORMAT: "image/png",
-                  },
-                }),
-                name: source.name,
-                opacity: source.opacity ?? opacity,
-                isBaseLayer: false,
-                visibility: false,
-              });
-              console.log(wmsLayer.url);
-            } else {
-              console.error(
-                `Layer ${source.layerName} not found in WMS capabilities for ${flag} ${source.name}`,
-              );
-              return;
-            }
-          } */
-
-          wmeSDK.Map.addTileLayer(layersList[source.unique]);
           uWaze.map.addLayer(layersList[source.unique]);
           uWaze.map.setLayerIndex(layersList[source.unique], 3);
 
@@ -374,8 +330,6 @@ const DEFAULT_SOURCES = {
             console.log(layersList[source.unique]);
             return;
           }
-
-          console.debug(layersList[source.unique].url);
 
           // Make checkbox and add to the section
           const toggleEntry = $("<li></li>");
@@ -556,7 +510,7 @@ const DEFAULT_SOURCES = {
    * Initialize the settings
    */
   async function settingsInit() {
-    const { tabLabel, tabPane } = W.userscripts.registerSidebarTab("geoportal-dach");
+    const { tabLabel, tabPane } = await wmeSDK.Sidebar.registerScriptTab();
 
     tabLabel.innerText = "🌍 Geoportal";
     tabLabel.title = "Geoportal DACH";
@@ -580,11 +534,6 @@ const DEFAULT_SOURCES = {
 
     await W.userscripts.waitForElementConnected(tabPane);
 
-    // check if Vue.js is already loaded
-    while (typeof Vue === "undefined") {
-      /* eslint-disable-next-line */
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
     // initialize Vue.js
     const { createApp, ref } = await import("https://unpkg.com/vue@3/dist/vue.esm-browser");
     try {
