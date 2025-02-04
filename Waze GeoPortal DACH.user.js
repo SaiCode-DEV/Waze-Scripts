@@ -580,11 +580,6 @@ const DEFAULT_SOURCES = {
 
     await W.userscripts.waitForElementConnected(tabPane);
 
-    // check if Vue.js is already loaded
-    while (typeof Vue === "undefined") {
-      /* eslint-disable-next-line */
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
     // initialize Vue.js
     const { createApp, ref } = await import("https://unpkg.com/vue@3/dist/vue.esm-browser");
     try {
