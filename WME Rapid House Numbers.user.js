@@ -347,30 +347,31 @@
 
     const nextParts = next.match(/[0-9]+|[a-z]|[A-Z]|\S/g);
 
-    for (const [index, part] of nextParts.reverse().entries()) {
+    // Process parts from right to left
+    nextParts.reduceRight((remainingIncrement, part, index, arr) => {
       if (!Number.isNaN(Number(part))) {
-        nextParts[index] = (Number(part) + increment).toString().padStart(part.length, '0');
-        break;
+        arr[index] = (Number(part) + remainingIncrement).toString().padStart(part.length, '0');
+        return 0;
       }
 
       if (/[a-z]/i.test(part)) {
-        let nextLetter = part.codePointAt(0) + (increment % 26);
-
-        increment = Math.floor(increment / 26);
+        let nextLetter = part.codePointAt(0) + (remainingIncrement % 26);
+        const nextIncrement = Math.floor(remainingIncrement / 26);
 
         if ((/[a-z]/.test(part) && nextLetter > 'z'.codePointAt(0)) ||
           (/[A-Z]/.test(part) && nextLetter > 'Z'.codePointAt(0))) {
           nextLetter -= 26;
-          increment++;
+          return nextIncrement + 1;
         }
 
-        nextParts[index] = String.fromCodePoint(nextLetter);
-
-        if (!increment) break;
+        arr[index] = String.fromCodePoint(nextLetter);
+        return nextIncrement;
       }
-    }
 
-    config.value = nextParts.reverse().join('');
+      return remainingIncrement;
+    }, increment);
+
+    config.value = nextParts.join('');
     nextElement.val(config.value);
   }
 
