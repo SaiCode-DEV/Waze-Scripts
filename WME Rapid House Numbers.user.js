@@ -179,13 +179,6 @@
       eventHandler: handleSelectionChanges,
     });
 
-    wmeSDK.Events.on({
-      eventName: "wme-map-zoom-changed",
-      eventHandler: () => {
-        enableDisableControls(rapidHNtoolbarButton, wmeSDK.Map.getZoomLevel() < 18);
-      },
-    });
-
     console.log(`${scriptName} initialized.`);
   }
 
@@ -211,10 +204,8 @@
                     </div>
                 </div>
             </div>
-        `);
-    rapidHNtoolbarButton = addHouseNumberNode.nextSibling;
-
-    enableDisableControls(rapidHNtoolbarButton, W.map.getZoom() < 18);
+    `);
+    rapidHNtoolbarButton = addHouseNumberNode.nextElementSibling;
 
     // if the <return> key is released blur so that you can type <h> to add a house number rather than see it appended to the next value.
     $("input.rapidHN.next").keyup(evt => {
@@ -235,50 +226,49 @@
 
     $("div.rapidHN-control input").on("change", () => {
       const rapidHNenabled = config.increment !== 0 && (config.value !== "" || config.val !== 0);
-
-      if (rapidHNenabled) {
-        if (houseNumbersObserver === undefined) {
-          console.log("registering house number observer");
-
-          // Find OpenLayers container
-          const container = document.querySelector('[id$="_OpenLayers_Container"]');
-          if (!container) {
-            console.warn("OpenLayers container not found");
-            return;
-          }
-
-          // Listen for changes in the OpenLayers container
-          houseNumbersObserver = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-              // Look for house numbers layer
-              const hnLayers = document.querySelectorAll('.olLayerDiv.house-numbers-layer .house-number');
-              if (!hnLayers.length) return;
-
-              // Find active house number input
-              const input = $(".house-numbers-layer .house-number .content.active:not(\".new\") input.number");
-              if (input.length && input.val() === "") {
-                injectHouseNumber(input);
-                // Move focus from input field to WazeMap
-                $("div#WazeMap").focus();
-              }
-            });
-          });
-
-          // Observe the OpenLayers container for all changes
-          houseNumbersObserver.observe(container, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-          });
-
-          // Register rapidAccelerator on keydown event in map.  Use rapidHN namespace to selectively remove later.
-          $(W.map.olMap.div).on("keydown.rapidHN", rapidAccelerator);
-          const eventList = $._data(W.map.olMap.div, "events");
-          eventList.keydown.unshift(eventList.keydown.pop());
-        }
-      } else {
+      if (!rapidHNenabled) {
         disconnectHouseNumbersObserver();
+        return;
       }
+      if (houseNumbersObserver !== undefined) {
+        return;
+      }
+
+      // Find OpenLayers container
+      const container = document.querySelector('[id$="_OpenLayers_Container"]');
+      if (!container) {
+        console.warn("OpenLayers container not found");
+        return;
+      }
+
+      // Listen for changes in the OpenLayers container
+      houseNumbersObserver = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          // Look for house numbers layer
+          const hnLayers = document.querySelectorAll('.olLayerDiv.house-numbers-layer .house-number');
+          if (!hnLayers.length) return;
+
+          // Find active house number input
+          const input = $(".house-numbers-layer .house-number .content.active:not(\".new\") input.number");
+          if (input.length && input.val() === "") {
+            injectHouseNumber(input);
+            // Move focus from input field to WazeMap
+            $("div#WazeMap").focus();
+          }
+        });
+      });
+
+      // Observe the OpenLayers container for all changes
+      houseNumbersObserver.observe(container, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+
+      // Register rapidAccelerator on keydown event in map.  Use rapidHN namespace to selectively remove later.
+      $(W.map.olMap.div).on("keydown.rapidHN", rapidAccelerator);
+      const eventList = $._data(W.map.olMap.div, "events");
+      eventList.keydown.unshift(eventList.keydown.pop());
     });
 
     if (config.value) {
@@ -302,21 +292,6 @@
 
       const div = $(W.map.olMap.div);
       div.off("keydown.rapidHN");
-    }
-  }
-
-  function enableDisableControls(toolbarButton, disabled) {
-    if (toolbarButton) {
-      toolbarButton.childNodes.forEach(node => {
-        if (node.nodeName === "INPUT" && node.classList.contains("rapidHN")) {
-          if (disabled) {
-            node.setAttribute("disabled", "disabled");
-            disconnectHouseNumbersObserver();
-          } else {
-            node.removeAttribute("disabled");
-          }
-        }
-      });
     }
   }
 
@@ -407,11 +382,6 @@
   }
 
   function rapidAccelerator(event) {
-    // Exit if not in house number editor mode
-    if ($(".toolbar wz-button.add-house-number").length === 0) {
-      disconnectHouseNumbersObserver();
-      return;
-    }
     // Ignore if any modifier keys are pressed
     if (event.shiftKey || event.altKey || event.metaKey) {
       return;
