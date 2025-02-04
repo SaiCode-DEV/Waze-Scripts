@@ -190,6 +190,12 @@
   }
 
   function createRHNcontrols(addHouseNumberNode) {
+    // check if the controls are already there
+    if ($(addHouseNumberNode).next().hasClass("rapidHN-control")) {
+      console.warn("RHN controls already exist");
+      return;
+    }
+
     $(addHouseNumberNode).append(/* html */ `
             <div class="rapidHN-control">
                 <div class="toolbar-button rapidHN-input">
@@ -344,13 +350,13 @@
 
     // Inject HN into WME
     setNativeValue(newHouseNumber[0], next);
-    const nextValue = incrementHouseNumber(next, increment);
+    const nextValue = calculateHouseNumber(next, increment);
     if (nextValue === null) return; // TODO: Show error message
     config.value = nextValue;
     nextElement.val(config.value);
   }
 
-  function incrementHouseNumber(houseNumber, amount) {
+  function calculateHouseNumber(houseNumber, amount) {
     const parts = houseNumber.match(/[0-9]+|[a-z]|[A-Z]|\S/g);
     if (!parts || parts.length === 0) return houseNumber;
 
@@ -385,43 +391,54 @@
     return parts.join("");
   }
 
-  // Type 1-9 instead of 'h' to specify a one-time increment that be applied after the current "next" value is added to the map
+  function isNumericKey(keyCode) {
+    return (keyCode >= KEYBOARD.ONE && keyCode <= KEYBOARD.NINE)
+      || (keyCode >= KEYBOARD.NUMPAD1 && keyCode <= KEYBOARD.NUMPAD9);
+  }
+
+  function getIncrementFromKeyCode(keyCode) {
+    if (keyCode >= KEYBOARD.ONE && keyCode <= KEYBOARD.NINE) {
+      return keyCode - KEYBOARD.ONE + 1;
+    }
+    if (keyCode >= KEYBOARD.NUMPAD1 && keyCode <= KEYBOARD.NUMPAD9) {
+      return keyCode - KEYBOARD.NUMPAD1 + 1;
+    }
+    return null;
+  }
+
   function rapidAccelerator(event) {
-    // if not in house number editor mode, return
+    // Exit if not in house number editor mode
     if ($(".toolbar wz-button.add-house-number").length === 0) {
       disconnectHouseNumbersObserver();
       return;
     }
-    if (!event.shiftKey && !event.altKey && !event.metaKey) {
-      let acceleratorSelected = false;
+    // Ignore if any modifier keys are pressed
+    if (event.shiftKey || event.altKey || event.metaKey) {
+      return;
+    }
+    // Ignore if we're typing in an input field
+    if (event.target.localName === "input") {
+      return;
+    }
 
-      if (
-        event.target.localName !== "input"
-        && KEYBOARD.ONE <= event.which
-        && event.which <= KEYBOARD.NINE
-      ) {
-        oneTimeIncrement = event.which - KEYBOARD.ONE + 1;
-        acceleratorSelected = true;
-      } else if (
-        event.target.localName !== "input"
-        && KEYBOARD.NUMPAD1 <= event.which
-        && event.which <= KEYBOARD.NUMPAD9
-      ) {
-        oneTimeIncrement = event.which - KEYBOARD.NUMPAD1 + 1;
-        acceleratorSelected = true;
-      } else if (event.which === KEYBOARD.H) {
-        oneTimeIncrement = undefined;
-        acceleratorSelected = true;
-      }
+    let shouldTriggerClick = false;
 
-      if (acceleratorSelected) {
-        // Prevent further event listeners from running
-        event.preventDefault();
-        event.stopImmediatePropagation();
+    // Handle numeric keys (1-9 and numpad)
+    if (isNumericKey(event.which)) {
+      oneTimeIncrement = getIncrementFromKeyCode(event.which);
+      shouldTriggerClick = true;
+    } else if (event.which === KEYBOARD.H) { // Handle 'h' key
+      oneTimeIncrement = undefined;
+      shouldTriggerClick = true;
+    }
 
-        // Click the Add House Number in the top nav bar
-        $(".toolbar wz-button.add-house-number").click();
-      }
+    if (shouldTriggerClick) {
+      // Prevent further event handling
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      // Trigger house number addition
+      $(".toolbar wz-button.add-house-number").click();
     }
   }
 
