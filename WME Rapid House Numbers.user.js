@@ -423,7 +423,7 @@ const DEBUG = true;
       // Handle numeric parts
       const result = Number(lastPart) + amount;
       if (result >= 0) {
-        parts[lastIndex] = result.toString().padStart(lastPart.length, "0");
+        parts[lastIndex] = result.toString();
       } else {
         // cancel if the result is negative
         return houseNumber;
