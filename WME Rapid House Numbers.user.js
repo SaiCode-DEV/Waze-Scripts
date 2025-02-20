@@ -131,6 +131,7 @@ const DEBUG = true;
       increment: 2,
       value: "",
       version: 0,
+      rapidAcceleratorEnabled: true,
     };
 
     // If no config exists yet, return default
@@ -211,13 +212,17 @@ const DEBUG = true;
   async function rapidHNBootstrap() {
     await SDK_INITIALIZED;
     await wmeReady();
-    initialize();
+    initShortcuts();
+    initSettings();
+    wmeSDK.Events.on({
+      eventName: "wme-selection-changed",
+      eventHandler: handleSelectionChanges,
+    });
+    log("RHN is ready.");
   }
 
   // Initialize RHN once Waze has been loaded.
-  function initialize() {
-    log("initializing");
-
+  async function initShortcuts() {
     // Register keyboard shortcuts
     W.accelerators.SpecialKeys[96] = "[NumPad] 0";
     W.accelerators.SpecialKeys[97] = "[NumPad] 1";
@@ -258,13 +263,30 @@ const DEBUG = true;
       }
     });
     log(`${wmeSDK.Shortcuts.getAllShortcuts().length} shortcuts registered.`);
+  }
 
-    wmeSDK.Events.on({
-      eventName: "wme-selection-changed",
-      eventHandler: handleSelectionChanges,
-    });
+  async function initSettings() {
+    if (!$.ui) {
+      log("jQuery UI is not loaded.");
+      setTimeout(initSettings, 1000);
+      return;
+    }
+    const { tabLabel, tabPane } = wmeSDK.Sidebar.registerScriptTab();
+    tabLabel.innerText = "🏠 Rapid HN";
+    tabLabel.title = "Rapid House Numbers";
 
-    log("initialized.");
+    tabPane.innerHTML = /* html */ `
+      <div class="rapidHN-settings">
+        <h1>Settings</h1>
+          <input type="checkbox" id="rapidAccelerator"/>
+          <label for="rapidAccelerator">Enable Rapid Accelerator</label>
+        <div class="rapidHN-settings__accelerator">
+          <h2>Rapid Accelerator Settings</h2>
+          <input type="checkbox" id="acceleratorNumpad" />
+          <label for="acceleratorNumpad">Enable Numpad Accelerator</label>
+        </div>
+      </div>
+    `;
   }
 
   function createRHNcontrols(addHouseNumberNode) {
