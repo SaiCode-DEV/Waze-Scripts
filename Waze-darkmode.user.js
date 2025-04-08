@@ -2,9 +2,9 @@
 // @name            Waze Darkmode
 // @name:de         Waze Darkmode (schön augen schonen)
 // @namespace       https://github.com/SaiCode-DEV
-// @version         0.75
-// @description     A darkmode for WME / Waze
-// @description:de  Dunkler Modus für WME / Waze
+// @version         0.76
+// @description     A darkmode for WME / Waze with improved contrast and dark gray tones
+// @description:de  Dunkler Modus für WME / Waze mit verbessertem Kontrast und dunkelgrauen Tönen
 // @author          SaiCode
 // @match           /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
 // @match           https://www.waze.com/*
@@ -19,7 +19,7 @@
 GM_addStyle(`
 
 p {
-  color: #aaa !important;
+  color: #cccccc !important;
 }
 
 h2 {
@@ -27,29 +27,29 @@ h2 {
 }
 
 .ToolboxMeasurementTool {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .ToolboxMeasurementTool .header {
-  background-color: #0c4151 !important;
+  background-color: #1a5566 !important;
 }
 
 #WMETB_Clear_Road_Geometry {
-  filter: brightness(1.2);
+  filter: brightness(1.3);
 }
 
 #WMETB_CreateJunctions {
-  filter: invert(1);
+  filter: invert(0.9);
 }
 
 #WMETB_NavBar {
-  background-color: rgba(17, 17, 17, 0.9) !important;
+  background-color: rgba(40, 40, 45, 0.95) !important;
   color: var(--text-color) !important;
   opacity: 1;
 }
 
 WWSUFooter a {
-  color: #6fc1e6 !important;
+  color: #7fd1f6 !important;
 }
 
 #WWSU-Container {
@@ -57,31 +57,31 @@ WWSUFooter a {
 }
 
 #WWSU-script-update-info {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .add-opening-hour .section {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 #app-head wz-header #left-app-head #logo-and-env #waze-logo {
-  filter: invert(1);
+  filter: invert(0.9);
 }
 
 .dialog-lightbox nav button {
   margin: 0 auto;
   outline: 0;
-  border: 3px solid #1a1a1a;
+  border: 3px solid #222222;
   border-radius: 10px;
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
   background: -webkit-gradient(
     linear,
     left top,
     left bottom,
-    color-stop(0%, #2f2f2f),
-    color-stop(50%, #2f2f2f),
-    color-stop(50%, #1a1a1a),
-    color-stop(100%, #1a1a1a)
+    color-stop(0%, #3a3a3a),
+    color-stop(50%, #3a3a3a),
+    color-stop(50%, #2a2a2a),
+    color-stop(100%, #2a2a2a)
   );
   padding: 3px;
   color: var(--text-color);
@@ -92,52 +92,52 @@ WWSUFooter a {
     linear,
     left top,
     left bottom,
-    color-stop(0%, #0077b6),
-    color-stop(50%, #0077b6),
-    color-stop(50%, #023e8a),
-    color-stop(100%, #023e8a)
+    color-stop(0%, #0088cc),
+    color-stop(50%, #0088cc),
+    color-stop(50%, #0055aa),
+    color-stop(100%, #0055aa)
   );
   cursor: pointer;
   color: var(--text-color);
 }
 
 [dir] .wz-footer {
-  background-color: #333 !important;
+  background-color: #2e2e2e !important;
 }
 
 [dir] .wz-nav {
-  background-color: #333 !important;
+  background-color: #2e2e2e !important;
 }
 
 .form-control {
-  background-color: #333 !important;
-  color: #d6dae7 !important;
+  background-color: #383838 !important;
+  color: #e6eaf7 !important;
 }
 
 .form-search .search-query {
-  background-color: #222 !important;
-  color: #89c4ff !important;
+  background-color: #2a2a2a !important;
+  color: #99d4ff !important;
 }
 
 .form-search input.search-query::placeholder {
-  color: #666 !important;
+  color: #999 !important;
 }
 
 #header {
-  border-bottom: 2px solid #50c9f2 !important;
-  background-color: #11242a !important;
+  border-bottom: 2px solid #60d9ff !important;
+  background-color: #1a3038 !important;
 }
 
 #header .user-avatar {
-  color: #6fc1e6 !important;
+  color: #7fd1f6 !important;
 }
 
 #header .user-headline .header-info {
-  background-color: #2c484f !important;
+  background-color: #345863 !important;
 }
 
 .house-number-marker {
-  background: #353535 !important;
+  background: #454545 !important;
 }
 
 #issue-tracker-filter-region {
@@ -149,28 +149,28 @@ WWSUFooter a {
 }
 
 div.c2821834349 > input:checked + label {
-  background-color: #333 !important;
+  background-color: #3e3e3e !important;
 }
 
 div.c2821834349 > input:enabled + label:hover {
-  background-color: #444 !important;
+  background-color: #4a4a4a !important;
 }
 
 div.c2821834349 > label {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 div.c2952996808 {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 div[class^="changesLog--"] {
-  --wz-tooltip-content-background-color: #222 !important;
-  color: #eee !important;
+  --wz-tooltip-content-background-color: #2a2a2a !important;
+  color: #f5f5f5 !important;
 }
 
 #jaOptions .disabled::after {
-  color: rgba(31, 31, 31, 0.67) !important;
+  color: rgba(60, 60, 60, 0.67) !important;
 }
 
 .layer-switcher .menu {
@@ -178,16 +178,16 @@ div[class^="changesLog--"] {
 }
 
 .layer-switcher .menu > .title {
-  color: #eee !important;
+  color: #f5f5f5 !important;
 }
 
 .ls-link:hover {
-  background-color: #333 !important;
+  background-color: #3e3e3e !important;
 }
 
 .ls-modal {
   background-color: var(--background_default) !important;
-  color: #d6dae7 !important;
+  color: #e6eaf7 !important;
 }
 
 .modal-content {
@@ -200,36 +200,36 @@ body {
 }
 
 .panel.panel--to-be-deprecated > * {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 #password {
-  background-color: #333 !important;
-  color: #d6dae7 !important;
+  background-color: #383838 !important;
+  color: #e6eaf7 !important;
 }
 
 #ptsm-Allgem {
-  color: #a4eeee !important;
+  color: #c4ffff !important;
 }
 
 #ptsm-Baustell {
-  color: #1de1b9 !important;
+  color: #4df1c9 !important;
 }
 
 #ptsm-Bilder {
-  color: #00ff00 !important;
+  color: #66ff66 !important;
 }
 
 #ptsm-Blitzer {
-  color: #00ffff !important;
+  color: #66ffff !important;
 }
 
 #ptsm-GeoPort {
-  color: #9abeff !important;
+  color: #baceff !important;
 }
 
 #ptsm-Misc {
-  color: #ff15ba !important;
+  color: #ff55ca !important;
 }
 
 #recent-edits .recent-edits-list .recent-edits-list-header {
@@ -245,26 +245,26 @@ body {
 }
 
 #recent-edits .recent-edits-map .map {
-  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+  filter: invert(95%) hue-rotate(180deg) brightness(85%) contrast(95%);
 }
 
 :root {
-  --background_default: #111 !important;
-  --background_variant: #222 !important;
-  --content_default: #a7a7a7 !important;
-  --surface_default: #1e1e1e !important;
-  --surface_variant: #333 !important;
-  --surface_variant_blue: #003a5e !important;
-  --surface_variant_green: #003f10 !important;
-  --surface_variant_orange: #421200 !important;
-  --surface_variant_purple: #2e0042 !important;
-  --surface_variant_red: #420000 !important;
-  --surface_variant_yellow: #565201 !important;
-  --surface_alt: #1e2122 !important;
-  --text-color: #fff !important;
-  --content_p1: #d6dae7 !important;
-  --content_p2: #bbb !important;
-  --content_p3: #666 !important;
+  --background_default: #1e1e1e !important;
+  --background_variant: #2a2a2a !important;
+  --content_default: #c7c7c7 !important;
+  --surface_default: #2e2e2e !important;
+  --surface_variant: #3a3a3a !important;
+  --surface_variant_blue: #124a6e !important;
+  --surface_variant_green: #124f20 !important;
+  --surface_variant_orange: #522210 !important;
+  --surface_variant_purple: #3e1052 !important;
+  --surface_variant_red: #521010 !important;
+  --surface_variant_yellow: #666211 !important;
+  --surface_alt: #2e3132 !important;
+  --text-color: #f0f0f0 !important;
+  --content_p1: #e6eaf7 !important;
+  --content_p2: #cccccc !important;
+  --content_p3: #999999 !important;
 }
 
 #sidebar {
@@ -272,31 +272,31 @@ body {
 }
 
 #sidebar .nav-tabs {
-  background: #222 !important;
+  background: #2a2a2a !important;
 }
 
 #sidebar .nav-tabs li a {
-  color: #ddd !important;
+  color: #eee !important;
 }
 
 #sidebar .nav-tabs li.active a {
-  background: #333 !important;
+  background: #3e3e3e !important;
 }
 
 #sidepanel-ptsm button {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .tb-feature-label-image {
-  filter: invert(1);
+  filter: invert(0.9);
 }
 
 .tb-tab-tab {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .tb-tab-tab.active {
-  background-color: #333 !important;
+  background-color: #3e3e3e !important;
 }
 
 .tb-tabContainer {
@@ -304,16 +304,16 @@ body {
 }
 
 .transaction-header:hover {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 #tutorial-dialog .modal-body {
-  background-image: linear-gradient(-179deg, #222 0%, #313131 100%);
+  background-image: linear-gradient(-179deg, #2a2a2a 0%, #3e3e3e 100%);
 }
 
 #username {
-  background-color: #333 !important;
-  color: #d6dae7 !important;
+  background-color: #383838 !important;
+  color: #e6eaf7 !important;
 }
 
 .welcome_popup_container--MpGOT {
@@ -321,7 +321,7 @@ body {
 }
 
 .welcome_popup_image--SSxnF {
-  filter: brightness(93.2%) invert(1) hue-rotate(180deg);
+  filter: brightness(90%) invert(0.9) hue-rotate(180deg);
 }
 
 .wm-card.is-routing {
@@ -329,16 +329,16 @@ body {
 }
 
 .wm-map__leaflet {
-  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+  filter: invert(95%) hue-rotate(180deg) brightness(85%) contrast(95%);
 }
 
 .wm-routes {
-  border-top: 8px solid #222 !important;
+  border-top: 8px solid #2a2a2a !important;
   background-color: var(--background_default) !important;
 }
 
 .wm-routes-item-desktop.is-active {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .wm-routes-item-desktop__header {
@@ -354,7 +354,7 @@ body {
 }
 
 .wm-routing-poi {
-  border-top: 8px solid #222 !important;
+  border-top: 8px solid #2a2a2a !important;
   background-color: var(--background_default) !important;
 }
 
@@ -367,42 +367,42 @@ body {
 }
 
 .wm-routing-schedule .wz-react-dropdown__head {
-  color: #d6dae7 !important;
+  color: #e6eaf7 !important;
 }
 
 .wm-routing-status {
-  border-top: 8px solid #222 !important;
+  border-top: 8px solid #2a2a2a !important;
   background-color: var(--background_default) !important;
 }
 
 .wm-routing__sticky-delimeter {
-  background-color: #333 !important;
+  background-color: #3e3e3e !important;
 }
 
 .wm-routing__title {
   background-color: var(--background_default) !important;
-  color: #d6dae7 !important;
+  color: #e6eaf7 !important;
 }
 
 .wm-search__secondary {
-  color: #bbb !important;
+  color: #cccccc !important;
 }
 
 .wz-button.shadowed {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .wz-cc-container {
-  background-color: #333 !important;
-  color: #d6dae7 !important;
+  background-color: #3e3e3e !important;
+  color: #e6eaf7 !important;
 }
 
 .wz-footer-meta-logo {
-  filter: invert(1);
+  filter: invert(0.9);
 }
 
 .wz-footer-meta-social-link-container {
-  filter: invert(1);
+  filter: invert(0.9);
 }
 
 .wz-footer-meta-social-link-container::marker {
@@ -410,7 +410,7 @@ body {
 }
 
 .wz-map-ol-control-mouse-position {
-  color: #eee !important;
+  color: #f5f5f5 !important;
 }
 
 .wz-map-ol-footer {
@@ -418,7 +418,7 @@ body {
 }
 
 .wz-react-dropdown__head::after {
-  border-top-color: #d6dae7 !important;
+  border-top-color: #e6eaf7 !important;
 }
 
 .wz-search-from-to {
@@ -426,11 +426,11 @@ body {
 }
 
 .wz-search-from-to .wm-search .wm-search__selected {
-  background-color: #333 !important;
+  background-color: #3e3e3e !important;
 }
 
 .wz-search-from-to .wm-search__primary {
-  color: #d7def2 !important;
+  color: #e7eeff !important;
 }
 
 .wz-sidebar {
@@ -438,19 +438,19 @@ body {
 }
 
 .wz-sidebar-toggle-label {
-  color: #ddd !important;
+  color: #eee !important;
 }
 
 .wz-tabs__button {
-  color: #d6dae7 !important;
+  color: #e6eaf7 !important;
 }
 
 .wz-tooltip-content-holder {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .wz-venue h6 {
-  color: #c8cee1 !important;
+  color: #d8def1 !important;
 }
 
 #RAUtilWindow {
@@ -459,46 +459,46 @@ body {
 
 #rotationAmount,
 #shiftAmount {
-  background-color: #333 !important;
-  color: #d6dae7 !important;
+  background-color: #383838 !important;
+  color: #e6eaf7 !important;
 }
 
 div.c3584528711 > span {
-  background-color: rgb(57, 57, 29) !important;
+  background-color: rgb(77, 77, 39) !important;
 }
 
 div.c3336571891 > span {
-  background-color: rgb(6, 61, 6) !important;
+  background-color: rgb(16, 71, 16) !important;
 }
 
 div.note {
-  background-color: #10101C !important;
+  background-color: #20202C !important;
 }
 div.note a {
-  color: #0c5b7f  !important;
+  color: #1c8bc0 !important;
 }
 div.note a:visited {
-  color: #107f0c  !important;
+  color: #20af20 !important;
 }
 
 img#slackPermalink {
-  filter: invert(1);
+  filter: invert(0.9);
 }
 
 .restrictions-summary .restrictions-table th {
-  background: #003342 !important;
+  background: #104352 !important;
 }
 
 .restrictions-summary .restrictions-table tr {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 .restrictions-summary .restriction-list-item:hover td {
-  background: #333 !important;
+  background: #3e3e3e !important;
 }
 
 .restriction-editing-region .restriction-editing-section .restriction-editing-container {
-  background-color: #222 !important;
+  background-color: #2a2a2a !important;
 }
 
 #WazeMap .snapshot-message .snapshot-mode-message {
@@ -513,7 +513,7 @@ img#slackPermalink {
 #abAlerts {
   background-color: var(--background_default) !important;
   box-shadow: var(--background_default) 5px 5px 10px !important;
-  border-color: #333 !important;
+  border-color: #3e3e3e !important;
 }
 
 #sidebar {
