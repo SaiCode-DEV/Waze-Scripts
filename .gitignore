@@ -1,0 +1,12 @@
+node_modules/
+Rankbypass.user.js
+Ladesaeulenregister.csv
+data.csv
+data.json
+
+Tests/
+yarn.lock
+IDK aber E Tanken.user.js
+BombAlarm.py
+sent_alerts.json
+alerts.csv
