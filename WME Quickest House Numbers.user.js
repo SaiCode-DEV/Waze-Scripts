@@ -290,6 +290,8 @@ let lastFetchedPosition = null;
       bubbles: true, cancelable: true, keyCode: 13,
     });
     element.dispatchEvent(keyEvent);
+    // change focus to the map
+    $("div#WazeMap").focus();
   }
 
   async function fetchHouseNumber(lat, lon) {

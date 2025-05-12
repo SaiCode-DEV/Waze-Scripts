@@ -11,6 +11,7 @@
 // @license       MIT
 // @grant         GM_addStyle
 // @require       https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
+// @require       https://code.jquery.com/ui/1.14.1/jquery-ui.min.js
 // ==/UserScript==
 
 const DEBUG = true;
@@ -272,27 +273,18 @@ const DEBUG = true;
       return;
     }
     const { tabLabel, tabPane } = wmeSDK.Sidebar.registerScriptTab();
+
     tabLabel.innerText = "🏠 Rapid HN";
     tabLabel.title = "Rapid House Numbers";
 
     tabPane.innerHTML = /* html */ `
-      <div class="rapidHN-settings">
-        <h1>Settings</h1>
-          <input type="checkbox" id="rapidAccelerator"/>
-          <label for="rapidAccelerator">Enable Rapid Accelerator</label>
-        <div class="rapidHN-settings__accelerator">
-          <h2>Rapid Accelerator Settings</h2>
-          <input type="checkbox" id="acceleratorNumpad" />
-          <label for="acceleratorNumpad">Enable Numpad Accelerator</label>
-        </div>
-      </div>
+
     `;
   }
 
   function createRHNcontrols(addHouseNumberNode) {
     // check if the controls are already there
-    if ($(addHouseNumberNode).next().hasClass("rapidHN-control")) {
-      console.warn("RHN controls already exist");
+    if (addHouseNumberNode.querySelector(".rapidHN-control")) {
       return;
     }
 
@@ -510,7 +502,7 @@ const DEBUG = true;
       event.stopImmediatePropagation();
 
       // Trigger house number addition
-      $(".toolbar wz-button.add-house-number").click();
+      $("wz-button:contains('Hausnummern hinzufügen')").click();
     }
   }
 
